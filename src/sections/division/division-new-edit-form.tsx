@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import * as Yup from 'yup';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -13,146 +13,147 @@ import { useRouter } from 'src/routes/hooks';
 import { IInvoice } from 'src/types/invoice';
 // _mock
 import { _addressBooks } from 'src/_mock';
+import {
+  _tags,
+  PRODUCT_SIZE_OPTIONS,
+  PRODUCT_GENDER_OPTIONS,
+  PRODUCT_COLOR_NAME_OPTIONS,
+  PRODUCT_CATEGORY_GROUP_OPTIONS,
+} from 'src/_mock';
 // hooks
 import { useBoolean } from 'src/hooks/use-boolean';
 // components
-import FormProvider from 'src/components/hook-form';
-//
-import DivisionNewEditDetails from './division-new-edit-details';
-import DivisionNewEditAddress from './division-new-edit-address';
-import DivisionNewEditStatusDate from './division-new-edit-status-date';
+import FormProvider, {
+  RHFAutocomplete,
+  RHFEditor,
+  RHFMultiCheckbox,
+  RHFMultiSelect,
+  RHFSelect,
+  RHFSwitch,
+  RHFTextField,
+  RHFUpload,
+} from 'src/components/hook-form';
+// types
+import { IProductItem } from 'src/types/product';
+import { useResponsive } from 'src/hooks/use-responsive';
+import { useSnackbar } from 'src/components/snackbar';
+import {
+  Box,
+  CardHeader,
+  Chip,
+  Divider,
+  FormControlLabel,
+  Grid,
+  InputAdornment,
+  Switch,
+  Typography,
+} from '@mui/material';
 
 // ----------------------------------------------------------------------
 
 type Props = {
-  currentInvoice?: IInvoice;
+  currentProduct?: IProductItem;
 };
 
-export default function InvoiceNewEditForm({ currentInvoice }: Props) {
+export default function DivisionNewEditForm({ currentProduct }: Props) {
   const router = useRouter();
 
-  const loadingSave = useBoolean();
+  const mdUp = useResponsive('up', 'md');
 
-  const loadingSend = useBoolean();
+  const { enqueueSnackbar } = useSnackbar();
 
-  const NewInvoiceSchema = Yup.object().shape({
-    invoiceTo: Yup.mixed<any>().nullable().required('Invoice to is required'),
-    createDate: Yup.mixed<any>().nullable().required('Create date is required'),
-    dueDate: Yup.mixed<any>()
-      .required('Due date is required')
-      .test(
-        'date-min',
-        'Due date must be later than create date',
-        (value, { parent }) => value.getTime() > parent.createDate.getTime()
-      ),
-    // not required
-    taxes: Yup.number(),
-    status: Yup.string(),
-    discount: Yup.number(),
-    shipping: Yup.number(),
-    invoiceFrom: Yup.mixed(),
-    totalAmount: Yup.number(),
-    invoiceNumber: Yup.string(),
+  const [includeTaxes, setIncludeTaxes] = useState(false);
+
+  const NewProductSchema = Yup.object().shape({
+    name: Yup.string().required('Name is required'),
+    description: Yup.string().required('Description is required'),
   });
 
   const defaultValues = useMemo(
     () => ({
-      invoiceNumber: currentInvoice?.invoiceNumber || 'INV-1990',
-      createDate: currentInvoice?.createDate || new Date(),
-      dueDate: currentInvoice?.dueDate || null,
-      taxes: currentInvoice?.taxes || 0,
-      shipping: currentInvoice?.shipping || 0,
-      status: currentInvoice?.status || 'draft',
-      discount: currentInvoice?.discount || 0,
-      invoiceFrom: currentInvoice?.invoiceFrom || _addressBooks[0],
-      invoiceTo: currentInvoice?.invoiceTo || null,
-      items: currentInvoice?.items || [
-        {
-          title: '',
-          description: '',
-          service: '',
-          quantity: 1,
-          price: 0,
-          total: 0,
-        },
-      ],
-      totalAmount: currentInvoice?.totalAmount || 0,
+      name: currentProduct?.name || '',
+      description: currentProduct?.description || '',
     }),
-    [currentInvoice]
+    [currentProduct]
   );
 
   const methods = useForm({
-    resolver: yupResolver(NewInvoiceSchema),
+    resolver: yupResolver(NewProductSchema),
     defaultValues,
   });
 
   const {
     reset,
-
+    watch,
+    setValue,
     handleSubmit,
     formState: { isSubmitting },
   } = methods;
 
-  const handleSaveAsDraft = handleSubmit(async (data) => {
-    loadingSave.onTrue();
+  const values = watch();
 
+  useEffect(() => {
+    if (currentProduct) {
+      reset(defaultValues);
+    }
+  }, [currentProduct, defaultValues, reset]);
+
+  const onSubmit = handleSubmit(async (data) => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 500));
       reset();
-      loadingSave.onFalse();
-      router.push(paths.dashboard.invoice.root);
-      console.info('DATA', JSON.stringify(data, null, 2));
+      enqueueSnackbar(currentProduct ? 'Update success!' : 'Create success!');
+      router.push(paths.dashboard.product.root);
+      console.info('DATA', data);
     } catch (error) {
       console.error(error);
-      loadingSave.onFalse();
     }
   });
 
-  const handleCreateAndSend = handleSubmit(async (data) => {
-    loadingSend.onTrue();
+  const renderDetails = (
+    <>
+      {mdUp && (
+        <Grid md={4}>
+          <Typography variant="h6" sx={{ mb: 0.5 }}>
+            Details
+          </Typography>
+          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+            Title, description
+          </Typography>
+        </Grid>
+      )}
 
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      reset();
-      loadingSend.onFalse();
-      router.push(paths.dashboard.invoice.root);
-      console.info('DATA', JSON.stringify(data, null, 2));
-    } catch (error) {
-      console.error(error);
-      loadingSend.onFalse();
-    }
-  });
+      <Grid xs={12} md={8}>
+        <Card>
+          {!mdUp && <CardHeader title="Details" />}
+
+          <Stack spacing={3} sx={{ p: 3 }}>
+            <RHFTextField name="name" label="Division Name" />
+
+            <RHFTextField name="description" label="Sub Description" multiline rows={4} />
+          </Stack>
+        </Card>
+      </Grid>
+    </>
+  );
+
+  const renderActions = (
+    <>
+      {mdUp && <Grid md={4} />}
+      <Grid xs={12} md={8} sx={{ display: 'flex', alignItems: 'center', marginTop: 5 }}>
+        <LoadingButton type="submit" variant="contained" size="large" loading={isSubmitting}>
+          {!currentProduct ? 'Create Division' : 'Save Changes'}
+        </LoadingButton>
+      </Grid>
+    </>
+  );
 
   return (
-    <FormProvider methods={methods}>
-      <Card>
-        <DivisionNewEditAddress />
-
-        <DivisionNewEditStatusDate />
-
-        <DivisionNewEditDetails />
-      </Card>
-
-      <Stack justifyContent="flex-end" direction="row" spacing={2} sx={{ mt: 3 }}>
-        <LoadingButton
-          color="inherit"
-          size="large"
-          variant="outlined"
-          loading={loadingSave.value && isSubmitting}
-          onClick={handleSaveAsDraft}
-        >
-          Save as Draft
-        </LoadingButton>
-
-        <LoadingButton
-          size="large"
-          variant="contained"
-          loading={loadingSend.value && isSubmitting}
-          onClick={handleCreateAndSend}
-        >
-          {currentInvoice ? 'Update' : 'Create'} & Send
-        </LoadingButton>
-      </Stack>
+    <FormProvider methods={methods} onSubmit={onSubmit}>
+      <Grid container spacing={3}>
+        {renderDetails}
+        {renderActions}
+      </Grid>
     </FormProvider>
   );
 }

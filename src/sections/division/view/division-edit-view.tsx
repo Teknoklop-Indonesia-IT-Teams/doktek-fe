@@ -9,6 +9,7 @@ import { useSettingsContext } from 'src/components/settings';
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 //
 import DivisionNewEditForm from '../division-new-edit-form';
+import { useGetProduct } from 'src/api/product';
 
 // ----------------------------------------------------------------------
 
@@ -19,6 +20,7 @@ type Props = {
 export default function DivisionEditView({ id }: Props) {
   const settings = useSettingsContext();
 
+  const { product: currentProduct } = useGetProduct(id);
   const currentDivision = _invoices.find((invoice) => invoice.id === id);
 
   return (
@@ -34,14 +36,14 @@ export default function DivisionEditView({ id }: Props) {
             name: 'Division',
             href: paths.dashboard.invoice.root,
           },
-          { name: currentDivision?.invoiceNumber },
+          { name: currentProduct?.name },
         ]}
         sx={{
           mb: { xs: 3, md: 5 },
         }}
       />
 
-      <DivisionNewEditForm currentInvoice={currentDivision} />
+      <DivisionNewEditForm currentProduct={currentProduct} />
     </Container>
   );
 }

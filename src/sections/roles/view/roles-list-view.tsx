@@ -186,14 +186,14 @@ export default function RolesListView() {
 
   const handleEditRow = useCallback(
     (id: string) => {
-      router.push(paths.dashboard.invoice.edit(id));
+      router.push(paths.dashboard.roles.edit(id));
     },
     [router]
   );
 
   const handleViewRow = useCallback(
     (id: string) => {
-      router.push(paths.dashboard.invoice.details(id));
+      router.push(paths.dashboard.roles.details(id));
     },
     [router]
   );

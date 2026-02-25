@@ -8,7 +8,7 @@ export default function RolesCreatePage() {
   return (
     <>
       <Helmet>
-        <title> Dashboard: Create a new invoice</title>
+        <title> Dashboard: Create a new roles</title>
       </Helmet>
 
       <RolesCreateView />

@@ -187,14 +187,14 @@ export default function DivisionListView() {
 
   const handleEditRow = useCallback(
     (id: string) => {
-      router.push(paths.dashboard.invoice.edit(id));
+      router.push(paths.dashboard.division.edit(id));
     },
     [router]
   );
 
   const handleViewRow = useCallback(
     (id: string) => {
-      router.push(paths.dashboard.invoice.details(id));
+      router.push(paths.dashboard.division.details(id));
     },
     [router]
   );

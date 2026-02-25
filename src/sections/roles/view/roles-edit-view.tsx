@@ -9,6 +9,7 @@ import { useSettingsContext } from 'src/components/settings';
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 //
 import RolesNewEditForm from '../roles-new-edit-form';
+import { useGetProduct } from 'src/api/product';
 
 // ----------------------------------------------------------------------
 
@@ -19,6 +20,7 @@ type Props = {
 export default function RolesEditView({ id }: Props) {
   const settings = useSettingsContext();
 
+  const { product: currentProduct } = useGetProduct(id);
   const currentRoles = _invoices.find((invoice) => invoice.id === id);
 
   return (
@@ -34,14 +36,14 @@ export default function RolesEditView({ id }: Props) {
             name: 'Roles',
             href: paths.dashboard.invoice.root,
           },
-          { name: currentRoles?.invoiceNumber },
+          { name: currentProduct?.name },
         ]}
         sx={{
           mb: { xs: 3, md: 5 },
         }}
       />
 
-      <RolesNewEditForm currentInvoice={currentRoles} />
+      <RolesNewEditForm currentProduct={currentProduct} />
     </Container>
   );
 }
