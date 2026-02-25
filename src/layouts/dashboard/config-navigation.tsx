@@ -92,7 +92,7 @@ export function useNavData() {
         items: [
           {
             title: t('user'),
-            path: paths.dashboard.user.cards,
+            path: paths.dashboard.user.list,
             icon: ICONS.user,
           },
 
