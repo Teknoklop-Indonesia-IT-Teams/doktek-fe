@@ -29,6 +29,24 @@ const InvoiceListPage = lazy(() => import('src/pages/dashboard/invoice/list'));
 const InvoiceDetailsPage = lazy(() => import('src/pages/dashboard/invoice/details'));
 const InvoiceCreatePage = lazy(() => import('src/pages/dashboard/invoice/new'));
 const InvoiceEditPage = lazy(() => import('src/pages/dashboard/invoice/edit'));
+// ROLES
+const RolesListPage = lazy(() => import('src/pages/dashboard/roles/list'));
+const RolesDetailsPage = lazy(() => import('src/pages/dashboard/roles/details'));
+const RolesCreatePage = lazy(() => import('src/pages/dashboard/roles/new'));
+const RolesEditPage = lazy(() => import('src/pages/dashboard/roles/edit'));
+// DOCUMENTS
+const DocumentsListPage = lazy(() => import('src/pages/dashboard/technical-documents/list'));
+const DocumentsDetailsPage = lazy(() => import('src/pages/dashboard/technical-documents/details'));
+const DocumentsCreatePage = lazy(() => import('src/pages/dashboard/technical-documents/new'));
+const DocumentsEditPage = lazy(() => import('src/pages/dashboard/technical-documents/edit'));
+// ACTIVITY
+const ActivityLogsListPage = lazy(() => import('src/pages/dashboard/activity-logs/list'));
+const ActivityLogsDetailsPage = lazy(() => import('src/pages/dashboard/activity-logs/details'));
+// DIVISION
+const DivisionListPage = lazy(() => import('src/pages/dashboard/division/list'));
+const DivisionDetailsPage = lazy(() => import('src/pages/dashboard/division/details'));
+const DivisionCreatePage = lazy(() => import('src/pages/dashboard/division/new'));
+const DivisionEditPage = lazy(() => import('src/pages/dashboard/division/edit'));
 // USER
 const UserProfilePage = lazy(() => import('src/pages/dashboard/user/profile'));
 const UserCardsPage = lazy(() => import('src/pages/dashboard/user/cards'));
@@ -107,6 +125,34 @@ export const dashboardRoutes = [
         ],
       },
       {
+        path: 'techincalDocument',
+        children: [
+          { element: <DocumentsListPage />, index: true },
+          { path: 'list', element: <DocumentsListPage /> },
+          { path: ':id', element: <DocumentsDetailsPage /> },
+          { path: 'new', element: <DocumentsCreatePage /> },
+          { path: ':id/edit', element: <DocumentsEditPage /> },
+        ],
+      },
+      {
+        path: 'activity',
+        children: [
+          { element: <ActivityLogsListPage />, index: true },
+          { path: 'list', element: <ActivityLogsListPage /> },
+          { path: ':id', element: <ActivityLogsDetailsPage /> },
+        ],
+      },
+      {
+        path: 'division',
+        children: [
+          { element: <DivisionListPage />, index: true },
+          { path: 'list', element: <DivisionListPage /> },
+          { path: ':id', element: <DivisionDetailsPage /> },
+          { path: 'new', element: <DivisionCreatePage /> },
+          { path: ':id/edit', element: <DivisionEditPage /> },
+        ],
+      },
+      {
         path: 'order',
         children: [
           { element: <OrderListPage />, index: true },
@@ -122,6 +168,16 @@ export const dashboardRoutes = [
           { path: ':id', element: <InvoiceDetailsPage /> },
           { path: ':id/edit', element: <InvoiceEditPage /> },
           { path: 'new', element: <InvoiceCreatePage /> },
+        ],
+      },
+      {
+        path: 'roles',
+        children: [
+          { element: <RolesListPage />, index: true },
+          { path: 'list', element: <RolesListPage /> },
+          { path: ':id', element: <RolesDetailsPage /> },
+          { path: ':id/edit', element: <RolesEditPage /> },
+          { path: 'new', element: <RolesCreatePage /> },
         ],
       },
       {

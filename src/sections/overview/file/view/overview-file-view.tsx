@@ -265,8 +265,6 @@ export default function OverviewFileView() {
             />
 
             <Box sx={{ display: { xs: 'none', sm: 'block' } }}>{renderStorageOverview}</Box>
-
-            {/* <FileUpgrade sx={{ mt: 3 }} /> */}
           </Grid>
         </Grid>
       </Container>

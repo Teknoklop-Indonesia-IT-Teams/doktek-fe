@@ -129,6 +129,46 @@ export const paths = {
         edit: `${ROOTS.DASHBOARD}/product/${MOCK_ID}/edit`,
       },
     },
+    techincalDocument: {
+      root: `${ROOTS.DASHBOARD}/techincalDocument`,
+      new: `${ROOTS.DASHBOARD}/techincalDocument/new`,
+      details: (id: string) => `${ROOTS.DASHBOARD}/techincalDocument/${id}`,
+      edit: (id: string) => `${ROOTS.DASHBOARD}/techincalDocument/${id}/edit`,
+      demo: {
+        details: `${ROOTS.DASHBOARD}/techincalDocument/${MOCK_ID}`,
+        edit: `${ROOTS.DASHBOARD}/techincalDocument/${MOCK_ID}/edit`,
+      },
+    },
+    activity: {
+      root: `${ROOTS.DASHBOARD}/activity`,
+      new: `${ROOTS.DASHBOARD}/activity/new`,
+      details: (id: string) => `${ROOTS.DASHBOARD}/activity/${id}`,
+      edit: (id: string) => `${ROOTS.DASHBOARD}/activity/${id}/edit`,
+      demo: {
+        details: `${ROOTS.DASHBOARD}/activity/${MOCK_ID}`,
+        edit: `${ROOTS.DASHBOARD}/activity/${MOCK_ID}/edit`,
+      },
+    },
+    division: {
+      root: `${ROOTS.DASHBOARD}/division`,
+      new: `${ROOTS.DASHBOARD}/division/new`,
+      details: (id: string) => `${ROOTS.DASHBOARD}/division/${id}`,
+      edit: (id: string) => `${ROOTS.DASHBOARD}/division/${id}/edit`,
+      demo: {
+        details: `${ROOTS.DASHBOARD}/division/${MOCK_ID}`,
+        edit: `${ROOTS.DASHBOARD}/division/${MOCK_ID}/edit`,
+      },
+    },
+    roles: {
+      root: `${ROOTS.DASHBOARD}/roles`,
+      new: `${ROOTS.DASHBOARD}/roles/new`,
+      details: (id: string) => `${ROOTS.DASHBOARD}/roles/${id}`,
+      edit: (id: string) => `${ROOTS.DASHBOARD}/roles/${id}/edit`,
+      demo: {
+        details: `${ROOTS.DASHBOARD}/roles/${MOCK_ID}`,
+        edit: `${ROOTS.DASHBOARD}/roles/${MOCK_ID}/edit`,
+      },
+    },
     invoice: {
       root: `${ROOTS.DASHBOARD}/invoice`,
       new: `${ROOTS.DASHBOARD}/invoice/new`,
