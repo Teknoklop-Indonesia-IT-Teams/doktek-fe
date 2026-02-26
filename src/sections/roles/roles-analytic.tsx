@@ -20,7 +20,7 @@ type Props = {
   color?: string;
 };
 
-export default function InvoiceAnalytic({ title, total, icon, color, percent, price }: Props) {
+export default function RoleAnalytic({ title, total, icon, color, percent, price }: Props) {
   return (
     <Stack
       spacing={2.5}

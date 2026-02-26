@@ -64,6 +64,11 @@ export function useNavData() {
         items: [
           {
             title: t('dashboard'),
+            path: paths.dashboard.root,
+            icon: ICONS.dashboard,
+          },
+          {
+            title: t('app'),
             path: paths.dashboard.general.file,
             icon: ICONS.file,
           },

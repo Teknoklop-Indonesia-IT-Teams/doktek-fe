@@ -1,5 +1,5 @@
 import sumBy from 'lodash/sumBy';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 // @mui
 import { useTheme, alpha } from '@mui/material/styles';
 import Tab from '@mui/material/Tab';
@@ -23,7 +23,9 @@ import { useBoolean } from 'src/hooks/use-boolean';
 // utils
 import { fTimestamp } from 'src/utils/format-time';
 // _mock
-import { _invoices, INVOICE_SERVICE_OPTIONS } from 'src/_mock';
+import { _roles } from 'src/_mock';
+// api
+import { useGetRoles, useGetRolesDetails, useSearchRoles } from 'src/api/role';
 // components
 import Label from 'src/components/label';
 import Iconify from 'src/components/iconify';
@@ -40,33 +42,29 @@ import {
   TableHeadCustom,
   TableSelectedAction,
   TablePaginationCustom,
+  TableSkeleton,
 } from 'src/components/table';
 // types
-import { IInvoice, IInvoiceTableFilters, IInvoiceTableFilterValue } from 'src/types/invoice';
+import { IRole, IRoleTableFilters, IRoleTableFilterValue } from 'src/types/role';
 //
 import RolesAnalytic from '../roles-analytic';
 import RolesTableRow from '../roles-table-row';
 import RolesTableToolbar from '../roles-table-toolbar';
 import RolesTableFiltersResult from '../roles-table-filters-result';
+import { _role, ROLE_NAME } from 'src/_mock/_role';
+import { isEqual } from 'lodash';
 
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
-  { id: 'invoiceNumber', label: 'Customer' },
-  { id: 'createDate', label: 'Create' },
-  { id: 'dueDate', label: 'Due' },
-  { id: 'price', label: 'Amount' },
-  { id: 'sent', label: 'Sent', align: 'center' },
-  { id: 'status', label: 'Status' },
+  { id: 'no', label: 'Number' },
+  { id: 'role_name', label: 'Role Name' },
   { id: '' },
 ];
 
-const defaultFilters: IInvoiceTableFilters = {
+const defaultFilters: IRoleTableFilters = {
+  number: 0,
   name: '',
-  service: [],
-  status: 'all',
-  startDate: null,
-  endDate: null,
 };
 
 // ----------------------------------------------------------------------
@@ -76,26 +74,28 @@ export default function RolesListView() {
 
   const settings = useSettingsContext();
 
+  const { roles, rolesLoading, rolesEmpty } = useGetRoles();
+
   const router = useRouter();
 
   const table = useTable({ defaultOrderBy: 'createDate' });
 
   const confirm = useBoolean();
 
-  const [tableData, setTableData] = useState(_invoices);
+  const [tableData, setTableData] = useState<IRole[]>([]);
 
   const [filters, setFilters] = useState(defaultFilters);
 
-  const dateError =
-    filters.startDate && filters.endDate
-      ? filters.startDate.getTime() > filters.endDate.getTime()
-      : false;
+  useEffect(() => {
+    if (roles.length) {
+      setTableData(roles);
+    }
+  }, [roles]);
 
   const dataFiltered = applyFilter({
     inputData: tableData,
     comparator: getComparator(table.order, table.orderBy),
     filters,
-    dateError,
   });
 
   const dataInPage = dataFiltered.slice(
@@ -105,55 +105,12 @@ export default function RolesListView() {
 
   const denseHeight = table.dense ? 56 : 76;
 
-  const canReset =
-    !!filters.name ||
-    !!filters.service.length ||
-    filters.status !== 'all' ||
-    (!!filters.startDate && !!filters.endDate);
+  const canReset = !isEqual(defaultFilters, filters);
 
-  const notFound = (!dataFiltered.length && canReset) || !dataFiltered.length;
-
-  const getRolesLength = (status: string) =>
-    tableData.filter((item) => item.status === status).length;
-
-  const getTotalAmount = (status: string) =>
-    sumBy(
-      tableData.filter((item) => item.status === status),
-      'totalAmount'
-    );
-
-  const getPercentByStatus = (status: string) => (getRolesLength(status) / tableData.length) * 100;
-
-  const TABS = [
-    { value: 'all', label: 'All', color: 'default', count: tableData.length },
-    {
-      value: 'paid',
-      label: 'Paid',
-      color: 'success',
-      count: getRolesLength('paid'),
-    },
-    {
-      value: 'pending',
-      label: 'Pending',
-      color: 'warning',
-      count: getRolesLength('pending'),
-    },
-    {
-      value: 'overdue',
-      label: 'Overdue',
-      color: 'error',
-      count: getRolesLength('overdue'),
-    },
-    {
-      value: 'draft',
-      label: 'Draft',
-      color: 'default',
-      count: getRolesLength('draft'),
-    },
-  ] as const;
+  const notFound = (!dataFiltered.length && canReset) || rolesEmpty;
 
   const handleFilters = useCallback(
-    (name: string, value: IInvoiceTableFilterValue) => {
+    (name: string, value: IRoleTableFilterValue) => {
       table.onResetPage();
       setFilters((prevState) => ({
         ...prevState,
@@ -164,8 +121,8 @@ export default function RolesListView() {
   );
 
   const handleDeleteRow = useCallback(
-    (id: string) => {
-      const deleteRow = tableData.filter((row) => row.id !== id);
+    (id: number) => {
+      const deleteRow = tableData.filter((row) => row.id_role !== id);
       setTableData(deleteRow);
 
       table.onUpdatePageDeleteRow(dataInPage.length);
@@ -174,7 +131,7 @@ export default function RolesListView() {
   );
 
   const handleDeleteRows = useCallback(() => {
-    const deleteRows = tableData.filter((row) => !table.selected.includes(row.id));
+    const deleteRows = tableData.filter((row) => !table.selected.includes(row.id_role.toString()));
     setTableData(deleteRows);
 
     table.onUpdatePageDeleteRows({
@@ -221,7 +178,7 @@ export default function RolesListView() {
             },
             {
               name: 'Roles',
-              href: paths.dashboard.invoice.root,
+              href: paths.dashboard.roles.root,
             },
             {
               name: 'List',
@@ -242,100 +199,11 @@ export default function RolesListView() {
           }}
         />
 
-        <Card
-          sx={{
-            mb: { xs: 3, md: 5 },
-          }}
-        >
-          <Scrollbar>
-            <Stack
-              direction="row"
-              divider={<Divider orientation="vertical" flexItem sx={{ borderStyle: 'dashed' }} />}
-              sx={{ py: 2 }}
-            >
-              <RolesAnalytic
-                title="Total"
-                total={tableData.length}
-                percent={100}
-                price={sumBy(tableData, 'totalAmount')}
-                icon="solar:bill-list-bold-duotone"
-                color={theme.palette.info.main}
-              />
-
-              <RolesAnalytic
-                title="Paid"
-                total={getRolesLength('paid')}
-                percent={getPercentByStatus('paid')}
-                price={getTotalAmount('paid')}
-                icon="solar:file-check-bold-duotone"
-                color={theme.palette.success.main}
-              />
-
-              <RolesAnalytic
-                title="Pending"
-                total={getRolesLength('pending')}
-                percent={getPercentByStatus('pending')}
-                price={getTotalAmount('pending')}
-                icon="solar:sort-by-time-bold-duotone"
-                color={theme.palette.warning.main}
-              />
-
-              <RolesAnalytic
-                title="Overdue"
-                total={getRolesLength('overdue')}
-                percent={getPercentByStatus('overdue')}
-                price={getTotalAmount('overdue')}
-                icon="solar:bell-bing-bold-duotone"
-                color={theme.palette.error.main}
-              />
-
-              <RolesAnalytic
-                title="Draft"
-                total={getRolesLength('draft')}
-                percent={getPercentByStatus('draft')}
-                price={getTotalAmount('draft')}
-                icon="solar:file-corrupted-bold-duotone"
-                color={theme.palette.text.secondary}
-              />
-            </Stack>
-          </Scrollbar>
-        </Card>
-
         <Card>
-          <Tabs
-            value={filters.status}
-            onChange={handleFilterStatus}
-            sx={{
-              px: 2.5,
-              boxShadow: `inset 0 -2px 0 0 ${alpha(theme.palette.grey[500], 0.08)}`,
-            }}
-          >
-            {TABS.map((tab) => (
-              <Tab
-                key={tab.value}
-                value={tab.value}
-                label={tab.label}
-                iconPosition="end"
-                icon={
-                  <Label
-                    variant={
-                      ((tab.value === 'all' || tab.value === filters.status) && 'filled') || 'soft'
-                    }
-                    color={tab.color}
-                  >
-                    {tab.count}
-                  </Label>
-                }
-              />
-            ))}
-          </Tabs>
-
           <RolesTableToolbar
             filters={filters}
             onFilters={handleFilters}
-            //
-            dateError={dateError}
-            serviceOptions={INVOICE_SERVICE_OPTIONS.map((option) => option.name)}
+            serviceOptions={ROLE_NAME.map((option) => option.value)}
           />
 
           {canReset && (
@@ -358,7 +226,7 @@ export default function RolesListView() {
               onSelectAllRows={(checked) =>
                 table.onSelectAllRows(
                   checked,
-                  tableData.map((row) => row.id)
+                  tableData.map((row) => row.id_role.toString())
                 )
               }
               action={
@@ -402,28 +270,37 @@ export default function RolesListView() {
                   onSelectAllRows={(checked) =>
                     table.onSelectAllRows(
                       checked,
-                      tableData.map((row) => row.id)
+                      tableData.map((row) => row.id_role.toString())
                     )
                   }
                 />
 
                 <TableBody>
-                  {dataFiltered
-                    .slice(
-                      table.page * table.rowsPerPage,
-                      table.page * table.rowsPerPage + table.rowsPerPage
-                    )
-                    .map((row) => (
-                      <RolesTableRow
-                        key={row.id}
-                        row={row}
-                        selected={table.selected.includes(row.id)}
-                        onSelectRow={() => table.onSelectRow(row.id)}
-                        onViewRow={() => handleViewRow(row.id)}
-                        onEditRow={() => handleEditRow(row.id)}
-                        onDeleteRow={() => handleDeleteRow(row.id)}
-                      />
-                    ))}
+                  {rolesLoading ? (
+                    [...Array(table.rowsPerPage)].map((i, index) => (
+                      <TableSkeleton key={index} sx={{ height: denseHeight }} />
+                    ))
+                  ) : (
+                    <>
+                      {dataFiltered
+                        .slice(
+                          table.page * table.rowsPerPage,
+                          table.page * table.rowsPerPage + table.rowsPerPage
+                        )
+                        .map((row, index) => (
+                          <RolesTableRow
+                            key={row.id_role}
+                            row={row}
+                            index={table.page * table.rowsPerPage + index}
+                            selected={table.selected.includes(row.id_role.toString())}
+                            onSelectRow={() => table.onSelectRow(row.id_role.toString())}
+                            onViewRow={() => handleViewRow(row.id_role.toString())}
+                            onEditRow={() => handleEditRow(row.id_role.toString())}
+                            onDeleteRow={() => handleDeleteRow(row.id_role)}
+                          />
+                        ))}
+                    </>
+                  )}
 
                   <TableEmptyRows
                     height={denseHeight}
@@ -481,14 +358,12 @@ function applyFilter({
   inputData,
   comparator,
   filters,
-  dateError,
 }: {
-  inputData: IInvoice[];
+  inputData: IRole[];
   comparator: (a: any, b: any) => number;
-  filters: IInvoiceTableFilters;
-  dateError: boolean;
+  filters: IRoleTableFilters;
 }) {
-  const { name, status, service, startDate, endDate } = filters;
+  const { name } = filters;
 
   const stabilizedThis = inputData.map((el, index) => [el, index] as const);
 
@@ -502,30 +377,8 @@ function applyFilter({
 
   if (name) {
     inputData = inputData.filter(
-      (invoice) =>
-        invoice.invoiceNumber.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
-        invoice.invoiceTo.name.toLowerCase().indexOf(name.toLowerCase()) !== -1
+      (roles) => roles.role_name.toLowerCase().indexOf(name.toLowerCase()) !== -1
     );
-  }
-
-  if (status !== 'all') {
-    inputData = inputData.filter((invoice) => invoice.status === status);
-  }
-
-  if (service.length) {
-    inputData = inputData.filter((invoice) =>
-      invoice.items.some((filterItem) => service.includes(filterItem.service))
-    );
-  }
-
-  if (!dateError) {
-    if (startDate && endDate) {
-      inputData = inputData.filter(
-        (invoice) =>
-          fTimestamp(invoice.createDate) >= fTimestamp(startDate) &&
-          fTimestamp(invoice.createDate) <= fTimestamp(endDate)
-      );
-    }
   }
 
   return inputData;

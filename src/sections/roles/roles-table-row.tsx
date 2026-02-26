@@ -1,4 +1,3 @@
-import { format } from 'date-fns';
 // @mui
 import Link from '@mui/material/Link';
 import Button from '@mui/material/Button';
@@ -13,20 +12,18 @@ import Typography from '@mui/material/Typography';
 import ListItemText from '@mui/material/ListItemText';
 // hooks
 import { useBoolean } from 'src/hooks/use-boolean';
-// utils
-import { fCurrency } from 'src/utils/format-number';
-// types
-import { IInvoice } from 'src/types/invoice';
 // components
 import Label from 'src/components/label';
 import Iconify from 'src/components/iconify';
 import { ConfirmDialog } from 'src/components/custom-dialog';
 import CustomPopover, { usePopover } from 'src/components/custom-popover';
+import { IRole } from 'src/types/role';
 
 // ----------------------------------------------------------------------
 
 type Props = {
-  row: IInvoice;
+  row: IRole;
+  index: number;
   selected: boolean;
   onSelectRow: VoidFunction;
   onViewRow: VoidFunction;
@@ -36,13 +33,14 @@ type Props = {
 
 export default function RolesTableRow({
   row,
+  index,
   selected,
   onSelectRow,
   onViewRow,
   onEditRow,
   onDeleteRow,
 }: Props) {
-  const { sent, invoiceNumber, createDate, dueDate, status, invoiceTo, totalAmount } = row;
+  const { role_name } = row;
 
   const confirm = useBoolean();
 
@@ -56,71 +54,27 @@ export default function RolesTableRow({
         </TableCell>
 
         <TableCell sx={{ display: 'flex', alignItems: 'center' }}>
-          <Avatar alt={invoiceTo.name} sx={{ mr: 2 }}>
-            {invoiceTo.name.charAt(0).toUpperCase()}
-          </Avatar>
-
           <ListItemText
             disableTypography
             primary={
               <Typography variant="body2" noWrap>
-                {invoiceTo.name}
+                {index + 1}
               </Typography>
             }
-            secondary={
-              <Link
-                noWrap
-                variant="body2"
-                onClick={onViewRow}
-                sx={{ color: 'text.disabled', cursor: 'pointer' }}
-              >
-                {invoiceNumber}
-              </Link>
-            }
           />
         </TableCell>
-
-        <TableCell>
-          <ListItemText
-            primary={format(new Date(createDate), 'dd MMM yyyy')}
-            secondary={format(new Date(createDate), 'p')}
-            primaryTypographyProps={{ typography: 'body2', noWrap: true }}
-            secondaryTypographyProps={{
-              mt: 0.5,
-              component: 'span',
-              typography: 'caption',
-            }}
-          />
-        </TableCell>
-
-        <TableCell>
-          <ListItemText
-            primary={format(new Date(dueDate), 'dd MMM yyyy')}
-            secondary={format(new Date(dueDate), 'p')}
-            primaryTypographyProps={{ typography: 'body2', noWrap: true }}
-            secondaryTypographyProps={{
-              mt: 0.5,
-              component: 'span',
-              typography: 'caption',
-            }}
-          />
-        </TableCell>
-
-        <TableCell>{fCurrency(totalAmount)}</TableCell>
-
-        <TableCell align="center">{sent}</TableCell>
 
         <TableCell>
           <Label
             variant="soft"
             color={
-              (status === 'paid' && 'success') ||
-              (status === 'pending' && 'warning') ||
-              (status === 'overdue' && 'error') ||
+              (role_name === 'paid' && 'success') ||
+              (role_name === 'pending' && 'warning') ||
+              (role_name === 'overdue' && 'error') ||
               'default'
             }
           >
-            {status}
+            {role_name}
           </Label>
         </TableCell>
 
