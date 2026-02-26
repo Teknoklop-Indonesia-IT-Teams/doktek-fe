@@ -17,40 +17,18 @@ export function useGetRoles() {
 
   const memoizedValue = useMemo(
     () => ({
-      roles: (data?.roles as IRole[]) || [],
+      roles: (data?.data as IRole[]) || [],
       rolesLoading: isLoading,
       rolesError: error,
       rolesValidating: isValidating,
-      rolesEmpty: !isLoading && !data?.roles.length,
+      rolesEmpty: !isLoading && !data?.data?.length,
     }),
-    [data?.roles, error, isLoading, isValidating]
+    [data?.data, error, isLoading, isValidating]
   );
+
 
   return memoizedValue;
 }
-
-// export function useGetProductsDoktek() {
-//   const URL = epDoktek.roles.findAllProduct;
-
-//   const { data, isLoading, error, isValidating } = useSWR(URL, fetcherDoktek, {
-//     revalidateOnFocus: false,
-//   });
-
-//   const memoizedValue = useMemo(
-//     () => ({
-//       roles: (data as IRole[]) || [],
-//       rolesLoading: isLoading,
-//       rolesError: error,
-//       rolesValidating: isValidating,
-//       rolesEmpty: !isLoading && !data?.roles?.length,
-//     }),
-//     [data, error, isLoading, isValidating],
-//   );
-
-//   return memoizedValue;
-// }
-
-// ----------------------------------------------------------------------
 
 export function useGetRolesDetails(roleId: number) {
   const URL = roleId ? epDoktek.roles.details(roleId) : null;
@@ -61,12 +39,13 @@ export function useGetRolesDetails(roleId: number) {
 
   const memoizedValue = useMemo(
     () => ({
-      role: data as IRole,
-      roleLoading: isLoading,
-      roleError: error,
-      roleValidating: isValidating,
+      roles: (data?.data as IRole[]) || [],
+      rolesLoading: isLoading,
+      rolesError: error,
+      rolesValidating: isValidating,
+      rolesEmpty: !isLoading && !data?.data?.length,
     }),
-    [data, error, isLoading, isValidating]
+    [data?.data, error, isLoading, isValidating]
   );
 
   return memoizedValue;
