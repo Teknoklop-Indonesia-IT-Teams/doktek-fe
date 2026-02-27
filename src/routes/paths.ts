@@ -130,13 +130,13 @@ export const paths = {
       },
     },
     techincalDocument: {
-      root: `${ROOTS.DASHBOARD}/techincalDocument`,
-      new: `${ROOTS.DASHBOARD}/techincalDocument/new`,
-      details: (id: string) => `${ROOTS.DASHBOARD}/techincalDocument/${id}`,
-      edit: (id: string) => `${ROOTS.DASHBOARD}/techincalDocument/${id}/edit`,
+      root: `${ROOTS.DASHBOARD}/techincal-document`,
+      new: `${ROOTS.DASHBOARD}/techincal-document/new`,
+      details: (id: string) => `${ROOTS.DASHBOARD}/techincal-document/${id}`,
+      edit: (id: string) => `${ROOTS.DASHBOARD}/techincal-document/${id}/edit`,
       demo: {
-        details: `${ROOTS.DASHBOARD}/techincalDocument/${MOCK_ID}`,
-        edit: `${ROOTS.DASHBOARD}/techincalDocument/${MOCK_ID}/edit`,
+        details: `${ROOTS.DASHBOARD}/techincal-document/${MOCK_ID}`,
+        edit: `${ROOTS.DASHBOARD}/techincal-document/${MOCK_ID}/edit`,
       },
     },
     activity: {
@@ -167,6 +167,16 @@ export const paths = {
       demo: {
         details: `${ROOTS.DASHBOARD}/roles/${MOCK_ID}`,
         edit: `${ROOTS.DASHBOARD}/roles/${MOCK_ID}/edit`,
+      },
+    },
+    typeDocument: {
+      root: `${ROOTS.DASHBOARD}/type-document`,
+      new: `${ROOTS.DASHBOARD}/type-document/new`,
+      details: (id: string) => `${ROOTS.DASHBOARD}/type-document/${id}`,
+      edit: (id: string) => `${ROOTS.DASHBOARD}/type-document/${id}/edit`,
+      demo: {
+        details: `${ROOTS.DASHBOARD}/type-document/${MOCK_ID}`,
+        edit: `${ROOTS.DASHBOARD}/type-document/${MOCK_ID}/edit`,
       },
     },
     invoice: {

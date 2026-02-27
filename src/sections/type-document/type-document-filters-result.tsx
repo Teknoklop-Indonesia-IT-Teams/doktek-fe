@@ -5,7 +5,7 @@ import Paper from '@mui/material/Paper';
 import Button from '@mui/material/Button';
 import Stack, { StackProps } from '@mui/material/Stack';
 // types
-import { IInvoiceTableFilters, IInvoiceTableFilterValue } from 'src/types/invoice';
+import { IFileFilters, IFileFilterValue } from 'src/types/file';
 // components
 import Iconify from 'src/components/iconify';
 import { shortDateLabel } from 'src/components/custom-date-range-picker';
@@ -13,18 +13,20 @@ import { shortDateLabel } from 'src/components/custom-date-range-picker';
 // ----------------------------------------------------------------------
 
 type Props = StackProps & {
-  filters: IInvoiceTableFilters;
-  onFilters: (name: string, value: IInvoiceTableFilterValue) => void;
+  filters: IFileFilters;
+  onFilters: (name: string, value: IFileFilterValue) => void;
   //
+  canReset: boolean;
   onResetFilters: VoidFunction;
   //
   results: number;
 };
 
-export default function DivisionTableFiltersResult({
+export default function FileManagerFiltersResult({
   filters,
   onFilters,
   //
+  canReset,
   onResetFilters,
   //
   results,
@@ -32,13 +34,9 @@ export default function DivisionTableFiltersResult({
 }: Props) {
   const shortLabel = shortDateLabel(filters.startDate, filters.endDate);
 
-  const handleRemoveService = (inputValue: string) => {
-    const newValue = filters.service.filter((item) => item !== inputValue);
-    onFilters('service', newValue);
-  };
-
-  const handleRemoveStatus = () => {
-    onFilters('status', 'all');
+  const handleRemoveTypes = (inputValue: string) => {
+    const newValue = filters.type.filter((item) => item !== inputValue);
+    onFilters('type', newValue);
   };
 
   const handleRemoveDate = () => {
@@ -56,22 +54,11 @@ export default function DivisionTableFiltersResult({
       </Box>
 
       <Stack flexGrow={1} spacing={1} direction="row" flexWrap="wrap" alignItems="center">
-        {!!filters.service.length && (
-          <Block label="Service:">
-            {filters.service.map((item) => (
-              <Chip
-                key={item}
-                label={item}
-                size="small"
-                onDelete={() => handleRemoveService(item)}
-              />
+        {!!filters.type.length && (
+          <Block label="Types:">
+            {filters.type.map((item) => (
+              <Chip key={item} label={item} size="small" onDelete={() => handleRemoveTypes(item)} />
             ))}
-          </Block>
-        )}
-
-        {filters.status !== 'all' && (
-          <Block label="Status:">
-            <Chip size="small" label={filters.status} onDelete={handleRemoveStatus} />
           </Block>
         )}
 
@@ -81,13 +68,15 @@ export default function DivisionTableFiltersResult({
           </Block>
         )}
 
-        <Button
-          color="error"
-          onClick={onResetFilters}
-          startIcon={<Iconify icon="solar:trash-bin-trash-bold" />}
-        >
-          Clear
-        </Button>
+        {canReset && (
+          <Button
+            color="error"
+            onClick={onResetFilters}
+            startIcon={<Iconify icon="solar:trash-bin-trash-bold" />}
+          >
+            Clear
+          </Button>
+        )}
       </Stack>
     </Stack>
   );
