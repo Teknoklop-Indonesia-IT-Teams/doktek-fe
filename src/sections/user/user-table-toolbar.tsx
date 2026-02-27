@@ -21,15 +21,15 @@ import CustomPopover, { usePopover } from 'src/components/custom-popover';
 type Props = {
   filters: IUserTableFilters;
   onFilters: (name: string, value: IUserTableFilterValue) => void;
-  //
-  roleOptions: string[];
+  roleOptions: { id_role: number; role_name: string }[];
+  divisionOptions: { id_division: number; division_name: string }[];
 };
 
 export default function UserTableToolbar({
   filters,
   onFilters,
-  //
   roleOptions,
+  divisionOptions,
 }: Props) {
   const popover = usePopover();
 
@@ -50,6 +50,16 @@ export default function UserTableToolbar({
     [onFilters]
   );
 
+  const handleFilterDivision = useCallback(
+    (event: SelectChangeEvent<string[]>) => {
+      onFilters(
+        'division',
+        typeof event.target.value === 'string' ? event.target.value.split(',') : event.target.value
+      );
+    },
+    [onFilters]
+  );
+
   return (
     <>
       <Stack
@@ -64,6 +74,7 @@ export default function UserTableToolbar({
           pr: { xs: 2.5, md: 1 },
         }}
       >
+        {/* Dropdown Role */}
         <FormControl
           sx={{
             flexShrink: 0,
@@ -71,7 +82,6 @@ export default function UserTableToolbar({
           }}
         >
           <InputLabel>Role</InputLabel>
-
           <Select
             multiple
             value={filters.role}
@@ -85,14 +95,44 @@ export default function UserTableToolbar({
             }}
           >
             {roleOptions.map((option) => (
-              <MenuItem key={option} value={option}>
-                <Checkbox disableRipple size="small" checked={filters.role.includes(option)} />
-                {option}
+              <MenuItem key={option.id_role} value={option.role_name}>
+                <Checkbox disableRipple size="small" checked={filters.role.includes(option.role_name)} />
+                {option.role_name}
               </MenuItem>
             ))}
           </Select>
         </FormControl>
 
+        {/* Dropdown Division */}
+        <FormControl
+          sx={{
+            flexShrink: 0,
+            width: { xs: 1, md: 200 },
+          }}
+        >
+          <InputLabel>Division</InputLabel>
+          <Select
+            multiple
+            value={filters.division}
+            onChange={handleFilterDivision}
+            input={<OutlinedInput label="Division" />}
+            renderValue={(selected) => selected.map((value) => value).join(', ')}
+            MenuProps={{
+              PaperProps: {
+                sx: { maxHeight: 240 },
+              },
+            }}
+          >
+            {divisionOptions.map((option) => (
+              <MenuItem key={option.id_division} value={option.division_name}>
+                <Checkbox disableRipple size="small" checked={filters.division.includes(option.division_name)} />
+                {option.division_name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        {/* Search */}
         <Stack direction="row" alignItems="center" spacing={2} flexGrow={1} sx={{ width: 1 }}>
           <TextField
             fullWidth
@@ -120,29 +160,17 @@ export default function UserTableToolbar({
         arrow="right-top"
         sx={{ width: 140 }}
       >
-        <MenuItem
-          onClick={() => {
-            popover.onClose();
-          }}
-        >
+        <MenuItem onClick={() => { popover.onClose(); }}>
           <Iconify icon="solar:printer-minimalistic-bold" />
           Print
         </MenuItem>
 
-        <MenuItem
-          onClick={() => {
-            popover.onClose();
-          }}
-        >
+        <MenuItem onClick={() => { popover.onClose(); }}>
           <Iconify icon="solar:import-bold" />
           Import
         </MenuItem>
 
-        <MenuItem
-          onClick={() => {
-            popover.onClose();
-          }}
-        >
+        <MenuItem onClick={() => { popover.onClose(); }}>
           <Iconify icon="solar:export-bold" />
           Export
         </MenuItem>

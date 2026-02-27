@@ -7,6 +7,7 @@ export type IUserTableFilterValue = string | string[];
 export type IUserTableFilters = {
   name: string;
   role: string[];
+  division: string[];
   status: string;
 };
 
@@ -134,4 +135,19 @@ export type IUserAccountChangePassword = {
   oldPassword: string;
   newPassword: string;
   confirmNewPassword: string;
+};
+
+export type IUserItemDoktek = {
+  id_user: number;
+  username: string;
+  password: string;
+  flag_active: boolean;
+  division: {
+    id_division: number;
+    division_name: string;
+  };
+  role: {
+    id_role: number;
+    role_name: string;
+  };
 };

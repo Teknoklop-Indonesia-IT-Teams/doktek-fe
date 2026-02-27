@@ -125,6 +125,14 @@ export const epDoktek = {
     list: '/role',
     details: (id: number) => `/role/${id}`,
   },
+  divisions: {
+    list: '/divisions',
+    details: (id: number) => `/divisions/${id}`,
+    edit: (id: number) => `/divisions/${id}`,
+    delete: (id: number) => `/divisions/${id}`,
+    post: `/division`,
+    search: `/division/q`,
+  },
   product: {
     create: '/product',
     list: '/product',

@@ -1,5 +1,5 @@
 import isEqual from 'lodash/isEqual';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 // @mui
 import { alpha } from '@mui/material/styles';
 import Tab from '@mui/material/Tab';
@@ -17,7 +17,13 @@ import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
 import { RouterLink } from 'src/routes/components';
 // _mock
-import { _userList, _roles, USER_STATUS_OPTIONS } from 'src/_mock';
+// import { _userList, _roles, USER_STATUS_OPTIONS } from 'src/_mock';
+import { USER_STATUS_OPTIONS } from 'src/_mock';
+// import api
+import { useGetUsers } from 'src/api/user';
+import { useGetRoles } from 'src/api/role';
+import { useGetDivisions } from 'src/api/division';
+
 // hooks
 import { useBoolean } from 'src/hooks/use-boolean';
 // components
@@ -38,7 +44,7 @@ import {
   TablePaginationCustom,
 } from 'src/components/table';
 // types
-import { IUserItem, IUserTableFilters, IUserTableFilterValue } from 'src/types/user';
+import { IUserItemDoktek, IUserTableFilters, IUserTableFilterValue } from 'src/types/user';
 //
 import UserTableRow from '../user-table-row';
 import UserTableToolbar from '../user-table-toolbar';
@@ -49,17 +55,17 @@ import UserTableFiltersResult from '../user-table-filters-result';
 const STATUS_OPTIONS = [{ value: 'all', label: 'All' }, ...USER_STATUS_OPTIONS];
 
 const TABLE_HEAD = [
-  { id: 'name', label: 'Name' },
-  { id: 'phoneNumber', label: 'Phone Number', width: 180 },
-  { id: 'company', label: 'Company', width: 220 },
+  { id: 'username', label: 'Username' },
+  { id: 'division', label: 'Division', width: 220 },
   { id: 'role', label: 'Role', width: 180 },
-  { id: 'status', label: 'Status', width: 100 },
+  { id: 'flag_active', label: 'Status', width: 100 },
   { id: '', width: 88 },
 ];
 
 const defaultFilters: IUserTableFilters = {
   name: '',
   role: [],
+  division: [],
   status: 'all',
 };
 
@@ -74,7 +80,11 @@ export default function UserListView() {
 
   const confirm = useBoolean();
 
-  const [tableData, setTableData] = useState(_userList);
+  // const [tableData, setTableData] = useState(_userList);
+  const { users, usersLoading } = useGetUsers();
+  const { roles } = useGetRoles();
+  const { divisions } = useGetDivisions();
+  const [tableData, setTableData] = useState<any[]>([]);
 
   const [filters, setFilters] = useState(defaultFilters);
 
@@ -145,6 +155,12 @@ export default function UserListView() {
     setFilters(defaultFilters);
   }, []);
 
+  useEffect(() => {
+    if (users.length) {
+      setTableData(users);
+    }
+  }, [users]);
+
   return (
     <>
       <Container maxWidth={settings.themeStretch ? false : 'lg'}>
@@ -192,21 +208,10 @@ export default function UserListView() {
                     }
                     color={
                       (tab.value === 'active' && 'success') ||
-                      (tab.value === 'pending' && 'warning') ||
-                      (tab.value === 'banned' && 'error') ||
+                      (tab.value === 'non-active' && 'warning') ||
                       'default'
                     }
                   >
-                    {tab.value === 'all' && _userList.length}
-                    {tab.value === 'active' &&
-                      _userList.filter((user) => user.status === 'active').length}
-
-                    {tab.value === 'pending' &&
-                      _userList.filter((user) => user.status === 'pending').length}
-                    {tab.value === 'banned' &&
-                      _userList.filter((user) => user.status === 'banned').length}
-                    {tab.value === 'rejected' &&
-                      _userList.filter((user) => user.status === 'rejected').length}
                   </Label>
                 }
               />
@@ -216,8 +221,8 @@ export default function UserListView() {
           <UserTableToolbar
             filters={filters}
             onFilters={handleFilters}
-            //
-            roleOptions={_roles}
+            roleOptions={roles}
+            divisionOptions={divisions}
           />
 
           {canReset && (
@@ -240,7 +245,7 @@ export default function UserListView() {
               onSelectAllRows={(checked) =>
                 table.onSelectAllRows(
                   checked,
-                  tableData.map((row) => row.id)
+                  tableData.map((row) => row.id_user.toString())
                 )
               }
               action={
@@ -264,7 +269,7 @@ export default function UserListView() {
                   onSelectAllRows={(checked) =>
                     table.onSelectAllRows(
                       checked,
-                      tableData.map((row) => row.id)
+                      tableData.map((row) => row.id_user.toString())
                     )
                   }
                 />
@@ -277,12 +282,12 @@ export default function UserListView() {
                     )
                     .map((row) => (
                       <UserTableRow
-                        key={row.id}
+                        key={row.id_user}
                         row={row}
-                        selected={table.selected.includes(row.id)}
-                        onSelectRow={() => table.onSelectRow(row.id)}
-                        onDeleteRow={() => handleDeleteRow(row.id)}
-                        onEditRow={() => handleEditRow(row.id)}
+                        selected={table.selected.includes(row.id_user.toString())}
+                        onSelectRow={() => table.onSelectRow(row.id_user.toString())}
+                        onDeleteRow={() => handleDeleteRow(row.id_user.toString())}
+                        onEditRow={() => handleEditRow(row.id_user.toString())}
                       />
                     ))}
 
@@ -343,7 +348,7 @@ function applyFilter({
   comparator,
   filters,
 }: {
-  inputData: IUserItem[];
+  inputData: IUserItemDoktek[];
   comparator: (a: any, b: any) => number;
   filters: IUserTableFilters;
 }) {
@@ -361,16 +366,24 @@ function applyFilter({
 
   if (name) {
     inputData = inputData.filter(
-      (user) => user.name.toLowerCase().indexOf(name.toLowerCase()) !== -1
+      (user) => user.username.toLowerCase().indexOf(name.toLowerCase()) !== -1
     );
   }
 
   if (status !== 'all') {
-    inputData = inputData.filter((user) => user.status === status);
+    inputData = inputData.filter((user) =>
+      status === 'active' ? user.flag_active === true : user.flag_active === false
+    );
   }
 
   if (role.length) {
-    inputData = inputData.filter((user) => role.includes(user.role));
+    inputData = inputData.filter((user) => role.includes(user.role?.role_name));
+  }
+
+  if (filters.division.length) {
+    inputData = inputData.filter((user) =>
+      filters.division.includes(user.division?.division_name)
+    );
   }
 
   return inputData;

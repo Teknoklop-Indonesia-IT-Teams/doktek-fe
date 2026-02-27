@@ -1,4 +1,3 @@
-// @mui
 import Button from '@mui/material/Button';
 import Avatar from '@mui/material/Avatar';
 import Tooltip from '@mui/material/Tooltip';
@@ -8,24 +7,19 @@ import Checkbox from '@mui/material/Checkbox';
 import TableCell from '@mui/material/TableCell';
 import IconButton from '@mui/material/IconButton';
 import ListItemText from '@mui/material/ListItemText';
-// hooks
 import { useBoolean } from 'src/hooks/use-boolean';
-// types
-import { IUserItem } from 'src/types/user';
-// components
 import Label from 'src/components/label';
 import Iconify from 'src/components/iconify';
 import CustomPopover, { usePopover } from 'src/components/custom-popover';
 import { ConfirmDialog } from 'src/components/custom-dialog';
-//
-import UserQuickEditForm from './user-quick-edit-form';
+import { IUserItemDoktek } from 'src/types/user';
 
 // ----------------------------------------------------------------------
 
 type Props = {
   selected: boolean;
   onEditRow: VoidFunction;
-  row: IUserItem;
+  row: IUserItemDoktek;
   onSelectRow: VoidFunction;
   onDeleteRow: VoidFunction;
 };
@@ -37,12 +31,9 @@ export default function UserTableRow({
   onSelectRow,
   onDeleteRow,
 }: Props) {
-  const { name, avatarUrl, company, role, status, email, phoneNumber } = row;
+  const { username, division, role, flag_active } = row;
 
   const confirm = useBoolean();
-
-  const quickEdit = useBoolean();
-
   const popover = usePopover();
 
   return (
@@ -53,42 +44,35 @@ export default function UserTableRow({
         </TableCell>
 
         <TableCell sx={{ display: 'flex', alignItems: 'center' }}>
-          <Avatar alt={name} src={avatarUrl} sx={{ mr: 2 }} />
-
+          <Avatar alt={username} sx={{ mr: 2 }}>
+            {username?.charAt(0).toUpperCase()}
+          </Avatar>
           <ListItemText
-            primary={name}
-            secondary={email}
+            primary={username}
             primaryTypographyProps={{ typography: 'body2' }}
-            secondaryTypographyProps={{
-              component: 'span',
-              color: 'text.disabled',
-            }}
           />
         </TableCell>
 
-        <TableCell sx={{ whiteSpace: 'nowrap' }}>{phoneNumber}</TableCell>
+        <TableCell sx={{ whiteSpace: 'nowrap' }}>
+          {division?.division_name}
+        </TableCell>
 
-        <TableCell sx={{ whiteSpace: 'nowrap' }}>{company}</TableCell>
-
-        <TableCell sx={{ whiteSpace: 'nowrap' }}>{role}</TableCell>
+        <TableCell sx={{ whiteSpace: 'nowrap' }}>
+          {role?.role_name}
+        </TableCell>
 
         <TableCell>
           <Label
             variant="soft"
-            color={
-              (status === 'active' && 'success') ||
-              (status === 'pending' && 'warning') ||
-              (status === 'banned' && 'error') ||
-              'default'
-            }
+            color={flag_active ? 'success' : 'error'}
           >
-            {status}
+            {flag_active ? 'Active' : 'Inactive'}
           </Label>
         </TableCell>
 
         <TableCell align="right" sx={{ px: 1, whiteSpace: 'nowrap' }}>
-          <Tooltip title="Quick Edit" placement="top" arrow>
-            <IconButton color={quickEdit.value ? 'inherit' : 'default'} onClick={quickEdit.onTrue}>
+          <Tooltip title="Edit" placement="top" arrow>
+            <IconButton onClick={onEditRow}>
               <Iconify icon="solar:pen-bold" />
             </IconButton>
           </Tooltip>
@@ -98,8 +82,6 @@ export default function UserTableRow({
           </IconButton>
         </TableCell>
       </TableRow>
-
-      <UserQuickEditForm currentUser={row} open={quickEdit.value} onClose={quickEdit.onFalse} />
 
       <CustomPopover
         open={popover.open}
