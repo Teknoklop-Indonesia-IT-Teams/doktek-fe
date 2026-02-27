@@ -22,7 +22,7 @@ import { USER_STATUS_OPTIONS } from 'src/_mock';
 // import api
 import { useGetUsers } from 'src/api/user';
 import { useGetRoles } from 'src/api/role';
-import { useGetDivisions } from 'src/api/division';
+import { useGetDivision } from 'src/api/division';
 
 // hooks
 import { useBoolean } from 'src/hooks/use-boolean';
@@ -83,7 +83,7 @@ export default function UserListView() {
   // const [tableData, setTableData] = useState(_userList);
   const { users, usersLoading } = useGetUsers();
   const { roles } = useGetRoles();
-  const { divisions } = useGetDivisions();
+  const { division } = useGetDivision();
   const [tableData, setTableData] = useState<any[]>([]);
 
   const [filters, setFilters] = useState(defaultFilters);
@@ -222,7 +222,7 @@ export default function UserListView() {
             filters={filters}
             onFilters={handleFilters}
             roleOptions={roles}
-            divisionOptions={divisions}
+            divisionOptions={division}
           />
 
           {canReset && (
