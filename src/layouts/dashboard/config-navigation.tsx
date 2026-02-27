@@ -113,7 +113,7 @@ export function useNavData() {
           },
           {
             title: t('type document'),
-            path: paths.dashboard.fileManager,
+            path: paths.dashboard.typeDocument.root,
             icon: ICONS.folder,
           },
         ],

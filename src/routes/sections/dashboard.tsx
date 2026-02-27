@@ -69,6 +69,11 @@ const TourDetailsPage = lazy(() => import('src/pages/dashboard/tour/details'));
 const TourListPage = lazy(() => import('src/pages/dashboard/tour/list'));
 const TourCreatePage = lazy(() => import('src/pages/dashboard/tour/new'));
 const TourEditPage = lazy(() => import('src/pages/dashboard/tour/edit'));
+// TYPE DOCUMENT
+import TypeDocumentListPage from 'src/pages/dashboard/type-document/list';
+import TypeDocumentDetailsPage from 'src/pages/dashboard/type-document/details';
+import TypeDocumentEditPage from 'src/pages/dashboard/type-document/edit';
+import TypeDocumentsCreatePage from 'src/pages/dashboard/type-document/new';
 // FILE MANAGER
 const FileManagerPage = lazy(() => import('src/pages/dashboard/file-manager'));
 // APP
@@ -125,7 +130,7 @@ export const dashboardRoutes = [
         ],
       },
       {
-        path: 'techincalDocument',
+        path: 'techincal-document',
         children: [
           { element: <DocumentsListPage />, index: true },
           { path: 'list', element: <DocumentsListPage /> },
@@ -178,6 +183,16 @@ export const dashboardRoutes = [
           { path: ':id', element: <RolesDetailsPage /> },
           { path: ':id/edit', element: <RolesEditPage /> },
           { path: 'new', element: <RolesCreatePage /> },
+        ],
+      },
+      {
+        path: 'type-document',
+        children: [
+          { element: <TypeDocumentListPage />, index: true },
+          { path: 'list', element: <TypeDocumentListPage /> },
+          { path: ':id', element: <TypeDocumentDetailsPage /> },
+          { path: ':id/edit', element: <TypeDocumentEditPage /> },
+          { path: 'new', element: <TypeDocumentsCreatePage /> },
         ],
       },
       {
