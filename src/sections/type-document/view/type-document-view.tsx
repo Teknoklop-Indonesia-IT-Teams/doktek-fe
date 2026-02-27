@@ -67,7 +67,6 @@ export default function TypeDocumentView() {
     inputData: tableData,
     comparator: getComparator(table.order, table.orderBy),
     filters,
-    dateError,
   });
 
   const dataInPage = dataFiltered.slice(
@@ -132,14 +131,9 @@ export default function TypeDocumentView() {
       alignItems={{ xs: 'flex-end', md: 'center' }}
     >
       <TypeDocumentFilters
-        openDateRange={openDateRange.value}
-        onCloseDateRange={openDateRange.onFalse}
-        onOpenDateRange={openDateRange.onTrue}
-        //
         filters={filters}
         onFilters={handleFilters}
         //
-        dateError={dateError}
         typeOptions={FILE_TYPE_OPTIONS}
       />
 
@@ -259,14 +253,12 @@ function applyFilter({
   inputData,
   comparator,
   filters,
-  dateError,
 }: {
   inputData: IFile[];
   comparator: (a: any, b: any) => number;
   filters: IFileFilters;
-  dateError: boolean;
 }) {
-  const { name, type, startDate, endDate } = filters;
+  const { name, type } = filters;
 
   const stabilizedThis = inputData.map((el, index) => [el, index] as const);
 
@@ -286,16 +278,6 @@ function applyFilter({
 
   if (type.length) {
     inputData = inputData.filter((file) => type.includes(fileFormat(file.type)));
-  }
-
-  if (!dateError) {
-    if (startDate && endDate) {
-      inputData = inputData.filter(
-        (file) =>
-          fTimestamp(file.createdAt) >= fTimestamp(startDate) &&
-          fTimestamp(file.createdAt) <= fTimestamp(endDate)
-      );
-    }
   }
 
   return inputData;

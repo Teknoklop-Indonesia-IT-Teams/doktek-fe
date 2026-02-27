@@ -142,7 +142,7 @@ export default function TypeDocumentNewEditForm({ currentProduct }: Props) {
       {mdUp && <Grid md={4} />}
       <Grid xs={12} md={8} sx={{ display: 'flex', alignItems: 'center', marginTop: 5 }}>
         <LoadingButton type="submit" variant="contained" size="large" loading={isSubmitting}>
-          {!currentProduct ? 'Create TypeDocument' : 'Save Changes'}
+          {!currentProduct ? 'Create Type Document' : 'Save Changes'}
         </LoadingButton>
       </Grid>
     </>

@@ -31,7 +31,7 @@ export default function TypeDocumentDetailsView({ id }: Props) {
             href: paths.dashboard.root,
           },
           {
-            name: 'TypeDocument',
+            name: 'Type Document',
             href: paths.dashboard.roles.root,
           },
           { name: currentTypeDocument?.invoiceNumber },

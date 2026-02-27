@@ -27,11 +27,9 @@ import TypeDocumentTableRow from './type-document-table-row';
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
-  { id: 'name', label: 'Name' },
-  { id: 'size', label: 'Size', width: 120 },
-  { id: 'type', label: 'Type', width: 120 },
-  { id: 'modifiedAt', label: 'Modified', width: 140 },
-  { id: 'shared', label: 'Shared', align: 'right', width: 120 },
+  { id: 'no', label: 'Number' },
+  { id: 'type_document', label: 'Type Document', width: 120 },
+  { id: 'code_document', label: 'Code Document', width: 120 },
   { id: '', width: 88 },
 ];
 
