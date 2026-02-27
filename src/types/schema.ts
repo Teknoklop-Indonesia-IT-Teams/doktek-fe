@@ -1199,7 +1199,6 @@ export interface FillingTestResult {
   profileId: string;
   FillingReworkIndicator: FillingReworkIndicator[] | null;
   specEval: SpecEval | null;
-
 }
 
 export interface FillingRework {
@@ -1303,7 +1302,7 @@ export interface Customer {
   poNumber: String;
   vehicleNum: String;
   poDate: Date | null;
-  AgentTo: Company
+  AgentTo: Company;
   agentId: Number;
   SoldTo: Company;
   soldToId: Number;
@@ -1429,41 +1428,38 @@ export interface ChemicalStockOut {
 }
 
 export enum RoleGroup {
-  presidentDirector = "presidentDirector",
-  director = "director",
-  vp = "vp",
-  manager = "manager",
-  assistantManager = "assistantManager",
-  head = "head",
-  spv = "spv",
-  admin = "admin",
-  analyst = "analyst",
-  sampling = "sampling",
-  techinician = "techinician",
-  driver = "driver",
-  houseKeeping = "houseKeeping",
-  guest = "guest",
+  super_admin = 'Super Admin',
+  admin = 'Admin',
+  user = 'User',
+}
+
+export enum DivisionGroup {
+  it_engineer = 'IT Engineer',
+  rnd = 'RnD',
+  automation = 'Automation',
+  laboratory = 'Laboratory',
+  finance = 'Finance',
 }
 
 export enum ParameterType {
-  PHYSICAL = "PHYSICAL",
-  CHEMICAL = "CHEMICAL",
+  PHYSICAL = 'PHYSICAL',
+  CHEMICAL = 'CHEMICAL',
 }
 
 export enum TrialBlendStatus {
-  DRAFTED = "DRAFTED",
-  RECEIVED = "RECEIVED",
-  ONPROGRESS = "ONPROGRESS",
-  PENDING = "PENDING",
-  FINISHED = "FINISHED",
-  CANCELED = "CANCELED",
+  DRAFTED = 'DRAFTED',
+  RECEIVED = 'RECEIVED',
+  ONPROGRESS = 'ONPROGRESS',
+  PENDING = 'PENDING',
+  FINISHED = 'FINISHED',
+  CANCELED = 'CANCELED',
 }
 
 export enum SpecEval {
-  ON = "ON",
-  BORDERLOW = "BORDERLOW",
-  BORDERHIGH = "BORDERHIGH",
-  OFFLOW = "OFFLOW",
-  OFFHIGH = "OFFHIGH",
-  REPORTED = "REPORTED",
+  ON = 'ON',
+  BORDERLOW = 'BORDERLOW',
+  BORDERHIGH = 'BORDERHIGH',
+  OFFLOW = 'OFFLOW',
+  OFFHIGH = 'OFFHIGH',
+  REPORTED = 'REPORTED',
 }

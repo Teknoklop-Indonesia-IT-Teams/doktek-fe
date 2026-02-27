@@ -117,7 +117,7 @@ export default function AuthClassicLayout({ children, image, title }: Props) {
         }}
       />
 
-      <Stack direction="row" spacing={2}>
+      {/* <Stack direction="row" spacing={2}>
         {METHODS.map((option) => (
           <Tooltip key={option.label} title={option.label}>
             <Link component={RouterLink} href={option.path}>
@@ -136,7 +136,7 @@ export default function AuthClassicLayout({ children, image, title }: Props) {
             </Link>
           </Tooltip>
         ))}
-      </Stack>
+      </Stack> */}
     </Stack>
   );
 

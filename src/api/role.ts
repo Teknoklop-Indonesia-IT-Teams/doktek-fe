@@ -1,10 +1,9 @@
 import { useMemo } from 'react';
 import useSWR from 'swr';
 // utils
-import { endpoints, fetcher } from 'src/utils/axios';
+import { epDoktek, fetcherDoktek } from 'src/utils/axios-doktek';
 // types
 import type { IRole } from 'src/types/role';
-import { epDoktek, fetcherDoktek } from 'src/utils/axios-doktek';
 
 // ----------------------------------------------------------------------
 
@@ -25,7 +24,6 @@ export function useGetRoles() {
     }),
     [data?.data, error, isLoading, isValidating]
   );
-
 
   return memoizedValue;
 }

@@ -1,53 +1,76 @@
 import { useMemo } from 'react';
 import useSWR from 'swr';
+// types
+import type { IDivision } from 'src/types/division';
+//utils
 import { epDoktek, fetcherDoktek } from 'src/utils/axios-doktek';
 
 // ----------------------------------------------------------------------
 
-export type IDivision = {
-    id_division: number;
-    division_name: string;
-};
+export function useGetDivision() {
+  const URL = epDoktek.division.list;
 
-// ----------------------------------------------------------------------
+  const { data, isLoading, error, isValidating } = useSWR(URL, fetcherDoktek, {
+    revalidateOnFocus: false,
+  });
 
-export function useGetDivisions() {
-    const URL = epDoktek.divisions.list;
+  const memoizedValue = useMemo(
+    () => ({
+      division: (data?.data as IDivision[]) || [],
+      divisionLoading: isLoading,
+      divisionError: error,
+      divisionValidating: isValidating,
+      divisionEmpty: !isLoading && !data?.data?.length,
+    }),
+    [data?.data, error, isLoading, isValidating]
+  );
 
-    const { data, isLoading, error, isValidating } = useSWR(URL, fetcherDoktek, {
-        revalidateOnFocus: false,
-    });
-
-    const memoizedValue = useMemo(
-        () => ({
-            divisions: (data?.data as IDivision[]) || [],
-            divisionsLoading: isLoading,
-            divisionsError: error,
-            divisionsValidating: isValidating,
-            divisionsEmpty: !isLoading && !data?.data?.length,
-        }),
-        [data?.data, error, isLoading, isValidating]
-    );
-
-    return memoizedValue;
+  return memoizedValue;
 }
 
 export function useGetDivisionDetails(divisionId: number) {
-    const URL = divisionId ? epDoktek.divisions.details(divisionId) : null;
+  const URL = divisionId ? epDoktek.division.details(divisionId) : null;
 
-    const { data, isLoading, error, isValidating } = useSWR(URL, fetcherDoktek, {
-        revalidateOnFocus: false,
-    });
+  const { data, isLoading, error, isValidating } = useSWR(URL, fetcherDoktek, {
+    revalidateOnFocus: false,
+  });
 
-    const memoizedValue = useMemo(
-        () => ({
-            division: data?.data as IDivision,
-            divisionLoading: isLoading,
-            divisionError: error,
-            divisionValidating: isValidating,
-        }),
-        [data, error, isLoading, isValidating]
-    );
+  const memoizedValue = useMemo(
+    () => ({
+      division: (data?.data as IDivision[]) || [],
+      divisionLoading: isLoading,
+      divisionError: error,
+      divisionValidating: isValidating,
+      divisionEmpty: !isLoading && !data?.data?.length,
+    }),
+    [data?.data, error, isLoading, isValidating]
+  );
 
-    return memoizedValue;
+  return memoizedValue;
+}
+
+// ----------------------------------------------------------------------
+
+export function useSearchDivision(query: unknown) {
+  const URL = query ? [epDoktek.division.search, { params: query }] : null;
+
+  const { data, isLoading, error, isValidating } = useSWR(URL, fetcherDoktek, {
+    // keepPreviousData: true,
+  });
+
+  const memoizedValue = useMemo(
+    () => ({
+      searchResults: {
+        division: (data?.division as IDivision[]) || [],
+        count: (data?.count as number) || 0,
+      },
+      searchLoading: isLoading,
+      searchError: error,
+      searchValidating: isValidating,
+      searchEmpty: !isLoading && !data?.division?.length,
+    }),
+    [data, error, isLoading, isValidating]
+  );
+
+  return memoizedValue;
 }
