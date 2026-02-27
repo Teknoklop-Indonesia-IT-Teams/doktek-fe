@@ -1,14 +1,14 @@
 import { useMemo } from 'react';
 import useSWR from 'swr';
-// utils
-import { epDoktek, fetcherDoktek } from 'src/utils/axios-doktek';
 // types
-import type { IRole } from 'src/types/role';
+import type { IDivision } from 'src/types/division';
+//utils
+import { epDoktek, fetcherDoktek } from 'src/utils/axios-doktek';
 
 // ----------------------------------------------------------------------
 
-export function useGetRoles() {
-  const URL = epDoktek.roles.list;
+export function useGetDivision() {
+  const URL = epDoktek.division.list;
 
   const { data, isLoading, error, isValidating } = useSWR(URL, fetcherDoktek, {
     revalidateOnFocus: false,
@@ -16,11 +16,11 @@ export function useGetRoles() {
 
   const memoizedValue = useMemo(
     () => ({
-      roles: (data?.data as IRole[]) || [],
-      rolesLoading: isLoading,
-      rolesError: error,
-      rolesValidating: isValidating,
-      rolesEmpty: !isLoading && !data?.data?.length,
+      division: (data?.data as IDivision[]) || [],
+      divisionLoading: isLoading,
+      divisionError: error,
+      divisionValidating: isValidating,
+      divisionEmpty: !isLoading && !data?.data?.length,
     }),
     [data?.data, error, isLoading, isValidating]
   );
@@ -28,8 +28,8 @@ export function useGetRoles() {
   return memoizedValue;
 }
 
-export function useGetRolesDetails(roleId: number) {
-  const URL = roleId ? epDoktek.roles.details(roleId) : null;
+export function useGetDivisionDetails(divisionId: number) {
+  const URL = divisionId ? epDoktek.division.details(divisionId) : null;
 
   const { data, isLoading, error, isValidating } = useSWR(URL, fetcherDoktek, {
     revalidateOnFocus: false,
@@ -37,11 +37,11 @@ export function useGetRolesDetails(roleId: number) {
 
   const memoizedValue = useMemo(
     () => ({
-      roles: (data?.data as IRole[]) || [],
-      rolesLoading: isLoading,
-      rolesError: error,
-      rolesValidating: isValidating,
-      rolesEmpty: !isLoading && !data?.data?.length,
+      division: (data?.data as IDivision[]) || [],
+      divisionLoading: isLoading,
+      divisionError: error,
+      divisionValidating: isValidating,
+      divisionEmpty: !isLoading && !data?.data?.length,
     }),
     [data?.data, error, isLoading, isValidating]
   );
@@ -51,8 +51,8 @@ export function useGetRolesDetails(roleId: number) {
 
 // ----------------------------------------------------------------------
 
-export function useSearchRoles(query: unknown) {
-  const URL = query ? [epDoktek.roles.search, { params: query }] : null;
+export function useSearchDivision(query: unknown) {
+  const URL = query ? [epDoktek.division.search, { params: query }] : null;
 
   const { data, isLoading, error, isValidating } = useSWR(URL, fetcherDoktek, {
     // keepPreviousData: true,
@@ -61,13 +61,13 @@ export function useSearchRoles(query: unknown) {
   const memoizedValue = useMemo(
     () => ({
       searchResults: {
-        roles: (data?.roles as IRole[]) || [],
+        division: (data?.division as IDivision[]) || [],
         count: (data?.count as number) || 0,
       },
       searchLoading: isLoading,
       searchError: error,
       searchValidating: isValidating,
-      searchEmpty: !isLoading && !data?.roles?.length,
+      searchEmpty: !isLoading && !data?.division?.length,
     }),
     [data, error, isLoading, isValidating]
   );

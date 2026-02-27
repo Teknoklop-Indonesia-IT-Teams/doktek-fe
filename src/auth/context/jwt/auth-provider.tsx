@@ -1,10 +1,13 @@
 import { useEffect, useReducer, useCallback, useMemo } from 'react';
 // utils
-import axios, { endpoints } from 'src/utils/axios';
+import apiDoktek, { epDoktek } from 'src/utils/axios-doktek';
 //
+import { authApi } from 'src/auth';
 import { AuthContext } from './auth-context';
-import { isValidToken, setSession } from './utils';
+import { isValidToken, setSessionDoktek } from './utils';
 import { ActionMapType, AuthStateType, AuthUserType } from '../../types';
+import { toast } from 'react-toastify';
+import { jwtDecode } from 'jwt-decode';
 
 // ----------------------------------------------------------------------
 
@@ -19,6 +22,7 @@ enum Types {
   LOGIN = 'LOGIN',
   REGISTER = 'REGISTER',
   LOGOUT = 'LOGOUT',
+  NEW_PASSWORD = 'NEW_PASSWORD',
 }
 
 type Payload = {
@@ -29,6 +33,9 @@ type Payload = {
     user: AuthUserType;
   };
   [Types.REGISTER]: {
+    user: AuthUserType;
+  };
+  [Types.NEW_PASSWORD]: {
     user: AuthUserType;
   };
   [Types.LOGOUT]: undefined;
@@ -62,6 +69,12 @@ const reducer = (state: AuthStateType, action: ActionsType) => {
       user: action.payload.user,
     };
   }
+  if (action.type === Types.NEW_PASSWORD) {
+    return {
+      ...state,
+      user: action.payload.user,
+    };
+  }
   if (action.type === Types.LOGOUT) {
     return {
       ...state,
@@ -84,56 +97,36 @@ export function AuthProvider({ children }: Props) {
 
   const initialize = useCallback(async () => {
     try {
-      const mockUser = {
-        id: '1',
-        displayName: 'Demo User',
-        email: 'demo@minimals.cc',
-        photoURL: null,
-        phoneNumber: null,
-        country: null,
-        address: 'Demo Address',
-        state: 'Demo State',
-        city: 'Demo City',
-        zipCode: '12345',
-        about: 'Demo user for bypassing login',
-        role: 'admin',
-        isPublic: true,
-        password: 'demo1234',
-      };
-      // const accessToken = sessionStorage.getItem(STORAGE_KEY);
+      const accessToken = localStorage.getItem(STORAGE_KEY);
 
-      // if (accessToken && isValidToken(accessToken)) {
-      //   setSession(accessToken);
+      if (accessToken && isValidToken(accessToken)) {
+        setSessionDoktek(accessToken);
 
-      //   const res = await axios.get(endpoints.auth.me);
-
-      //   const { user } = res.data;
+        const decoded = jwtDecode<{
+          id_user: number;
+          username: string;
+        }>(accessToken);
 
         dispatch({
           type: Types.INITIAL,
           payload: {
             user: {
-              mockUser,
-              // ...user,
-              // accessToken,
+              id_user: decoded.id_user,
+              username: decoded.username,
+              accessToken,
             },
           },
         });
-      // } else {
-      //   dispatch({
-      //     type: Types.INITIAL,
-      //     payload: {
-      //       user: null,
-      //     },
-      //   });
-      // }
-    } catch (error) {
-      console.error(error);
+      } else {
+        dispatch({
+          type: Types.INITIAL,
+          payload: { user: null },
+        });
+      }
+    } catch {
       dispatch({
         type: Types.INITIAL,
-        payload: {
-          user: null,
-        },
+        payload: { user: null },
       });
     }
   }, []);
@@ -143,44 +136,55 @@ export function AuthProvider({ children }: Props) {
   }, [initialize]);
 
   // LOGIN
-  const login = useCallback(async (email: string, password: string) => {
-    const data = {
-      email,
-      password,
-    };
+  const login = useCallback(async (username: string, password: string) => {
+    try {
+      const res = await apiDoktek.post(epDoktek.auth.login, {
+        username,
+        password,
+      });
 
-    const res = await axios.post(endpoints.auth.login, data);
+      const accessToken = res.data.access_token;
 
-    const { accessToken, user } = res.data;
+      setSessionDoktek(accessToken);
 
-    setSession(accessToken);
+      const decoded = jwtDecode<{
+        id_user: number;
+        username: string;
+      }>(accessToken);
 
-    dispatch({
-      type: Types.LOGIN,
-      payload: {
-        user: {
-          ...user,
-          accessToken,
+      dispatch({
+        type: Types.LOGIN,
+        payload: {
+          user: {
+            id_user: decoded.id_user,
+            username: decoded.username,
+            accessToken,
+          },
         },
-      },
-    });
+      });
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Login gagal', { autoClose: 10000 });
+    }
   }, []);
 
   // REGISTER
   const register = useCallback(
-    async (email: string, password: string, firstName: string, lastName: string) => {
+    async (username: string, password: string, firstName: string, lastName: string) => {
       const data = {
-        email,
+        username,
         password,
         firstName,
         lastName,
       };
+      console.log(data);
 
-      const res = await axios.post(endpoints.auth.register, data);
+      const res = await apiDoktek.post(epDoktek.auth.register, data);
 
-      const { accessToken, user } = res.data;
+      const { accessToken } = res.data;
 
-      sessionStorage.setItem(STORAGE_KEY, accessToken);
+      localStorage.setItem(STORAGE_KEY, accessToken);
+
+      const user = await authApi.login({ accessToken });
 
       dispatch({
         type: Types.REGISTER,
@@ -197,9 +201,42 @@ export function AuthProvider({ children }: Props) {
 
   // LOGOUT
   const logout = useCallback(async () => {
-    setSession(null);
+    // await apiSID.get(epSID.auth.logout);
+    setSessionDoktek(null);
     dispatch({
       type: Types.LOGOUT,
+    });
+  }, []);
+
+  // NEW password
+  const newPassword = useCallback(async (username: string, code: string, password: string) => {
+    const data = {
+      username,
+      password,
+    };
+
+    if (code !== '010101') {
+      dispatch({
+        type: Types.LOGOUT,
+      });
+    }
+
+    const res = await apiDoktek.post(epDoktek.auth.createPassword, data);
+
+    const { accessToken } = res.data;
+
+    setSessionDoktek(accessToken);
+
+    const user = await authApi.login({ accessToken });
+
+    dispatch({
+      type: Types.NEW_PASSWORD,
+      payload: {
+        user: {
+          ...user,
+          accessToken,
+        },
+      },
     });
   }, []);
 
@@ -220,8 +257,9 @@ export function AuthProvider({ children }: Props) {
       login,
       register,
       logout,
+      newPassword,
     }),
-    [login, logout, register, state.user, status]
+    [login, logout, register, newPassword, state.user, status]
   );
 
   return <AuthContext.Provider value={memoizedValue}>{children}</AuthContext.Provider>;

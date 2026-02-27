@@ -1,4 +1,5 @@
 import { LogoutOptions, RedirectLoginOptions, PopupLoginOptions } from '@auth0/auth0-react';
+import { DivisionGroup, RoleGroup } from 'src/types/schema';
 
 // ----------------------------------------------------------------------
 
@@ -103,3 +104,20 @@ export type Auth0ContextType = CanRemove & {
   loginWithRedirect: (options?: RedirectLoginOptions) => Promise<void>;
   logout: (options?: LogoutOptions) => Promise<void>;
 };
+
+export type AuthUser = {
+  // USER
+  id_user: string;
+  username: string;
+  email: string;
+  flag_Active: string;
+  id_division: number;
+  id_role: number;
+  division_name: DivisionGroup[];
+  role_name: RoleGroup[];
+};
+
+export interface IAuthRequest extends Partial<AuthUser> {
+  password?: string;
+  accessToken?: string;
+}
