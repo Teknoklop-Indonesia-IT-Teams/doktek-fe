@@ -143,7 +143,7 @@ export function AuthProvider({ children }: Props) {
         password,
       });
 
-      const accessToken = res.data.access_token;
+      const accessToken = res.data.data.access_token;
 
       setSessionDoktek(accessToken);
 
