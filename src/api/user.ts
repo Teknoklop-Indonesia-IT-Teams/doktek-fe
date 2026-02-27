@@ -22,3 +22,19 @@ export function useGetUsers() {
 
     return memoizedValue;
 }
+
+export function useGetUserById(id: string) {
+    const URL = id ? epDoktek.users.details(id) : null;
+
+    const { data, isLoading, error } = useSWR(URL, fetcherDoktek, {
+        revalidateOnFocus: false,
+    });
+
+    const memoizedValue = useMemo(() => ({
+        user: data?.data as any,
+        userLoading: isLoading,
+        userError: error,
+    }), [data?.data, error, isLoading]);
+
+    return memoizedValue;
+}
