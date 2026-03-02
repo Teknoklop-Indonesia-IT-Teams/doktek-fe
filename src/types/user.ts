@@ -94,20 +94,18 @@ export type IUserCard = {
 };
 
 export type IUserItem = {
-  id: string;
-  name: string;
-  city: string;
-  role: string;
-  email: string;
-  state: string;
-  status: string;
-  address: string;
-  country: string;
-  zipCode: string;
-  company: string;
-  avatarUrl: string;
-  phoneNumber: string;
-  isVerified: boolean;
+  id_user: number;
+  username: string;
+  password?: string;
+  flag_active: boolean;
+  division: {
+    id_division: number;
+    division_name: string;
+  };
+  role: {
+    id_role: number;
+    role_name: string;
+  };
 };
 
 export type IUserAccount = {
