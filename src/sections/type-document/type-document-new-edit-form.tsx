@@ -10,75 +10,44 @@ import Stack from '@mui/material/Stack';
 import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
 // types
-import { IInvoice } from 'src/types/invoice';
+import { ITypeManager } from 'src/types/type';
 // _mock
 import { _addressBooks } from 'src/_mock';
-import {
-  _tags,
-  PRODUCT_SIZE_OPTIONS,
-  PRODUCT_GENDER_OPTIONS,
-  PRODUCT_COLOR_NAME_OPTIONS,
-  PRODUCT_CATEGORY_GROUP_OPTIONS,
-} from 'src/_mock';
-// hooks
-import { useBoolean } from 'src/hooks/use-boolean';
-// components
-import FormProvider, {
-  RHFAutocomplete,
-  RHFEditor,
-  RHFMultiCheckbox,
-  RHFMultiSelect,
-  RHFSelect,
-  RHFSwitch,
-  RHFTextField,
-  RHFUpload,
-} from 'src/components/hook-form';
 // types
-import { IProductItem } from 'src/types/product';
 import { useResponsive } from 'src/hooks/use-responsive';
 import { useSnackbar } from 'src/components/snackbar';
-import {
-  Box,
-  CardHeader,
-  Chip,
-  Divider,
-  FormControlLabel,
-  Grid,
-  InputAdornment,
-  Switch,
-  Typography,
-} from '@mui/material';
+import { CardHeader, Grid, Typography } from '@mui/material';
+import FormProvider, { RHFTextField } from 'src/components/hook-form';
 
 // ----------------------------------------------------------------------
 
 type Props = {
-  currentProduct?: IProductItem;
+  currentTypes?: ITypeManager;
 };
 
-export default function TypeDocumentNewEditForm({ currentProduct }: Props) {
+export default function TypeDocumentNewEditForm({ currentTypes }: Props) {
   const router = useRouter();
 
   const mdUp = useResponsive('up', 'md');
 
   const { enqueueSnackbar } = useSnackbar();
 
-  const [includeTaxes, setIncludeTaxes] = useState(false);
-
-  const NewProductSchema = Yup.object().shape({
-    name: Yup.string().required('Name is required'),
-    description: Yup.string().required('Description is required'),
+  const NewTypesSchema = Yup.object().shape({
+    type_document: Yup.string().required('Type Document is required'),
+    code_document: Yup.string().required('Code Document is required'),
   });
 
   const defaultValues = useMemo(
     () => ({
-      name: currentProduct?.name || '',
-      description: currentProduct?.description || '',
+      id: currentTypes?.id || '',
+      type_document: currentTypes?.type_document || '',
+      code_document: currentTypes?.code_document || '',
     }),
-    [currentProduct]
+    [currentTypes]
   );
 
   const methods = useForm({
-    resolver: yupResolver(NewProductSchema),
+    resolver: yupResolver(NewTypesSchema),
     defaultValues,
   });
 
@@ -93,17 +62,17 @@ export default function TypeDocumentNewEditForm({ currentProduct }: Props) {
   const values = watch();
 
   useEffect(() => {
-    if (currentProduct) {
+    if (currentTypes) {
       reset(defaultValues);
     }
-  }, [currentProduct, defaultValues, reset]);
+  }, [currentTypes, defaultValues, reset]);
 
   const onSubmit = handleSubmit(async (data) => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 500));
       reset();
-      enqueueSnackbar(currentProduct ? 'Update success!' : 'Create success!');
-      router.push(paths.dashboard.product.root);
+      enqueueSnackbar(currentTypes ? 'Update success!' : 'Create success!');
+      router.push(paths.dashboard.typeDocument.root);
       console.info('DATA', data);
     } catch (error) {
       console.error(error);
@@ -118,7 +87,7 @@ export default function TypeDocumentNewEditForm({ currentProduct }: Props) {
             Details
           </Typography>
           <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            Title, description
+            Type Document, Code Document
           </Typography>
         </Grid>
       )}
@@ -128,9 +97,9 @@ export default function TypeDocumentNewEditForm({ currentProduct }: Props) {
           {!mdUp && <CardHeader title="Details" />}
 
           <Stack spacing={3} sx={{ p: 3 }}>
-            <RHFTextField name="name" label="Type Document Name" />
+            <RHFTextField name="type_document" label="Type Document Name" multiline rows={4} />
 
-            <RHFTextField name="description" label="Sub Description" multiline rows={4} />
+            <RHFTextField name="code_document" label="Code Document Name" />
           </Stack>
         </Card>
       </Grid>
@@ -142,7 +111,7 @@ export default function TypeDocumentNewEditForm({ currentProduct }: Props) {
       {mdUp && <Grid md={4} />}
       <Grid xs={12} md={8} sx={{ display: 'flex', alignItems: 'center', marginTop: 5 }}>
         <LoadingButton type="submit" variant="contained" size="large" loading={isSubmitting}>
-          {!currentProduct ? 'Create Type Document' : 'Save Changes'}
+          {!currentTypes ? 'Create Type Document' : 'Save Changes'}
         </LoadingButton>
       </Grid>
     </>

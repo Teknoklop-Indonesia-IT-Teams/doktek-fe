@@ -34,7 +34,7 @@ import FormProvider, {
   RHFUpload,
 } from 'src/components/hook-form';
 // types
-import { IProductItem } from 'src/types/product';
+import { IRole } from 'src/types/role';
 import { useResponsive } from 'src/hooks/use-responsive';
 import { useSnackbar } from 'src/components/snackbar';
 import {
@@ -52,33 +52,29 @@ import {
 // ----------------------------------------------------------------------
 
 type Props = {
-  currentProduct?: IProductItem;
+  currentRoles?: IRole;
 };
 
-export default function RolesNewEditForm({ currentProduct }: Props) {
+export default function RolesNewEditForm({ currentRoles }: Props) {
   const router = useRouter();
 
   const mdUp = useResponsive('up', 'md');
 
   const { enqueueSnackbar } = useSnackbar();
 
-  const [includeTaxes, setIncludeTaxes] = useState(false);
-
-  const NewProductSchema = Yup.object().shape({
+  const NewRolesSchema = Yup.object().shape({
     name: Yup.string().required('Name is required'),
-    description: Yup.string().required('Description is required'),
   });
 
   const defaultValues = useMemo(
     () => ({
-      name: currentProduct?.name || '',
-      description: currentProduct?.description || '',
+      name: currentRoles?.role_name || '',
     }),
-    [currentProduct]
+    [currentRoles]
   );
 
   const methods = useForm({
-    resolver: yupResolver(NewProductSchema),
+    resolver: yupResolver(NewRolesSchema),
     defaultValues,
   });
 
@@ -93,17 +89,17 @@ export default function RolesNewEditForm({ currentProduct }: Props) {
   const values = watch();
 
   useEffect(() => {
-    if (currentProduct) {
+    if (currentRoles) {
       reset(defaultValues);
     }
-  }, [currentProduct, defaultValues, reset]);
+  }, [currentRoles, defaultValues, reset]);
 
   const onSubmit = handleSubmit(async (data) => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 500));
       reset();
-      enqueueSnackbar(currentProduct ? 'Update success!' : 'Create success!');
-      router.push(paths.dashboard.product.root);
+      enqueueSnackbar(currentRoles ? 'Update success!' : 'Create success!');
+      router.push(paths.dashboard.roles.root);
       console.info('DATA', data);
     } catch (error) {
       console.error(error);
@@ -118,7 +114,7 @@ export default function RolesNewEditForm({ currentProduct }: Props) {
             Details
           </Typography>
           <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            Title, description
+            Title
           </Typography>
         </Grid>
       )}
@@ -129,8 +125,6 @@ export default function RolesNewEditForm({ currentProduct }: Props) {
 
           <Stack spacing={3} sx={{ p: 3 }}>
             <RHFTextField name="name" label="Roles Name" />
-
-            <RHFTextField name="description" label="Sub Description" multiline rows={4} />
           </Stack>
         </Card>
       </Grid>
@@ -142,7 +136,7 @@ export default function RolesNewEditForm({ currentProduct }: Props) {
       {mdUp && <Grid md={4} />}
       <Grid xs={12} md={8} sx={{ display: 'flex', alignItems: 'center', marginTop: 5 }}>
         <LoadingButton type="submit" variant="contained" size="large" loading={isSubmitting}>
-          {!currentProduct ? 'Create Roles' : 'Save Changes'}
+          {!currentRoles ? 'Create Roles' : 'Save Changes'}
         </LoadingButton>
       </Grid>
     </>

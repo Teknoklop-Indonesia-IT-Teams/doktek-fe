@@ -6,6 +6,6 @@ export type IRoleTableFilters = {
 };
 
 export type IRole = {
-  id_role: number;
+  id_role: string;
   role_name: string;
 };

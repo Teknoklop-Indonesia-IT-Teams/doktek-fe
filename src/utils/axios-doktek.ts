@@ -123,7 +123,7 @@ export const epDoktek = {
     search: `/role/q`,
     postRole: `/role`,
     list: '/role',
-    details: (id: number) => `/role/${id}`,
+    details: (id: string) => `/role/${id}`,
   },
   division: {
     edit: (id: number) => `/divisions/${id}`,
@@ -132,6 +132,14 @@ export const epDoktek = {
     postDivision: `/divisions`,
     list: '/divisions',
     details: (id: number) => `/divisions/${id}`,
+  },
+  type: {
+    edit: (id: number) => `/type-documents/${id}`,
+    delete: (id: number) => `/type-documents/${id}`,
+    search: `/type-documents/q`,
+    postType: `/type-documents`,
+    list: '/type-documents',
+    details: (id: string) => `/type-documents/${id}`,
   },
   product: {
     create: '/product',

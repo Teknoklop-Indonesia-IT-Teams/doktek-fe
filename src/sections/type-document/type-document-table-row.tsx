@@ -3,17 +3,13 @@ import { useState, useCallback } from 'react';
 // @mui
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
-import Avatar from '@mui/material/Avatar';
 import Divider from '@mui/material/Divider';
 import MenuItem from '@mui/material/MenuItem';
 import Checkbox from '@mui/material/Checkbox';
-import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
-import ListItemText from '@mui/material/ListItemText';
 import { alpha, useTheme } from '@mui/material/styles';
 import TableRow, { tableRowClasses } from '@mui/material/TableRow';
 import TableCell, { tableCellClasses } from '@mui/material/TableCell';
-import AvatarGroup, { avatarGroupClasses } from '@mui/material/AvatarGroup';
 // hooks
 import { useBoolean } from 'src/hooks/use-boolean';
 import { useDoubleClick } from 'src/hooks/use-double-click';
@@ -21,7 +17,7 @@ import { useCopyToClipboard } from 'src/hooks/use-copy-to-clipboard';
 // utils
 import { fData } from 'src/utils/format-number';
 // types
-import { IFileManager } from 'src/types/file';
+import { ITypeManager } from 'src/types/type';
 // components
 import Iconify from 'src/components/iconify';
 import CustomPopover, { usePopover } from 'src/components/custom-popover';
@@ -35,36 +31,31 @@ import TypeDocumentFileDetails from './type-document-file-details';
 // ----------------------------------------------------------------------
 
 type Props = {
-  row: IFileManager;
+  row: ITypeManager;
   selected: boolean;
   onSelectRow: VoidFunction;
+  onEditRow: VoidFunction;
   onDeleteRow: VoidFunction;
 };
 
-export default function TypeDocumentTableRow({ row, selected, onSelectRow, onDeleteRow }: Props) {
+export default function TypeDocumentTableRow({
+  row,
+  selected,
+  onSelectRow,
+  onEditRow,
+  onDeleteRow,
+}: Props) {
   const theme = useTheme();
 
-  const { name, size, type, modifiedAt, shared, isFavorited } = row;
+  const { type_document, code_document } = row;
 
   const { enqueueSnackbar } = useSnackbar();
 
-  const { copy } = useCopyToClipboard();
-
-  const [inviteEmail, setInviteEmail] = useState('');
-
-  const favorite = useBoolean(isFavorited);
-
   const details = useBoolean();
-
-  const share = useBoolean();
 
   const confirm = useBoolean();
 
   const popover = usePopover();
-
-  const handleChangeInvite = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    setInviteEmail(event.target.value);
-  }, []);
 
   const handleClick = useDoubleClick({
     click: () => {
@@ -72,11 +63,6 @@ export default function TypeDocumentTableRow({ row, selected, onSelectRow, onDel
     },
     doubleClick: () => console.info('DOUBLE CLICK'),
   });
-
-  const handleCopy = useCallback(() => {
-    enqueueSnackbar('Copied!');
-    copy(row.url);
-  }, [copy, enqueueSnackbar, row.url]);
 
   const defaultStyles = {
     borderTop: `solid 1px ${alpha(theme.palette.grey[500], 0.16)}`,
@@ -130,7 +116,7 @@ export default function TypeDocumentTableRow({ row, selected, onSelectRow, onDel
 
         <TableCell onClick={handleClick}>
           <Stack direction="row" alignItems="center" spacing={2}>
-            <FileThumbnail file={type} sx={{ width: 36, height: 36 }} />
+            <FileThumbnail file={type_document} sx={{ width: 36, height: 36 }} />
 
             <Typography
               noWrap
@@ -141,17 +127,13 @@ export default function TypeDocumentTableRow({ row, selected, onSelectRow, onDel
                 ...(details.value && { fontWeight: 'fontWeightBold' }),
               }}
             >
-              {name}
+              {type_document}
             </Typography>
           </Stack>
         </TableCell>
 
         <TableCell onClick={handleClick} sx={{ whiteSpace: 'nowrap' }}>
-          {fData(size)}
-        </TableCell>
-
-        <TableCell onClick={handleClick} sx={{ whiteSpace: 'nowrap' }}>
-          {type}
+          {code_document}
         </TableCell>
       </TableRow>
 
@@ -163,26 +145,13 @@ export default function TypeDocumentTableRow({ row, selected, onSelectRow, onDel
       >
         <MenuItem
           onClick={() => {
+            confirm.onTrue();
             popover.onClose();
-            handleCopy();
           }}
         >
-          <Iconify icon="eva:link-2-fill" />
-          Copy Link
+          <Iconify icon="solar:pen-bold" />
+          Edit
         </MenuItem>
-
-        <MenuItem
-          onClick={() => {
-            popover.onClose();
-            share.onTrue();
-          }}
-        >
-          <Iconify icon="solar:share-bold" />
-          Share
-        </MenuItem>
-
-        <Divider sx={{ borderStyle: 'dashed' }} />
-
         <MenuItem
           onClick={() => {
             confirm.onTrue();
@@ -197,24 +166,9 @@ export default function TypeDocumentTableRow({ row, selected, onSelectRow, onDel
 
       <TypeDocumentFileDetails
         item={row}
-        favorited={favorite.value}
-        onFavorite={favorite.onToggle}
-        onCopyLink={handleCopy}
         open={details.value}
         onClose={details.onFalse}
         onDelete={onDeleteRow}
-      />
-
-      <TypeDocumentShareDialog
-        open={share.value}
-        shared={shared}
-        inviteEmail={inviteEmail}
-        onChangeInvite={handleChangeInvite}
-        onCopyLink={handleCopy}
-        onClose={() => {
-          share.onFalse();
-          setInviteEmail('');
-        }}
       />
 
       <ConfirmDialog

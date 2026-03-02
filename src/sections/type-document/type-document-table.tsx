@@ -9,7 +9,7 @@ import TableContainer from '@mui/material/TableContainer';
 import { tableCellClasses } from '@mui/material/TableCell';
 import { tablePaginationClasses } from '@mui/material/TablePagination';
 // types
-import { IFile } from 'src/types/file';
+import { ITypeManager } from 'src/types/type';
 // components
 import Iconify from 'src/components/iconify';
 import {
@@ -27,7 +27,6 @@ import TypeDocumentTableRow from './type-document-table-row';
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
-  { id: 'no', label: 'Number' },
   { id: 'type_document', label: 'Type Document', width: 120 },
   { id: 'code_document', label: 'Code Document', width: 120 },
   { id: '', width: 88 },
@@ -37,9 +36,10 @@ const TABLE_HEAD = [
 
 type Props = {
   table: TableProps;
-  tableData: IFile[];
+  tableData: ITypeManager[];
   notFound: boolean;
-  dataFiltered: IFile[];
+  dataFiltered: ITypeManager[];
+  onEditRow: (id: string) => void;
   onOpenConfirm: VoidFunction;
   onDeleteRow: (id: string) => void;
 };
@@ -50,6 +50,7 @@ export default function TypeDocumentTable({
   notFound,
   onDeleteRow,
   dataFiltered,
+  onEditRow,
   onOpenConfirm,
 }: Props) {
   const theme = useTheme();
@@ -166,6 +167,7 @@ export default function TypeDocumentTable({
                     row={row}
                     selected={selected.includes(row.id)}
                     onSelectRow={() => onSelectRow(row.id)}
+                    onEditRow={() => onEditRow(row.id)}
                     onDeleteRow={() => onDeleteRow(row.id)}
                   />
                 ))}

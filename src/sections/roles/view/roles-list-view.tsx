@@ -121,7 +121,7 @@ export default function RolesListView() {
   );
 
   const handleDeleteRow = useCallback(
-    (id: number) => {
+    (id: string) => {
       const deleteRow = tableData.filter((row) => row.id_role !== id);
       setTableData(deleteRow);
 

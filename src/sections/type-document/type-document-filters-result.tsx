@@ -5,7 +5,7 @@ import Paper from '@mui/material/Paper';
 import Button from '@mui/material/Button';
 import Stack, { StackProps } from '@mui/material/Stack';
 // types
-import { IFileFilters, IFileFilterValue } from 'src/types/file';
+import { ITypeFilters, ITypeFilterValue } from 'src/types/type';
 // components
 import Iconify from 'src/components/iconify';
 import { shortDateLabel } from 'src/components/custom-date-range-picker';
@@ -13,8 +13,8 @@ import { shortDateLabel } from 'src/components/custom-date-range-picker';
 // ----------------------------------------------------------------------
 
 type Props = StackProps & {
-  filters: IFileFilters;
-  onFilters: (name: string, value: IFileFilterValue) => void;
+  filters: ITypeFilters;
+  onFilters: (name: string, value: ITypeFilterValue) => void;
   //
   canReset: boolean;
   onResetFilters: VoidFunction;
@@ -32,16 +32,9 @@ export default function FileManagerFiltersResult({
   results,
   ...other
 }: Props) {
-  const shortLabel = shortDateLabel(filters.startDate, filters.endDate);
-
   const handleRemoveTypes = (inputValue: string) => {
-    const newValue = filters.type.filter((item) => item !== inputValue);
-    onFilters('type', newValue);
-  };
-
-  const handleRemoveDate = () => {
-    onFilters('startDate', null);
-    onFilters('endDate', null);
+    const newValue = filters.code_document.filter((item) => item !== inputValue);
+    onFilters('code_document', newValue);
   };
 
   return (
@@ -54,17 +47,11 @@ export default function FileManagerFiltersResult({
       </Box>
 
       <Stack flexGrow={1} spacing={1} direction="row" flexWrap="wrap" alignItems="center">
-        {!!filters.type.length && (
+        {!!filters.code_document.length && (
           <Block label="Types:">
-            {filters.type.map((item) => (
+            {filters.code_document.map((item) => (
               <Chip key={item} label={item} size="small" onDelete={() => handleRemoveTypes(item)} />
             ))}
-          </Block>
-        )}
-
-        {filters.startDate && filters.endDate && (
-          <Block label="Date:">
-            <Chip size="small" label={shortLabel} onDelete={handleRemoveDate} />
           </Block>
         )}
 

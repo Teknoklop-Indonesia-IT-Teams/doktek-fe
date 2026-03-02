@@ -9,7 +9,8 @@ import { useSettingsContext } from 'src/components/settings';
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 //
 import RolesNewEditForm from '../roles-new-edit-form';
-import { useGetProduct } from 'src/api/product';
+import { useGetRoles, useGetRolesDetails } from 'src/api/role';
+import { _role } from 'src/_mock/_role';
 
 // ----------------------------------------------------------------------
 
@@ -20,8 +21,8 @@ type Props = {
 export default function RolesEditView({ id }: Props) {
   const settings = useSettingsContext();
 
-  const { product: currentProduct } = useGetProduct(id);
-  const currentRoles = _invoices.find((invoice) => invoice.id === id);
+  const { roles: currentRole } = useGetRolesDetails(id);
+  const currentRoles = _role.find((role) => role.id_role.toString() === id);
 
   return (
     <Container maxWidth={settings.themeStretch ? false : 'lg'}>
@@ -34,16 +35,16 @@ export default function RolesEditView({ id }: Props) {
           },
           {
             name: 'Roles',
-            href: paths.dashboard.invoice.root,
+            href: paths.dashboard.roles.root,
           },
-          { name: currentProduct?.name },
+          { name: currentRoles?.role_name },
         ]}
         sx={{
           mb: { xs: 3, md: 5 },
         }}
       />
 
-      <RolesNewEditForm currentProduct={currentProduct} />
+      <RolesNewEditForm currentRoles={currentRole} />
     </Container>
   );
 }

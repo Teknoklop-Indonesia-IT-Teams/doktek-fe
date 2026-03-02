@@ -9,23 +9,22 @@ import Typography from '@mui/material/Typography';
 import CardActionArea from '@mui/material/CardActionArea';
 import InputAdornment from '@mui/material/InputAdornment';
 // types
-import { IFileFilters, IFileFilterValue } from 'src/types/file';
+import { ITypeFilters, ITypeFilterValue } from 'src/types/type';
 // components
 import Label from 'src/components/label';
 import Iconify from 'src/components/iconify';
 import FileThumbnail from 'src/components/file-thumbnail';
 import CustomPopover, { usePopover } from 'src/components/custom-popover';
-import CustomDateRangePicker, { shortDateLabel } from 'src/components/custom-date-range-picker';
 
 // ----------------------------------------------------------------------
 
 type Props = {
-  filters: IFileFilters;
-  onFilters: (name: string, value: IFileFilterValue) => void;
+  filters: ITypeFilters;
+  onFilters: (name: string, value: ITypeFilterValue) => void;
   typeOptions: string[];
 };
 
-export default function FileManagerFilters({
+export default function TypeManagerFilters({
   //
   filters,
   onFilters,
@@ -33,7 +32,7 @@ export default function FileManagerFilters({
 }: Props) {
   const popover = usePopover();
 
-  const renderLabel = filters.type.length ? filters.type.slice(0, 2).join(',') : 'All type';
+  const renderLabel = filters.code_document.length ? filters.code_document.slice(0, 2) : 'All type';
 
   const handleFilterName = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -42,38 +41,24 @@ export default function FileManagerFilters({
     [onFilters]
   );
 
-  const handleFilterStartDate = useCallback(
-    (newValue: Date | null) => {
-      onFilters('startDate', newValue);
-    },
-    [onFilters]
-  );
-
-  const handleFilterEndDate = useCallback(
-    (newValue: Date | null) => {
-      onFilters('endDate', newValue);
-    },
-    [onFilters]
-  );
-
   const handleFilterType = useCallback(
     (newValue: string) => {
-      const checked = filters.type.includes(newValue)
-        ? filters.type.filter((value) => value !== newValue)
-        : [...filters.type, newValue];
-      onFilters('type', checked);
+      const checked = filters.code_document.includes(newValue)
+        ? filters.code_document.filter((value) => value !== newValue)
+        : [...filters.code_document, newValue];
+      onFilters('code_document', checked);
     },
-    [filters.type, onFilters]
+    [filters.code_document, onFilters]
   );
 
   const handleResetType = useCallback(() => {
     popover.onClose();
-    onFilters('type', []);
+    onFilters('code_document', '');
   }, [onFilters, popover]);
 
   const renderFilterName = (
     <TextField
-      value={filters.name}
+      value={filters.type_document}
       onChange={handleFilterName}
       placeholder="Search..."
       InputProps={{
@@ -102,9 +87,9 @@ export default function FileManagerFilters({
         }
       >
         {renderLabel}
-        {filters.type.length > 2 && (
+        {filters.code_document.length > 2 && (
           <Label color="info" sx={{ ml: 1 }}>
-            +{filters.type.length - 2}
+            +{filters.code_document.length - 2}
           </Label>
         )}
       </Button>
@@ -119,13 +104,13 @@ export default function FileManagerFilters({
               sm: 'repeat(4, 1fr)',
             }}
           >
-            {typeOptions.map((type) => {
-              const selected = filters.type.includes(type);
+            {typeOptions.map((code) => {
+              const selected = filters.code_document.includes(code);
 
               return (
                 <CardActionArea
-                  key={type}
-                  onClick={() => handleFilterType(type)}
+                  key={code}
+                  onClick={() => handleFilterType(code)}
                   sx={{
                     p: 1,
                     borderRadius: 1,
@@ -137,8 +122,8 @@ export default function FileManagerFilters({
                   }}
                 >
                   <Stack spacing={1} direction="row" alignItems="center">
-                    <FileThumbnail file={type} />
-                    <Typography variant={selected ? 'subtitle2' : 'body2'}>{type}</Typography>
+                    <FileThumbnail file={code} />
+                    <Typography variant={selected ? 'subtitle2' : 'body2'}>{code}</Typography>
                   </Stack>
                 </CardActionArea>
               );

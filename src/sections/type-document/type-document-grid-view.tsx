@@ -1,30 +1,25 @@
 import { useState, useRef, useCallback } from 'react';
-// @mui
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Divider from '@mui/material/Divider';
-import Collapse from '@mui/material/Collapse';
 // types
-import { IFile } from 'src/types/file';
+import { ITypeManager } from 'src/types/type';
 // hooks
 import { useBoolean } from 'src/hooks/use-boolean';
 // components
-import Iconify from 'src/components/iconify';
 import { TableProps } from 'src/components/table';
 //
-import TypeDocumentPanel from './type-document-panel';
-import TypeDocumentFileItem from './type-document-file-item';
-import TypeDocumentFolderItem from './type-document-folder-item';
-import TypeDocumentActionSelected from './type-document-action-selected';
 import TypeDocumentShareDialog from './type-document-share-dialog';
 import TypeDocumentNewFolderDialog from './type-document-new-folder-dialog';
+import { Box, Button, Collapse, Divider } from '@mui/material';
+import TypeDocumentPanel from './type-document-panel';
+import TypeDocumentFileItem from './type-document-file-item';
+import TypeDocumentActionSelected from './type-document-action-selected';
+import Iconify from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
 type Props = {
   table: TableProps;
-  data: IFile[];
-  dataFiltered: IFile[];
+  data: ITypeManager[];
+  dataFiltered: ITypeManager[];
   onOpenConfirm: VoidFunction;
   onDeleteItem: (id: string) => void;
 };
@@ -65,50 +60,6 @@ export default function TypeDocumentGridView({
   return (
     <>
       <Box ref={containerRef}>
-        <TypeDocumentPanel
-          title="Folders"
-          subTitle={`${data.filter((item) => item.type === 'folder').length} folders`}
-          onOpen={newFolder.onTrue}
-          collapse={folders.value}
-          onCollapse={folders.onToggle}
-        />
-
-        <Collapse in={!folders.value} unmountOnExit>
-          <Box
-            gap={3}
-            display="grid"
-            gridTemplateColumns={{
-              xs: 'repeat(1, 1fr)',
-              sm: 'repeat(2, 1fr)',
-              md: 'repeat(3, 1fr)',
-              lg: 'repeat(4, 1fr)',
-            }}
-          >
-            {dataFiltered
-              .filter((i) => i.type === 'folder')
-              .map((folder) => (
-                <TypeDocumentFolderItem
-                  key={folder.id}
-                  folder={folder}
-                  selected={selected.includes(folder.id)}
-                  onSelect={() => onSelectItem(folder.id)}
-                  onDelete={() => onDeleteItem(folder.id)}
-                  sx={{ maxWidth: 'auto' }}
-                />
-              ))}
-          </Box>
-        </Collapse>
-
-        <Divider sx={{ my: 5, borderStyle: 'dashed' }} />
-
-        <TypeDocumentPanel
-          title="Files"
-          subTitle={`${data.filter((item) => item.type !== 'folder').length} files`}
-          onOpen={upload.onTrue}
-          collapse={files.value}
-          onCollapse={files.onToggle}
-        />
-
         <Collapse in={!files.value} unmountOnExit>
           <Box
             display="grid"
@@ -121,7 +72,7 @@ export default function TypeDocumentGridView({
             gap={3}
           >
             {dataFiltered
-              .filter((i) => i.type !== 'folder')
+              .filter((i) => i.code_document !== 'folder')
               .map((file) => (
                 <TypeDocumentFileItem
                   key={file.id}

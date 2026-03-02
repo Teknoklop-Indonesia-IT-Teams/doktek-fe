@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 // @mui
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
@@ -7,9 +7,8 @@ import Typography from '@mui/material/Typography';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 // utils
-import { fTimestamp } from 'src/utils/format-time';
 // _mock
-import { _allFiles, FILE_TYPE_OPTIONS } from 'src/_mock';
+import { _allTypes, CODE_TYPE_OPTIONS } from 'src/_mock';
 // hooks
 import { useBoolean } from 'src/hooks/use-boolean';
 // components
@@ -20,7 +19,7 @@ import { ConfirmDialog } from 'src/components/custom-dialog';
 import { useSettingsContext } from 'src/components/settings';
 import { useTable, getComparator } from 'src/components/table';
 // types
-import { IFile, IFileFilters, IFileFilterValue } from 'src/types/file';
+import { ITypeManager, ITypeFilters, ITypeFilterValue } from 'src/types/type';
 //
 import TypeDocumentTable from '../type-document-table';
 import TypeDocumentFilters from '../type-document-filters';
@@ -29,14 +28,15 @@ import TypeDocumentFiltersResult from '../type-document-filters-result';
 import TypeDocumentNewFolderDialog from '../type-document-new-folder-dialog';
 import { paths } from 'src/routes/paths';
 import { RouterLink } from 'src/routes/components';
+import { useGetTypes } from 'src/api/type';
+import { isEqual } from 'lodash';
+import { useRouter } from 'src/routes/hooks';
 
 // ----------------------------------------------------------------------
 
-const defaultFilters: IFileFilters = {
-  name: '',
-  type: [],
-  startDate: null,
-  endDate: null,
+const defaultFilters: ITypeFilters = {
+  type_document: '',
+  code_document: [],
 };
 
 // ----------------------------------------------------------------------
@@ -46,22 +46,22 @@ export default function TypeDocumentView() {
 
   const settings = useSettingsContext();
 
-  const openDateRange = useBoolean();
-
   const confirm = useBoolean();
-
-  const upload = useBoolean();
+  const router = useRouter();
 
   const [view, setView] = useState('list');
 
-  const [tableData, setTableData] = useState(_allFiles);
+  const { type, typeLoading, typeEmpty } = useGetTypes();
+
+  const [tableData, setTableData] = useState<ITypeManager[]>([]);
 
   const [filters, setFilters] = useState(defaultFilters);
 
-  const dateError =
-    filters.startDate && filters.endDate
-      ? filters.startDate.getTime() > filters.endDate.getTime()
-      : false;
+  useEffect(() => {
+    if (type.length) {
+      setTableData(type);
+    }
+  }, [type]);
 
   const dataFiltered = applyFilter({
     inputData: tableData,
@@ -74,10 +74,9 @@ export default function TypeDocumentView() {
     table.page * table.rowsPerPage + table.rowsPerPage
   );
 
-  const canReset =
-    !!filters.name || !!filters.type.length || (!!filters.startDate && !!filters.endDate);
+  const canReset = !isEqual(defaultFilters, filters);
 
-  const notFound = (!dataFiltered.length && canReset) || !dataFiltered.length;
+  const notFound = (!dataFiltered.length && canReset) || typeEmpty;
 
   const handleChangeView = useCallback(
     (event: React.MouseEvent<HTMLElement>, newView: string | null) => {
@@ -89,7 +88,7 @@ export default function TypeDocumentView() {
   );
 
   const handleFilters = useCallback(
-    (name: string, value: IFileFilterValue) => {
+    (name: string, value: ITypeFilterValue) => {
       table.onResetPage();
       setFilters((prevState) => ({
         ...prevState,
@@ -107,6 +106,13 @@ export default function TypeDocumentView() {
       table.onUpdatePageDeleteRow(dataInPage.length);
     },
     [dataInPage.length, table, tableData]
+  );
+
+  const handleEditRow = useCallback(
+    (id: string) => {
+      router.push(paths.dashboard.roles.edit(id));
+    },
+    [router]
   );
 
   const handleDeleteItems = useCallback(() => {
@@ -134,7 +140,7 @@ export default function TypeDocumentView() {
         filters={filters}
         onFilters={handleFilters}
         //
-        typeOptions={FILE_TYPE_OPTIONS}
+        typeOptions={CODE_TYPE_OPTIONS}
       />
 
       <ToggleButtonGroup size="small" value={view} exclusive onChange={handleChangeView}>
@@ -203,6 +209,7 @@ export default function TypeDocumentView() {
                 tableData={tableData}
                 dataFiltered={dataFiltered}
                 onDeleteRow={handleDeleteItem}
+                onEditRow={handleEditRow}
                 notFound={notFound}
                 onOpenConfirm={confirm.onTrue}
               />
@@ -212,15 +219,13 @@ export default function TypeDocumentView() {
                 data={tableData}
                 dataFiltered={dataFiltered}
                 onDeleteItem={handleDeleteItem}
+                // onEditRow={handleEditRow}
                 onOpenConfirm={confirm.onTrue}
               />
             )}
           </>
         )}
       </Container>
-
-      <TypeDocumentNewFolderDialog open={upload.value} onClose={upload.onFalse} />
-
       <ConfirmDialog
         open={confirm.value}
         onClose={confirm.onFalse}
@@ -254,11 +259,11 @@ function applyFilter({
   comparator,
   filters,
 }: {
-  inputData: IFile[];
+  inputData: ITypeManager[];
   comparator: (a: any, b: any) => number;
-  filters: IFileFilters;
+  filters: ITypeFilters;
 }) {
-  const { name, type } = filters;
+  const { type_document, code_document } = filters;
 
   const stabilizedThis = inputData.map((el, index) => [el, index] as const);
 
@@ -270,14 +275,14 @@ function applyFilter({
 
   inputData = stabilizedThis.map((el) => el[0]);
 
-  if (name) {
+  if (type_document) {
     inputData = inputData.filter(
-      (file) => file.name.toLowerCase().indexOf(name.toLowerCase()) !== -1
+      (file) => file.type_document.toLowerCase().indexOf(type_document.toLowerCase()) !== -1
     );
   }
 
-  if (type.length) {
-    inputData = inputData.filter((file) => type.includes(fileFormat(file.type)));
+  if (code_document.length) {
+    inputData = inputData.filter((file) => code_document.includes(fileFormat(file.code_document)));
   }
 
   return inputData;

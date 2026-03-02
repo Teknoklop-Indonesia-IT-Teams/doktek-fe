@@ -71,7 +71,6 @@ const TourCreatePage = lazy(() => import('src/pages/dashboard/tour/new'));
 const TourEditPage = lazy(() => import('src/pages/dashboard/tour/edit'));
 // TYPE DOCUMENT
 import TypeDocumentListPage from 'src/pages/dashboard/type-document/list';
-import TypeDocumentDetailsPage from 'src/pages/dashboard/type-document/details';
 import TypeDocumentEditPage from 'src/pages/dashboard/type-document/edit';
 import TypeDocumentsCreatePage from 'src/pages/dashboard/type-document/new';
 // FILE MANAGER
@@ -190,7 +189,6 @@ export const dashboardRoutes = [
         children: [
           { element: <TypeDocumentListPage />, index: true },
           { path: 'list', element: <TypeDocumentListPage /> },
-          { path: ':id', element: <TypeDocumentDetailsPage /> },
           { path: ':id/edit', element: <TypeDocumentEditPage /> },
           { path: 'new', element: <TypeDocumentsCreatePage /> },
         ],

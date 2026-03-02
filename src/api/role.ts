@@ -28,7 +28,7 @@ export function useGetRoles() {
   return memoizedValue;
 }
 
-export function useGetRolesDetails(roleId: number) {
+export function useGetRolesDetails(roleId: string) {
   const URL = roleId ? epDoktek.roles.details(roleId) : null;
 
   const { data, isLoading, error, isValidating } = useSWR(URL, fetcherDoktek, {
@@ -37,7 +37,7 @@ export function useGetRolesDetails(roleId: number) {
 
   const memoizedValue = useMemo(
     () => ({
-      roles: (data?.data as IRole[]) || [],
+      roles: data?.data as IRole,
       rolesLoading: isLoading,
       rolesError: error,
       rolesValidating: isValidating,

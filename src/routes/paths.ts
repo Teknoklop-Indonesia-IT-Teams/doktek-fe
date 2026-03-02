@@ -172,10 +172,8 @@ export const paths = {
     typeDocument: {
       root: `${ROOTS.DASHBOARD}/type-document`,
       new: `${ROOTS.DASHBOARD}/type-document/new`,
-      details: (id: string) => `${ROOTS.DASHBOARD}/type-document/${id}`,
       edit: (id: string) => `${ROOTS.DASHBOARD}/type-document/${id}/edit`,
       demo: {
-        details: `${ROOTS.DASHBOARD}/type-document/${MOCK_ID}`,
         edit: `${ROOTS.DASHBOARD}/type-document/${MOCK_ID}/edit`,
       },
     },
