@@ -20,6 +20,7 @@ type Props = {
   table: TableProps;
   data: ITypeManager[];
   dataFiltered: ITypeManager[];
+  onEditItem: (id: string) => void;
   onOpenConfirm: VoidFunction;
   onDeleteItem: (id: string) => void;
 };
@@ -28,6 +29,7 @@ export default function TypeDocumentGridView({
   table,
   data,
   dataFiltered,
+  onEditItem,
   onDeleteItem,
   onOpenConfirm,
 }: Props) {
@@ -75,11 +77,12 @@ export default function TypeDocumentGridView({
               .filter((i) => i.code_document !== 'folder')
               .map((file) => (
                 <TypeDocumentFileItem
-                  key={file.id}
+                  key={file.id_type_document}
                   file={file}
-                  selected={selected.includes(file.id)}
-                  onSelect={() => onSelectItem(file.id)}
-                  onDelete={() => onDeleteItem(file.id)}
+                  selected={selected.includes(file.id_type_document)}
+                  onSelect={() => onSelectItem(file.id_type_document)}
+                  onEdit={() => onEditItem(file.id_type_document)}
+                  onDelete={() => onDeleteItem(file.id_type_document)}
                   sx={{ maxWidth: 'auto' }}
                 />
               ))}
@@ -94,7 +97,7 @@ export default function TypeDocumentGridView({
             onSelectAllItems={(checked) =>
               onSelectAllItems(
                 checked,
-                data.map((row) => row.id)
+                data.map((row) => row.id_type_document)
               )
             }
             action={

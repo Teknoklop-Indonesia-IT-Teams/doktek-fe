@@ -10,6 +10,7 @@ import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 //
 import DivisionNewEditForm from '../division-new-edit-form';
 import { useGetProduct } from 'src/api/product';
+import { useGetDivision, useGetDivisionDetails } from 'src/api/division';
 
 // ----------------------------------------------------------------------
 
@@ -20,8 +21,8 @@ type Props = {
 export default function DivisionEditView({ id }: Props) {
   const settings = useSettingsContext();
 
-  const { product: currentProduct } = useGetProduct(id);
-  const currentDivision = _invoices.find((invoice) => invoice.id === id);
+  const { division: currentDivision } = useGetDivisionDetails(id);
+  // const currentDivisions = _.find((invoice) => invoice.id === id);
 
   return (
     <Container maxWidth={settings.themeStretch ? false : 'lg'}>
@@ -34,16 +35,16 @@ export default function DivisionEditView({ id }: Props) {
           },
           {
             name: 'Division',
-            href: paths.dashboard.invoice.root,
+            href: paths.dashboard.division.root,
           },
-          { name: currentProduct?.name },
+          { name: currentDivision?.division_name },
         ]}
         sx={{
           mb: { xs: 3, md: 5 },
         }}
       />
 
-      <DivisionNewEditForm currentProduct={currentProduct} />
+      <DivisionNewEditForm currentDivision={currentDivision} />
     </Container>
   );
 }

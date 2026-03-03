@@ -131,7 +131,7 @@ export const epDoktek = {
     search: `/divisions/q`,
     postDivision: `/divisions`,
     list: '/divisions',
-    details: (id: number) => `/divisions/${id}`,
+    details: (id: string) => `/divisions/${id}`,
   },
   type: {
     edit: (id: number) => `/type-documents/${id}`,

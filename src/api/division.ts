@@ -28,7 +28,7 @@ export function useGetDivision() {
   return memoizedValue;
 }
 
-export function useGetDivisionDetails(divisionId: number) {
+export function useGetDivisionDetails(divisionId: string) {
   const URL = divisionId ? epDoktek.division.details(divisionId) : null;
 
   const { data, isLoading, error, isValidating } = useSWR(URL, fetcherDoktek, {
@@ -37,7 +37,7 @@ export function useGetDivisionDetails(divisionId: number) {
 
   const memoizedValue = useMemo(
     () => ({
-      division: (data?.data as IDivision[]) || [],
+      division: data?.data as IDivision,
       divisionLoading: isLoading,
       divisionError: error,
       divisionValidating: isValidating,

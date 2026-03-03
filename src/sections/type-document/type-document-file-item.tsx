@@ -35,6 +35,7 @@ interface Props extends CardProps {
   file: ITypeManager;
   selected?: boolean;
   onSelect?: VoidFunction;
+  onEdit: VoidFunction;
   onDelete: VoidFunction;
 }
 
@@ -42,6 +43,7 @@ export default function TypeDocumentFileItem({
   file,
   selected,
   onSelect,
+  onEdit,
   onDelete,
   sx,
   ...other
@@ -137,6 +139,10 @@ export default function TypeDocumentFileItem({
         item={file}
         open={details.value}
         onClose={details.onFalse}
+        onEdit={() => {
+          details.onFalse();
+          onEdit();
+        }}
         onDelete={() => {
           details.onFalse();
           onDelete();

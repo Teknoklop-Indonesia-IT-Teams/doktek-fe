@@ -39,7 +39,7 @@ export default function TypeDocumentNewEditForm({ currentTypes }: Props) {
 
   const defaultValues = useMemo(
     () => ({
-      id: currentTypes?.id || '',
+      id: currentTypes?.id_type_document || '',
       type_document: currentTypes?.type_document || '',
       code_document: currentTypes?.code_document || '',
     }),

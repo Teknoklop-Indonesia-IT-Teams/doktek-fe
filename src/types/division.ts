@@ -6,6 +6,6 @@ export type IDivisionTableFilters = {
 };
 
 export type IDivision = {
-  id_division: number;
+  id_division: string;
   division_name: string;
 };

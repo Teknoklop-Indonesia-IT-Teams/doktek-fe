@@ -10,7 +10,9 @@ export type ITypeFilters = {
 // ----------------------------------------------------------------------
 
 export type ITypeManager = {
-  id: string;
+  id_type_document: string;
   type_document: string;
   code_document: string;
 };
+
+export type IType = ITypeManager;

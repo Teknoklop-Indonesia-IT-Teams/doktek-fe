@@ -100,7 +100,7 @@ export default function TypeDocumentView() {
 
   const handleDeleteItem = useCallback(
     (id: string) => {
-      const deleteRow = tableData.filter((row) => row.id !== id);
+      const deleteRow = tableData.filter((row) => row.id_type_document !== id);
       setTableData(deleteRow);
 
       table.onUpdatePageDeleteRow(dataInPage.length);
@@ -110,13 +110,13 @@ export default function TypeDocumentView() {
 
   const handleEditRow = useCallback(
     (id: string) => {
-      router.push(paths.dashboard.roles.edit(id));
+      router.push(paths.dashboard.typeDocument.edit(id));
     },
     [router]
   );
 
   const handleDeleteItems = useCallback(() => {
-    const deleteRows = tableData.filter((row) => !table.selected.includes(row.id));
+    const deleteRows = tableData.filter((row) => !table.selected.includes(row.id_type_document));
     setTableData(deleteRows);
 
     table.onUpdatePageDeleteRows({
@@ -219,7 +219,7 @@ export default function TypeDocumentView() {
                 data={tableData}
                 dataFiltered={dataFiltered}
                 onDeleteItem={handleDeleteItem}
-                // onEditRow={handleEditRow}
+                onEditItem={handleEditRow}
                 onOpenConfirm={confirm.onTrue}
               />
             )}

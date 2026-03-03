@@ -34,7 +34,7 @@ import FormProvider, {
   RHFUpload,
 } from 'src/components/hook-form';
 // types
-import { IProductItem } from 'src/types/product';
+import { IDivision } from 'src/types/division';
 import { useResponsive } from 'src/hooks/use-responsive';
 import { useSnackbar } from 'src/components/snackbar';
 import {
@@ -52,31 +52,29 @@ import {
 // ----------------------------------------------------------------------
 
 type Props = {
-  currentProduct?: IProductItem;
+  currentDivision?: IDivision;
 };
 
-export default function DivisionNewEditForm({ currentProduct }: Props) {
+export default function DivisionNewEditForm({ currentDivision }: Props) {
   const router = useRouter();
 
   const mdUp = useResponsive('up', 'md');
 
   const { enqueueSnackbar } = useSnackbar();
 
-  const NewProductSchema = Yup.object().shape({
-    name: Yup.string().required('Name is required'),
-    description: Yup.string().required('Description is required'),
+  const NewDivisionSchema = Yup.object().shape({
+    division_name: Yup.string().required('Division is required'),
   });
 
   const defaultValues = useMemo(
     () => ({
-      name: currentProduct?.name || '',
-      description: currentProduct?.description || '',
+      division_name: currentDivision?.division_name || '',
     }),
-    [currentProduct]
+    [currentDivision]
   );
 
   const methods = useForm({
-    resolver: yupResolver(NewProductSchema),
+    resolver: yupResolver(NewDivisionSchema),
     defaultValues,
   });
 
@@ -91,17 +89,17 @@ export default function DivisionNewEditForm({ currentProduct }: Props) {
   const values = watch();
 
   useEffect(() => {
-    if (currentProduct) {
+    if (currentDivision) {
       reset(defaultValues);
     }
-  }, [currentProduct, defaultValues, reset]);
+  }, [currentDivision, defaultValues, reset]);
 
   const onSubmit = handleSubmit(async (data) => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 500));
       reset();
-      enqueueSnackbar(currentProduct ? 'Update success!' : 'Create success!');
-      router.push(paths.dashboard.product.root);
+      enqueueSnackbar(currentDivision ? 'Update success!' : 'Create success!');
+      router.push(paths.dashboard.division.root);
       console.info('DATA', data);
     } catch (error) {
       console.error(error);
@@ -116,7 +114,7 @@ export default function DivisionNewEditForm({ currentProduct }: Props) {
             Details
           </Typography>
           <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            Title, description
+            Title
           </Typography>
         </Grid>
       )}
@@ -126,9 +124,7 @@ export default function DivisionNewEditForm({ currentProduct }: Props) {
           {!mdUp && <CardHeader title="Details" />}
 
           <Stack spacing={3} sx={{ p: 3 }}>
-            <RHFTextField name="name" label="Division Name" />
-
-            <RHFTextField name="description" label="Sub Description" multiline rows={4} />
+            <RHFTextField name="division_name" label="Division Name" />
           </Stack>
         </Card>
       </Grid>
@@ -140,7 +136,7 @@ export default function DivisionNewEditForm({ currentProduct }: Props) {
       {mdUp && <Grid md={4} />}
       <Grid xs={12} md={8} sx={{ display: 'flex', alignItems: 'center', marginTop: 5 }}>
         <LoadingButton type="submit" variant="contained" size="large" loading={isSubmitting}>
-          {!currentProduct ? 'Create Division' : 'Save Changes'}
+          {!currentDivision ? 'Create Division' : 'Save Changes'}
         </LoadingButton>
       </Grid>
     </>

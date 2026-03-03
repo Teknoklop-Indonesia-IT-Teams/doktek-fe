@@ -27,6 +27,7 @@ import FileThumbnail from 'src/components/file-thumbnail';
 //
 import TypeDocumentShareDialog from './type-document-share-dialog';
 import TypeDocumentFileDetails from './type-document-file-details';
+import { IconButton } from '@mui/material';
 
 // ----------------------------------------------------------------------
 
@@ -135,6 +136,11 @@ export default function TypeDocumentTableRow({
         <TableCell onClick={handleClick} sx={{ whiteSpace: 'nowrap' }}>
           {code_document}
         </TableCell>
+        <TableCell align="right" sx={{ px: 1 }}>
+          <IconButton color={popover.open ? 'inherit' : 'default'} onClick={popover.onOpen}>
+            <Iconify icon="eva:more-vertical-fill" />
+          </IconButton>
+        </TableCell>
       </TableRow>
 
       <CustomPopover
@@ -145,13 +151,14 @@ export default function TypeDocumentTableRow({
       >
         <MenuItem
           onClick={() => {
-            confirm.onTrue();
+            onEditRow();
             popover.onClose();
           }}
         >
           <Iconify icon="solar:pen-bold" />
           Edit
         </MenuItem>
+        <Divider sx={{ borderStyle: 'dashed' }} />
         <MenuItem
           onClick={() => {
             confirm.onTrue();
@@ -167,6 +174,7 @@ export default function TypeDocumentTableRow({
       <TypeDocumentFileDetails
         item={row}
         open={details.value}
+        onEdit={onEditRow}
         onClose={details.onFalse}
         onDelete={onDeleteRow}
       />

@@ -29,10 +29,11 @@ import TypeDocumentFileDetails from './type-document-file-details';
 
 interface Props extends StackProps {
   file: ITypeManager;
+  onEdit: VoidFunction;
   onDelete: VoidFunction;
 }
 
-export default function FileRecentItem({ file, onDelete, sx, ...other }: Props) {
+export default function FileRecentItem({ file, onEdit, onDelete, sx, ...other }: Props) {
   const { enqueueSnackbar } = useSnackbar();
 
   const { copy } = useCopyToClipboard();
@@ -110,6 +111,10 @@ export default function FileRecentItem({ file, onDelete, sx, ...other }: Props) 
         item={file}
         open={details.value}
         onClose={details.onFalse}
+        onEdit={() => {
+          details.onFalse();
+          onEdit();
+        }}
         onDelete={() => {
           details.onFalse();
           onDelete();

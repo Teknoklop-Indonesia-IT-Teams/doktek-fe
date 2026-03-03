@@ -30,7 +30,7 @@ import TypeDocumentInvitedItem from './type-document-invited-item';
 
 type Props = DrawerProps & {
   item: ITypeManager;
-  //
+  onEdit: VoidFunction;
   onClose: VoidFunction;
   onDelete: VoidFunction;
 };
@@ -38,6 +38,7 @@ type Props = DrawerProps & {
 export default function TypeDocumentFileDetails({
   item,
   open,
+  onEdit,
   onClose,
   onDelete,
   ...other
@@ -107,6 +108,19 @@ export default function TypeDocumentFileDetails({
             {renderProperties}
           </Stack>
         </Scrollbar>
+
+        <Box sx={{ p: 2.5 }}>
+          <Button
+            fullWidth
+            variant="soft"
+            color="success"
+            size="large"
+            startIcon={<Iconify icon="solar:pen-bold" />}
+            onClick={onEdit}
+          >
+            Edit
+          </Button>
+        </Box>
 
         <Box sx={{ p: 2.5 }}>
           <Button

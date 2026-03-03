@@ -9,7 +9,7 @@ import TableContainer from '@mui/material/TableContainer';
 import { tableCellClasses } from '@mui/material/TableCell';
 import { tablePaginationClasses } from '@mui/material/TablePagination';
 // types
-import { ITypeManager } from 'src/types/type';
+import { IType, ITypeManager } from 'src/types/type';
 // components
 import Iconify from 'src/components/iconify';
 import {
@@ -20,9 +20,11 @@ import {
   TableHeadCustom,
   TableSelectedAction,
   TablePaginationCustom,
+  TableSkeleton,
 } from 'src/components/table';
 //
 import TypeDocumentTableRow from './type-document-table-row';
+import { useGetType, useGetTypes } from 'src/api/type';
 
 // ----------------------------------------------------------------------
 
@@ -73,7 +75,8 @@ export default function TypeDocumentTable({
   } = table;
 
   const denseHeight = dense ? 58 : 78;
-
+  const { type, typeLoading, typeEmpty } = useGetTypes();
+  console.log('ID', tableData);
   return (
     <>
       <Box
@@ -89,7 +92,7 @@ export default function TypeDocumentTable({
           onSelectAllRows={(checked) =>
             onSelectAllRows(
               checked,
-              tableData.map((row) => row.id)
+              tableData.map((row) => row.id_type_document)
             )
           }
           action={
@@ -141,7 +144,7 @@ export default function TypeDocumentTable({
               onSelectAllRows={(checked) =>
                 onSelectAllRows(
                   checked,
-                  tableData.map((row) => row.id)
+                  tableData.map((row) => row.id_type_document)
                 )
               }
               sx={{
@@ -159,18 +162,26 @@ export default function TypeDocumentTable({
             />
 
             <TableBody>
-              {dataFiltered
-                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((row) => (
-                  <TypeDocumentTableRow
-                    key={row.id}
-                    row={row}
-                    selected={selected.includes(row.id)}
-                    onSelectRow={() => onSelectRow(row.id)}
-                    onEditRow={() => onEditRow(row.id)}
-                    onDeleteRow={() => onDeleteRow(row.id)}
-                  />
-                ))}
+              {typeLoading ? (
+                [...Array(table.rowsPerPage)].map((i, index) => (
+                  <TableSkeleton key={index} sx={{ height: denseHeight }} />
+                ))
+              ) : (
+                <>
+                  {dataFiltered
+                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                    .map((row) => (
+                      <TypeDocumentTableRow
+                        key={row.id_type_document}
+                        row={row}
+                        selected={selected.includes(row.id_type_document)}
+                        onSelectRow={() => onSelectRow(row.id_type_document)}
+                        onEditRow={() => onEditRow(row.id_type_document)}
+                        onDeleteRow={() => onDeleteRow(row.id_type_document)}
+                      />
+                    ))}
+                </>
+              )}
 
               <TableEmptyRows
                 height={denseHeight}

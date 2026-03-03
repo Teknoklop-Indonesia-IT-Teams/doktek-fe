@@ -117,7 +117,7 @@ export default function DivisionListView() {
   );
 
   const handleDeleteRow = useCallback(
-    (id_division: number) => {
+    (id_division: string) => {
       const deleteRow = tableData.filter((row) => row.id_division !== id_division);
       setTableData(deleteRow);
 
@@ -187,7 +187,7 @@ export default function DivisionListView() {
               onSelectAllRows={(checked) =>
                 table.onSelectAllRows(
                   checked,
-                  tableData.map((row) => row.id_division.toString())
+                  tableData.map((row) => row.id_division)
                 )
               }
               action={
@@ -231,7 +231,7 @@ export default function DivisionListView() {
                   onSelectAllRows={(checked) =>
                     table.onSelectAllRows(
                       checked,
-                      tableData.map((row) => row.id_division.toString())
+                      tableData.map((row) => row.id_division)
                     )
                   }
                 />
@@ -253,10 +253,10 @@ export default function DivisionListView() {
                             key={row.id_division}
                             row={row}
                             index={table.page * table.rowsPerPage + index}
-                            selected={table.selected.includes(row.id_division.toString())}
-                            onSelectRow={() => table.onSelectRow(row.id_division.toString())}
-                            onViewRow={() => handleViewRow(row.id_division.toString())}
-                            onEditRow={() => handleEditRow(row.id_division.toString())}
+                            selected={table.selected.includes(row.id_division)}
+                            onSelectRow={() => table.onSelectRow(row.id_division)}
+                            onViewRow={() => handleViewRow(row.id_division)}
+                            onEditRow={() => handleEditRow(row.id_division)}
                             onDeleteRow={() => handleDeleteRow(row.id_division)}
                           />
                         ))}
