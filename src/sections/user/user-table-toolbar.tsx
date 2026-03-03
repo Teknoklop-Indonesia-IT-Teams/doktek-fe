@@ -10,18 +10,13 @@ import FormControl from '@mui/material/FormControl';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import InputAdornment from '@mui/material/InputAdornment';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
-// types
 import { IUserTableFilters, IUserTableFilterValue } from 'src/types/user';
-// components
 import Iconify from 'src/components/iconify';
-import CustomPopover, { usePopover } from 'src/components/custom-popover';
-
-// ----------------------------------------------------------------------
 
 type Props = {
   filters: IUserTableFilters;
   onFilters: (name: string, value: IUserTableFilterValue) => void;
-  roleOptions: { id_role: number; role_name: string }[];
+  roleOptions: { id_role: string; role_name: string }[];
   divisionOptions: { id_division: number; division_name: string }[];
 };
 
@@ -31,7 +26,6 @@ export default function UserTableToolbar({
   roleOptions,
   divisionOptions,
 }: Props) {
-  const popover = usePopover();
 
   const handleFilterName = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -74,7 +68,6 @@ export default function UserTableToolbar({
           pr: { xs: 2.5, md: 1 },
         }}
       >
-        {/* Dropdown Role */}
         <FormControl
           sx={{
             flexShrink: 0,
@@ -103,7 +96,6 @@ export default function UserTableToolbar({
           </Select>
         </FormControl>
 
-        {/* Dropdown Division */}
         <FormControl
           sx={{
             flexShrink: 0,
@@ -132,7 +124,6 @@ export default function UserTableToolbar({
           </Select>
         </FormControl>
 
-        {/* Search */}
         <Stack direction="row" alignItems="center" spacing={2} flexGrow={1} sx={{ width: 1 }}>
           <TextField
             fullWidth
@@ -147,34 +138,8 @@ export default function UserTableToolbar({
               ),
             }}
           />
-
-          <IconButton onClick={popover.onOpen}>
-            <Iconify icon="eva:more-vertical-fill" />
-          </IconButton>
         </Stack>
       </Stack>
-
-      <CustomPopover
-        open={popover.open}
-        onClose={popover.onClose}
-        arrow="right-top"
-        sx={{ width: 140 }}
-      >
-        <MenuItem onClick={() => { popover.onClose(); }}>
-          <Iconify icon="solar:printer-minimalistic-bold" />
-          Print
-        </MenuItem>
-
-        <MenuItem onClick={() => { popover.onClose(); }}>
-          <Iconify icon="solar:import-bold" />
-          Import
-        </MenuItem>
-
-        <MenuItem onClick={() => { popover.onClose(); }}>
-          <Iconify icon="solar:export-bold" />
-          Export
-        </MenuItem>
-      </CustomPopover>
     </>
   );
 }
