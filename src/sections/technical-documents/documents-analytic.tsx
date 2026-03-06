@@ -16,11 +16,10 @@ type Props = {
   title: string;
   total: number;
   percent: number;
-  price: number;
   color?: string;
 };
 
-export default function DocumentsAnalytic({ title, total, icon, color, percent, price }: Props) {
+export default function DocumentsAnalytic({ title, total, icon, color, percent }: Props) {
   return (
     <Stack
       spacing={2.5}
@@ -59,10 +58,8 @@ export default function DocumentsAnalytic({ title, total, icon, color, percent, 
         <Typography variant="subtitle1">{title}</Typography>
 
         <Box component="span" sx={{ color: 'text.disabled', typography: 'body2' }}>
-          {fShortenNumber(total)} invoices
+          {fShortenNumber(total)} document
         </Box>
-
-        <Typography variant="subtitle2">{fCurrency(price)}</Typography>
       </Stack>
     </Stack>
   );

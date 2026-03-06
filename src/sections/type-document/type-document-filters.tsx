@@ -36,7 +36,7 @@ export default function TypeManagerFilters({
 
   const handleFilterName = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
-      onFilters('name', event.target.value);
+      onFilters('type_document', event.target.value);
     },
     [onFilters]
   );

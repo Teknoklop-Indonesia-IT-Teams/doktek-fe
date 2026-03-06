@@ -14,5 +14,3 @@ export type ITypeManager = {
   type_document: string;
   code_document: string;
 };
-
-export type IType = ITypeManager;

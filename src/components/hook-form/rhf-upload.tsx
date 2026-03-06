@@ -56,6 +56,14 @@ export function RHFUploadBox({ name, ...other }: Props) {
 export function RHFUpload({ name, multiple, helperText, ...other }: Props) {
   const { control } = useFormContext();
 
+  const documentAccept = {
+    'application/pdf': ['.pdf'],
+    'application/msword': ['.doc'],
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+    'application/vnd.ms-excel': ['.xls'],
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
+  };
+
   return (
     <Controller
       name={name}
@@ -64,7 +72,7 @@ export function RHFUpload({ name, multiple, helperText, ...other }: Props) {
         multiple ? (
           <Upload
             multiple
-            accept={{ 'image/*': [] }}
+            accept={documentAccept}
             files={field.value}
             error={!!error}
             helperText={
@@ -78,7 +86,7 @@ export function RHFUpload({ name, multiple, helperText, ...other }: Props) {
           />
         ) : (
           <Upload
-            accept={{ 'image/*': [] }}
+            accept={documentAccept}
             file={field.value}
             error={!!error}
             helperText={

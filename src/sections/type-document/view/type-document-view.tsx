@@ -7,8 +7,6 @@ import Typography from '@mui/material/Typography';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 // utils
-// _mock
-import { _allTypes, CODE_TYPE_OPTIONS } from 'src/_mock';
 // hooks
 import { useBoolean } from 'src/hooks/use-boolean';
 // components
@@ -73,6 +71,8 @@ export default function TypeDocumentView() {
     table.page * table.rowsPerPage,
     table.page * table.rowsPerPage + table.rowsPerPage
   );
+
+  const codeDocumentOptions = Array.from(new Set(type.map((item) => item.code_document)));
 
   const canReset = !isEqual(defaultFilters, filters);
 
@@ -140,7 +140,7 @@ export default function TypeDocumentView() {
         filters={filters}
         onFilters={handleFilters}
         //
-        typeOptions={CODE_TYPE_OPTIONS}
+        typeOptions={codeDocumentOptions}
       />
 
       <ToggleButtonGroup size="small" value={view} exclusive onChange={handleChangeView}>

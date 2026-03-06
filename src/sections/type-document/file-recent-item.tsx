@@ -24,6 +24,7 @@ import CustomPopover, { usePopover } from 'src/components/custom-popover';
 import FileThumbnail from 'src/components/file-thumbnail';
 //
 import TypeDocumentFileDetails from './type-document-file-details';
+import { Typography } from '@mui/material';
 
 // ----------------------------------------------------------------------
 
@@ -38,6 +39,8 @@ export default function FileRecentItem({ file, onEdit, onDelete, sx, ...other }:
 
   const { copy } = useCopyToClipboard();
 
+  const { type_document, code_document } = file;
+
   const smUp = useResponsive('up', 'sm');
 
   const popover = usePopover();
@@ -49,24 +52,24 @@ export default function FileRecentItem({ file, onEdit, onDelete, sx, ...other }:
       <Stack
         component={Paper}
         variant="outlined"
-        spacing={1}
-        direction={{ xs: 'column', sm: 'row' }}
-        alignItems={{ xs: 'unset', sm: 'center' }}
+        spacing={2}
+        direction="row"
+        alignItems="center"
         sx={{
           borderRadius: 2,
-          bgcolor: 'unset',
-          cursor: 'pointer',
-          position: 'relative',
-          p: { xs: 2.5, sm: 2 },
-          '&:hover': {
-            bgcolor: 'background.paper',
-            boxShadow: (theme) => theme.customShadows.z20,
-          },
+          p: 2,
           ...sx,
         }}
-        {...other}
       >
-        <FileThumbnail file={file.code_document} sx={{ width: 36, height: 36, mr: 1 }} />
+        <FileThumbnail file={type_document} sx={{ width: 36, height: 36 }} />
+
+        <Stack>
+          <Typography variant="subtitle2">{type_document}</Typography>
+
+          <Typography variant="body2" color="text.secondary">
+            {code_document}
+          </Typography>
+        </Stack>
       </Stack>
 
       <CustomPopover

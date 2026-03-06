@@ -1,3 +1,4 @@
+import { format } from 'date-fns';
 import { useState, useCallback } from 'react';
 // @mui
 import { styled } from '@mui/material/styles';
@@ -10,7 +11,7 @@ import TableRow from '@mui/material/TableRow';
 import TableHead from '@mui/material/TableHead';
 import TableCell from '@mui/material/TableCell';
 import TableBody from '@mui/material/TableBody';
-import Grid from '@mui/material/Unstable_Grid2';
+import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import TableContainer from '@mui/material/TableContainer';
 // utils
@@ -19,236 +20,395 @@ import { fCurrency } from 'src/utils/format-number';
 // _mock
 import { INVOICE_STATUS_OPTIONS } from 'src/_mock';
 // types
-import { IInvoice } from 'src/types/invoice';
+import { IDocument, IDocumentItem, IDocumentTableFilters } from 'src/types/document';
 // components
 import Label from 'src/components/label';
 import Scrollbar from 'src/components/scrollbar';
 //
 import DocumentsToolbar from './documents-toolbar';
-
-// ----------------------------------------------------------------------
-
-const StyledTableRow = styled(TableRow)(({ theme }) => ({
-  '& td': {
-    textAlign: 'right',
-    borderBottom: 'none',
-    paddingTop: theme.spacing(1),
-    paddingBottom: theme.spacing(1),
-  },
-}));
-
+import { IDivision } from 'src/types/division';
+import { useBoolean } from 'src/hooks/use-boolean';
+import CustomPopover, { usePopover } from 'src/components/custom-popover';
+import { Button, Checkbox, IconButton, Link, ListItemText, MenuItem } from '@mui/material';
+import Iconify from 'src/components/iconify';
+import { ConfirmDialog } from 'src/components/custom-dialog';
+import { useGetDivision } from 'src/api/division';
+import { getComparator, TableHeadCustom, useTable } from 'src/components/table';
+import { useRouter } from 'src/routes/hooks';
+import { paths } from 'src/routes/paths';
+import { useGetType, useGetTypes } from 'src/api/type';
+import { useGetDocumentItems, useGetDocuments } from 'src/api/document';
+import LoadingButton from '@mui/lab/LoadingButton';
 // ----------------------------------------------------------------------
 
 type Props = {
-  invoice: IInvoice;
+  documents: IDocument;
 };
 
-export default function InvoiceDetails({ invoice }: Props) {
-  const [currentStatus, setCurrentStatus] = useState(invoice.status);
+const TABLE_HEAD = [
+  { id: 'document_number', label: 'Doc Number' },
+  { id: 'id_type_document', label: 'Type Document' },
+  { id: 'upload_doc', label: 'Upload' },
+  { id: 'created_at', label: 'Create At' },
+  { id: 'updated_at', label: 'Update At' },
+  { id: '' },
+];
 
-  const handleChangeStatus = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    setCurrentStatus(event.target.value);
-  }, []);
+export default function DocumentDetails({ documents }: Props) {
+  if (!documents) return null;
+  const { division } = useGetDivision();
+  const table = useTable({ defaultOrderBy: 'createDate' });
+  const { documentItem } = useGetDocumentItems();
+  const [loadingId, setLoadingId] = useState<number | null>(null);
+  const [downloadLoadingId, setDownloadLoadingId] = useState<number | null>(null);
 
-  const renderTotal = (
-    <>
-      <StyledTableRow>
-        <TableCell colSpan={3} />
-        <TableCell sx={{ color: 'text.secondary' }}>
-          <Box sx={{ mt: 2 }} />
-          Subtotal
-        </TableCell>
-        <TableCell width={120} sx={{ typography: 'subtitle2' }}>
-          <Box sx={{ mt: 2 }} />
-          {fCurrency(invoice.subTotal)}
-        </TableCell>
-      </StyledTableRow>
+  const tableData: IDocumentItem[] =
+    documentItem?.filter(
+      (item) => item.technicalDocument?.id_technical_document === documents.id_technical_document
+    ) || [];
 
-      <StyledTableRow>
-        <TableCell colSpan={3} />
-        <TableCell sx={{ color: 'text.secondary' }}>Shipping</TableCell>
-        <TableCell width={120} sx={{ color: 'error.main', typography: 'body2' }}>
-          {fCurrency(-invoice.shipping)}
-        </TableCell>
-      </StyledTableRow>
+  const { document_number, job_title, created_at, updated_at } = documents;
+  const divisionObj = division.find((d) => d.id_division === documents.division.id_division);
 
-      <StyledTableRow>
-        <TableCell colSpan={3} />
-        <TableCell sx={{ color: 'text.secondary' }}>Discount</TableCell>
-        <TableCell width={120} sx={{ color: 'error.main', typography: 'body2' }}>
-          {fCurrency(-invoice.discount)}
-        </TableCell>
-      </StyledTableRow>
+  const confirm = useBoolean();
+  const router = useRouter();
 
-      <StyledTableRow>
-        <TableCell colSpan={3} />
-        <TableCell sx={{ color: 'text.secondary' }}>Taxes</TableCell>
-        <TableCell width={120}>{fCurrency(invoice.taxes)}</TableCell>
-      </StyledTableRow>
+  const popover = usePopover();
+  // const dataFiltered = applyFilter({
+  //   inputData: tableData,
+  //   comparator: getComparator(table.order, table.orderBy),
+  //   filters,
+  // });
+  // const dataInPage = dataFiltered.slice(
+  //   table.page * table.rowsPerPage,
+  //   table.page * table.rowsPerPage + table.rowsPerPage
+  // );
 
-      <StyledTableRow>
-        <TableCell colSpan={3} />
-        <TableCell sx={{ typography: 'subtitle1' }}>Total</TableCell>
-        <TableCell width={140} sx={{ typography: 'subtitle1' }}>
-          {fCurrency(invoice.totalAmount)}
-        </TableCell>
-      </StyledTableRow>
-    </>
+  const handleEditRow = useCallback(
+    (id: string) => {
+      router.push(paths.dashboard.techincalDocument.item.edit(id));
+    },
+    [router]
   );
 
-  const renderFooter = (
-    <Grid container>
-      <Grid xs={12} md={9} sx={{ py: 3 }}>
-        <Typography variant="subtitle2">NOTES</Typography>
+  // const handleDeleteRow = useCallback(
+  //   (id: string) => {
+  //     const deleteRow = tableData.filter((row) => row.id_technical_document.toString() !== id);
+  //     setTableData(deleteRow);
 
-        <Typography variant="body2">
-          We appreciate your business. Should you need us to add VAT or extra notes let us know!
-        </Typography>
-      </Grid>
+  //     table.onUpdatePageDeleteRow(dataInPage.length);
+  //   },
+  //   [dataInPage.length, table, tableData]
+  // );
+  const handleViewFile = (row: IDocumentItem) => {
+    setLoadingId(row.id_technical_document_item);
 
-      <Grid xs={12} md={3} sx={{ py: 3, textAlign: 'right' }}>
-        <Typography variant="subtitle2">Have a Question?</Typography>
+    setTimeout(() => {
+      const file = row.upload_doc?.[0];
 
-        <Typography variant="body2">support@minimals.cc</Typography>
-      </Grid>
-    </Grid>
-  );
+      if (!file) return;
 
-  const renderList = (
-    <TableContainer sx={{ overflow: 'unset', mt: 5 }}>
-      <Scrollbar>
-        <Table sx={{ minWidth: 960 }}>
-          <TableHead>
-            <TableRow>
-              <TableCell width={40}>#</TableCell>
+      const url = typeof file === 'string' ? file : URL.createObjectURL(file);
 
-              <TableCell sx={{ typography: 'subtitle2' }}>Description</TableCell>
+      window.open(url, '_blank');
 
-              <TableCell>Qty</TableCell>
+      setLoadingId(null);
+    }, 500);
+  };
 
-              <TableCell align="right">Unit price</TableCell>
+  const handleDownloadFile = (row: IDocumentItem) => {
+    const file = row.upload_doc?.[0];
+    if (!file) return;
 
-              <TableCell align="right">Total</TableCell>
-            </TableRow>
-          </TableHead>
+    setDownloadLoadingId(row.id_technical_document_item);
 
-          <TableBody>
-            {invoice.items.map((row, index) => (
-              <TableRow key={index}>
-                <TableCell>{index + 1}</TableCell>
+    setTimeout(() => {
+      const url = typeof file === 'string' ? file : URL.createObjectURL(file);
 
-                <TableCell>
-                  <Box sx={{ maxWidth: 560 }}>
-                    <Typography variant="subtitle2">{row.title}</Typography>
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = row.document_number || 'document';
 
-                    <Typography variant="body2" sx={{ color: 'text.secondary' }} noWrap>
-                      {row.description}
-                    </Typography>
-                  </Box>
-                </TableCell>
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
 
-                <TableCell>{row.quantity}</TableCell>
-
-                <TableCell align="right">{fCurrency(row.price)}</TableCell>
-
-                <TableCell align="right">{fCurrency(row.price * row.quantity)}</TableCell>
-              </TableRow>
-            ))}
-
-            {renderTotal}
-          </TableBody>
-        </Table>
-      </Scrollbar>
-    </TableContainer>
-  );
+      setDownloadLoadingId(null);
+    }, 500);
+  };
 
   return (
     <>
-      <DocumentsToolbar
-        invoice={invoice}
-        currentStatus={currentStatus || ''}
-        onChangeStatus={handleChangeStatus}
-        statusOptions={INVOICE_STATUS_OPTIONS}
-      />
+      <Box sx={{ flexGrow: 1 }}>
+        <Grid container spacing={2}>
+          <Grid>
+            <Card>
+              {/* <IconButton onClick={popover.onOpen} sx={{ position: 'absolute', top: 8, right: 8 }}>
+                <Iconify icon="eva:more-vertical-fill" />
+              </IconButton> */}
 
-      <Card sx={{ pt: 5, px: 5 }}>
-        <Box
-          rowGap={5}
-          display="grid"
-          alignItems="center"
-          gridTemplateColumns={{
-            xs: 'repeat(1, 1fr)',
-            sm: 'repeat(2, 1fr)',
-          }}
-        >
-          <Box
-            component="img"
-            alt="logo"
-            src="/logo/logo_single.svg"
-            sx={{ width: 48, height: 48 }}
-          />
+              <Stack sx={{ p: 3, pb: 2 }}>
+                {/* <Avatar
+              alt={company.name}
+              src={company.logo}
+              variant="rounded"
+              sx={{ width: 48, height: 48, mb: 2 }}
+            /> */}
 
-          <Stack spacing={1} alignItems={{ xs: 'flex-start', md: 'flex-end' }}>
-            <Label
-              variant="soft"
-              color={
-                (currentStatus === 'paid' && 'success') ||
-                (currentStatus === 'pending' && 'warning') ||
-                (currentStatus === 'overdue' && 'error') ||
-                'default'
-              }
-            >
-              {currentStatus}
-            </Label>
+                <ListItemText
+                  sx={{ mb: 1 }}
+                  primary={
+                    // <Link component={RouterLink} href={paths.dashboard.job.details(id)} color="inherit">
+                    document_number
+                    // </Link>
+                  }
+                  secondary={`Posted date: ${fDate(created_at)}`}
+                  primaryTypographyProps={{
+                    typography: 'subtitle1',
+                  }}
+                  secondaryTypographyProps={{
+                    mt: 1,
+                    component: 'span',
+                    typography: 'caption',
+                    color: 'text.disabled',
+                  }}
+                />
 
-            <Typography variant="h6">{invoice.invoiceNumber}</Typography>
-          </Stack>
+                <Stack
+                  spacing={0.5}
+                  direction="row"
+                  alignItems="center"
+                  sx={{ color: 'primary.main', typography: 'caption' }}
+                >
+                  <Iconify width={16} icon="solar:users-group-rounded-bold" />
+                  {job_title}
+                </Stack>
+                <Stack
+                  spacing={0.5}
+                  direction="row"
+                  alignItems="center"
+                  sx={{ color: 'primary.main', typography: 'caption' }}
+                >
+                  {divisionObj?.division_name}
+                </Stack>
+              </Stack>
 
-          <Stack sx={{ typography: 'body2' }}>
-            <Typography variant="subtitle2" sx={{ mb: 1 }}>
-              Invoice From
-            </Typography>
-            {invoice.invoiceFrom.name}
-            <br />
-            {invoice.invoiceFrom.fullAddress}
-            <br />
-            Phone: {invoice.invoiceFrom.phoneNumber}
-            <br />
-          </Stack>
+              {/* <Divider sx={{ borderStyle: 'dashed' }} /> */}
+            </Card>
+          </Grid>
+          <Grid spacing={2} marginLeft={5}>
+            <Card>
+              <TableContainer sx={{ position: 'relative', overflow: 'unset' }}>
+                <Scrollbar>
+                  <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 800 }}>
+                    <TableHeadCustom
+                      order={table.order}
+                      orderBy={table.orderBy}
+                      headLabel={TABLE_HEAD}
+                      rowCount={tableData.length}
+                      numSelected={table.selected.length}
+                      onSort={table.onSort}
+                      // onSelectAllRows={(checked) =>
+                      //   table.onSelectAllRows(
+                      //     checked,
+                      //     tableData.map((row) => row.id_technical_document)
+                      //   )
+                      // }
+                    />
+                    <TableBody>
+                      {tableData.map((row) => {
+                        console.log('ROW', row);
 
-          <Stack sx={{ typography: 'body2' }}>
-            <Typography variant="subtitle2" sx={{ mb: 1 }}>
-              Invoice To
-            </Typography>
-            {invoice.invoiceTo.name}
-            <br />
-            {invoice.invoiceTo.fullAddress}
-            <br />
-            Phone: {invoice.invoiceTo.phoneNumber}
-            <br />
-          </Stack>
+                        return (
+                          <>
+                            <TableRow hover>
+                              <TableCell>
+                                <ListItemText
+                                  disableTypography
+                                  primary={
+                                    <Typography variant="body2" noWrap>
+                                      {row.document_number}
+                                    </Typography>
+                                  }
+                                />
+                              </TableCell>
+                              <TableCell>
+                                <ListItemText
+                                  disableTypography
+                                  primary={
+                                    <Label
+                                      variant="soft"
+                                      color={
+                                        (row.typeDocument?.code_document === 'SOP' && 'success') ||
+                                        (row.typeDocument?.code_document === 'Manual Book' &&
+                                          'warning') ||
+                                        (row.typeDocument?.code_document === 'MTG' && 'error') ||
+                                        (row.typeDocument?.code_document === 'CER' && 'info') ||
+                                        (row.typeDocument?.code_document === 'Technical' &&
+                                          'secondary') ||
+                                        'default'
+                                      }
+                                    >
+                                      {row.typeDocument?.code_document}
+                                    </Label>
+                                  }
+                                />
+                              </TableCell>
 
-          <Stack sx={{ typography: 'body2' }}>
-            <Typography variant="subtitle2" sx={{ mb: 1 }}>
-              Date Create
-            </Typography>
-            {fDate(invoice.createDate)}
-          </Stack>
+                              <TableCell>
+                                {row.upload_doc ? (
+                                  <Stack direction="row" spacing={1}>
+                                    <LoadingButton
+                                      variant="outlined"
+                                      size="small"
+                                      startIcon={<Iconify icon="solar:eye-bold" />}
+                                      loading={loadingId === row.id_technical_document_item}
+                                      onClick={() => handleViewFile(row)}
+                                    >
+                                      View
+                                    </LoadingButton>
 
-          <Stack sx={{ typography: 'body2' }}>
-            <Typography variant="subtitle2" sx={{ mb: 1 }}>
-              Due Date
-            </Typography>
-            {fDate(invoice.dueDate)}
-          </Stack>
-        </Box>
+                                    <LoadingButton
+                                      variant="contained"
+                                      size="small"
+                                      startIcon={<Iconify icon="solar:download-bold" />}
+                                      loading={downloadLoadingId === row.id_technical_document_item}
+                                      onClick={() => handleDownloadFile(row)}
+                                    >
+                                      Download
+                                    </LoadingButton>
+                                  </Stack>
+                                ) : (
+                                  <Typography variant="body2" color="text.secondary">
+                                    No File
+                                  </Typography>
+                                )}
+                              </TableCell>
 
-        {renderList}
+                              <TableCell>
+                                <ListItemText
+                                  primary={format(new Date(row.created_at), 'dd MMM yyyy')}
+                                  secondary={format(new Date(row.created_at), 'p')}
+                                  primaryTypographyProps={{ typography: 'body2', noWrap: true }}
+                                  secondaryTypographyProps={{
+                                    mt: 0.5,
+                                    component: 'span',
+                                    typography: 'caption',
+                                  }}
+                                />
+                              </TableCell>
 
-        <Divider sx={{ mt: 5, borderStyle: 'dashed' }} />
+                              <TableCell>
+                                <ListItemText
+                                  primary={format(new Date(row.updated_at), 'dd MMM yyyy')}
+                                  secondary={format(new Date(row.updated_at), 'p')}
+                                  primaryTypographyProps={{ typography: 'body2', noWrap: true }}
+                                  secondaryTypographyProps={{
+                                    mt: 0.5,
+                                    component: 'span',
+                                    typography: 'caption',
+                                  }}
+                                />
+                              </TableCell>
 
-        {renderFooter}
-      </Card>
+                              <TableCell align="right" sx={{ px: 1 }}>
+                                <IconButton
+                                  color={popover.open ? 'inherit' : 'default'}
+                                  onClick={popover.onOpen}
+                                >
+                                  <Iconify icon="eva:more-vertical-fill" />
+                                </IconButton>
+                              </TableCell>
+                            </TableRow>
+                            <CustomPopover
+                              open={popover.open}
+                              onClose={popover.onClose}
+                              arrow="right-top"
+                              sx={{ width: 160 }}
+                            >
+                              <MenuItem
+                                onClick={() => {
+                                  () => handleEditRow(row.id_technical_document_item.toString());
+                                  popover.onClose();
+                                }}
+                              >
+                                <Iconify icon="solar:pen-bold" />
+                                Edit
+                              </MenuItem>
+
+                              <Divider sx={{ borderStyle: 'dashed' }} />
+
+                              <MenuItem
+                                onClick={() => {
+                                  confirm.onTrue();
+                                  popover.onClose();
+                                }}
+                                sx={{ color: 'error.main' }}
+                              >
+                                <Iconify icon="solar:trash-bin-trash-bold" />
+                                Delete
+                              </MenuItem>
+                            </CustomPopover>
+                          </>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </Scrollbar>
+              </TableContainer>
+            </Card>
+
+            {/* <ConfirmDialog
+        open={confirm.value}
+        onClose={confirm.onFalse}
+        title="Delete"
+        content="Are you sure want to delete?"
+        action={
+          <Button variant="contained" color="error" onClick={handleDeleteRow}>
+            Delete
+          </Button>
+        }
+      /> */}
+          </Grid>
+        </Grid>
+      </Box>
     </>
   );
+}
+
+// ----------------------------------------------------------------------
+
+function applyFilter({
+  inputData,
+  comparator,
+  filters,
+}: {
+  inputData: IDocument[];
+  comparator: (a: any, b: any) => number;
+  filters: IDocumentTableFilters;
+}) {
+  const { document_number, job_title, created_at, updated_at, id_division } = filters;
+
+  const stabilizedThis = inputData.map((el, index) => [el, index] as const);
+
+  stabilizedThis.sort((a, b) => {
+    const order = comparator(a[0], b[0]);
+    if (order !== 0) return order;
+    return a[1] - b[1];
+  });
+
+  inputData = stabilizedThis.map((el) => el[0]);
+
+  if (document_number) {
+    inputData = inputData.filter(
+      (document) =>
+        document.document_number.toLowerCase().indexOf(document_number.toLowerCase()) !== -1
+    );
+  }
+
+  if (id_division && id_division !== 'all') {
+    inputData = inputData.filter((document) => document.division?.division_name === id_division);
+  }
+
+  return inputData;
 }

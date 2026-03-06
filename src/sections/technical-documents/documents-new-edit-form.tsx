@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import * as Yup from 'yup';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -6,153 +6,184 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
+import Grid from '@mui/material/Unstable_Grid2';
 // routes
 import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
 // types
-import { IInvoice } from 'src/types/invoice';
-// _mock
-import { _addressBooks } from 'src/_mock';
-// hooks
-import { useBoolean } from 'src/hooks/use-boolean';
+import { IDocument, IDocumentInput } from 'src/types/document';
 // components
-import FormProvider from 'src/components/hook-form';
-//
-import DocumentsNewEditDetails from './documents-new-edit-details';
-import DocumentsNewEditAddress from './documents-new-edit-address';
-import DocumentsNewEditStatusDate from './documents-new-edit-status-date';
+import FormProvider, { RHFSelect, RHFTextField } from 'src/components/hook-form';
+import { useResponsive } from 'src/hooks/use-responsive';
+import { useSnackbar } from 'src/components/snackbar';
+import Typography from '@mui/material/Typography';
+import CardHeader from '@mui/material/CardHeader';
+import { useGetDivision } from 'src/api/division';
+import { epDoktek, patcherDoktek, posterDoktek, putDoktek } from 'src/utils/axios-doktek';
+import { mutate } from 'swr';
 
 // ----------------------------------------------------------------------
 
 type Props = {
-  currentInvoice?: IInvoice;
+  currentDocument?: IDocument;
 };
 
-export default function InvoiceNewEditForm({ currentInvoice }: Props) {
+export default function DocumentNewEditForm({ currentDocument }: Props) {
   const router = useRouter();
 
-  const loadingSave = useBoolean();
+  const mdUp = useResponsive('up', 'md');
 
-  const loadingSend = useBoolean();
+  const { enqueueSnackbar } = useSnackbar();
+  const { division } = useGetDivision();
 
-  const NewInvoiceSchema = Yup.object().shape({
-    invoiceTo: Yup.mixed<any>().nullable().required('Invoice to is required'),
-    createDate: Yup.mixed<any>().nullable().required('Create date is required'),
-    dueDate: Yup.mixed<any>()
-      .required('Due date is required')
-      .test(
-        'date-min',
-        'Due date must be later than create date',
-        (value, { parent }) => value.getTime() > parent.createDate.getTime()
-      ),
-    // not required
-    taxes: Yup.number(),
-    status: Yup.string(),
-    discount: Yup.number(),
-    shipping: Yup.number(),
-    invoiceFrom: Yup.mixed(),
-    totalAmount: Yup.number(),
-    invoiceNumber: Yup.string(),
+  const NewDocumentSchema = Yup.object().shape({
+    job_title: Yup.string().required('Job Title is required'),
+    id_division: Yup.string().required('Division is required'),
   });
 
   const defaultValues = useMemo(
     () => ({
-      invoiceNumber: currentInvoice?.invoiceNumber || 'INV-1990',
-      createDate: currentInvoice?.createDate || new Date(),
-      dueDate: currentInvoice?.dueDate || null,
-      taxes: currentInvoice?.taxes || 0,
-      shipping: currentInvoice?.shipping || 0,
-      status: currentInvoice?.status || 'draft',
-      discount: currentInvoice?.discount || 0,
-      invoiceFrom: currentInvoice?.invoiceFrom || _addressBooks[0],
-      invoiceTo: currentInvoice?.invoiceTo || null,
-      items: currentInvoice?.items || [
-        {
-          title: '',
-          description: '',
-          service: '',
-          quantity: 1,
-          price: 0,
-          total: 0,
-        },
-      ],
-      totalAmount: currentInvoice?.totalAmount || 0,
+      job_title: currentDocument?.job_title || '',
+      id_division: currentDocument?.division.id_division || '',
     }),
-    [currentInvoice]
+    [currentDocument]
   );
 
   const methods = useForm({
-    resolver: yupResolver(NewInvoiceSchema),
+    resolver: yupResolver(NewDocumentSchema),
     defaultValues,
   });
 
   const {
     reset,
-
+    watch,
     handleSubmit,
     formState: { isSubmitting },
   } = methods;
 
-  const handleSaveAsDraft = handleSubmit(async (data) => {
-    loadingSave.onTrue();
+  const values = watch();
+
+  useEffect(() => {
+    if (currentDocument) {
+      reset(defaultValues);
+    }
+  }, [currentDocument, defaultValues, reset]);
+
+  const postDocument = (data: IDocumentInput) => {
+    const dataDocument = data;
+    if (currentDocument) {
+      const URLEdit = epDoktek.document.edit(currentDocument?.id_technical_document.toString());
+      putDoktek(URLEdit, dataDocument, {})
+        .then((response: any) => {
+          enqueueSnackbar(currentDocument ? 'Update success!' : 'Create success!');
+          router.push(paths.dashboard.techincalDocument.root);
+          console.info('DATA', response);
+        })
+        .catch((error: any) => {
+          console.error(error);
+          enqueueSnackbar(
+            currentDocument ? `Update failed! ${error.message}` : `Create failed! ${error.message}`,
+            {
+              variant: 'error',
+            }
+          );
+        });
+    } else {
+      const URL = epDoktek.document.postDocument;
+      posterDoktek(URL, dataDocument, {})
+        .then((response) => {
+          enqueueSnackbar(currentDocument ? 'Update success!' : 'Create success!');
+          router.push(paths.dashboard.techincalDocument.root);
+          console.info('DATA', response);
+        })
+        .catch((error) => {
+          console.error(error);
+          enqueueSnackbar(
+            currentDocument ? `Update failed! ${error.message}` : `Create failed! ${error.message}`,
+            {
+              variant: 'error',
+            }
+          );
+        });
+    }
+  };
+
+  const onSubmit = handleSubmit(async (data) => {
+    const payload: IDocumentInput = {
+      ...data,
+      id_division: Number(data.id_division),
+    };
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 500));
+      postDocument(payload);
+      mutate(epDoktek.document.search);
       reset();
-      loadingSave.onFalse();
-      router.push(paths.dashboard.invoice.root);
-      console.info('DATA', JSON.stringify(data, null, 2));
     } catch (error) {
       console.error(error);
-      loadingSave.onFalse();
     }
   });
 
-  const handleCreateAndSend = handleSubmit(async (data) => {
-    loadingSend.onTrue();
+  const renderDetails = (
+    <>
+      {mdUp && (
+        <Grid md={4}>
+          <Typography variant="h6" sx={{ mb: 0.5 }}>
+            Details
+          </Typography>
+          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+            Title, short description, image...
+          </Typography>
+        </Grid>
+      )}
 
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      reset();
-      loadingSend.onFalse();
-      router.push(paths.dashboard.invoice.root);
-      console.info('DATA', JSON.stringify(data, null, 2));
-    } catch (error) {
-      console.error(error);
-      loadingSend.onFalse();
-    }
-  });
+      <Grid xs={12} md={8}>
+        <Card>
+          {!mdUp && <CardHeader title="Details" />}
+
+          <Stack spacing={3} sx={{ p: 3 }}>
+            <RHFTextField name="job_title" label="Job Title" />
+
+            <RHFSelect
+              native
+              name="id_division"
+              label="Division"
+              InputLabelProps={{ shrink: true }}
+            >
+              {division.map((category) => (
+                <option key={category.id_division} value={category.id_division}>
+                  {category.division_name}
+                </option>
+              ))}
+            </RHFSelect>
+          </Stack>
+        </Card>
+      </Grid>
+    </>
+  );
+
+  const renderActions = (
+    <>
+      {mdUp && <Grid md={4} />}
+      <Grid
+        xs={12}
+        md={8}
+        sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}
+      >
+        <LoadingButton type="submit" variant="contained" size="large" loading={isSubmitting}>
+          {!currentDocument ? 'Create Document' : 'Save Changes'}
+        </LoadingButton>
+      </Grid>
+    </>
+  );
 
   return (
-    <FormProvider methods={methods}>
-      <Card>
-        <DocumentsNewEditAddress />
+    <FormProvider methods={methods} onSubmit={onSubmit}>
+      <Grid container spacing={3}>
+        {renderDetails}
 
-        <DocumentsNewEditStatusDate />
-
-        <DocumentsNewEditDetails />
-      </Card>
-
-      <Stack justifyContent="flex-end" direction="row" spacing={2} sx={{ mt: 3 }}>
-        <LoadingButton
-          color="inherit"
-          size="large"
-          variant="outlined"
-          loading={loadingSave.value && isSubmitting}
-          onClick={handleSaveAsDraft}
-        >
-          Save as Draft
-        </LoadingButton>
-
-        <LoadingButton
-          size="large"
-          variant="contained"
-          loading={loadingSend.value && isSubmitting}
-          onClick={handleCreateAndSend}
-        >
-          {currentInvoice ? 'Update' : 'Create'} & Send
-        </LoadingButton>
-      </Stack>
+        {renderActions}
+      </Grid>
     </FormProvider>
   );
 }

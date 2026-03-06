@@ -8,8 +8,9 @@ import { _invoices } from 'src/_mock';
 import { useSettingsContext } from 'src/components/settings';
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 //
-import DocumentsNewEditForm from '../documents-new-edit-form';
-import { useGetDocumentByID } from 'src/api/document';
+import DocumentItemsNewEditForm from '../document-items-new-edit-form';
+import { useGetDocumentByID, useGetDocumentItemsByID } from 'src/api/document';
+import { useParams } from 'react-router';
 
 // ----------------------------------------------------------------------
 
@@ -17,11 +18,12 @@ type Props = {
   id: string;
 };
 
-export default function DocumentsEditView({ id }: Props) {
+export default function DocumentItemsEditView({ id }: Props) {
   const settings = useSettingsContext();
+  const { id_technical_document } = useParams();
 
-  const { document: currentDocument } = useGetDocumentByID(id);
-  // const currentDocuments = _invoices.find((invoice) => invoice.id === id);
+  const { documentItem: currentDocumentItem } = useGetDocumentItemsByID(id);
+  // const currentDocumentItems = _invoices.find((invoice) => invoice.id === id);
 
   return (
     <Container maxWidth={settings.themeStretch ? false : 'lg'}>
@@ -33,17 +35,20 @@ export default function DocumentsEditView({ id }: Props) {
             href: paths.dashboard.root,
           },
           {
-            name: 'Documents',
+            name: 'Document Items',
             href: paths.dashboard.techincalDocument.root,
           },
-          { name: currentDocument?.document_number },
+          { name: currentDocumentItem?.document_number },
         ]}
         sx={{
           mb: { xs: 3, md: 5 },
         }}
       />
 
-      <DocumentsNewEditForm currentDocument={currentDocument} />
+      <DocumentItemsNewEditForm
+        currentDocumentItems={currentDocumentItem}
+        id_technical_documents={id_technical_document}
+      />
     </Container>
   );
 }

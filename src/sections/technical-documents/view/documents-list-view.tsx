@@ -1,5 +1,5 @@
 import sumBy from 'lodash/sumBy';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 // @mui
 import { useTheme, alpha } from '@mui/material/styles';
 import Tab from '@mui/material/Tab';
@@ -23,7 +23,7 @@ import { useBoolean } from 'src/hooks/use-boolean';
 // utils
 import { fTimestamp } from 'src/utils/format-time';
 // _mock
-import { _invoices, INVOICE_SERVICE_OPTIONS } from 'src/_mock';
+import { DOCUMENT_DIVISION_OPTIONS } from 'src/_mock';
 // components
 import Label from 'src/components/label';
 import Iconify from 'src/components/iconify';
@@ -40,33 +40,36 @@ import {
   TableHeadCustom,
   TableSelectedAction,
   TablePaginationCustom,
+  TableSkeleton,
 } from 'src/components/table';
 // types
-import { IInvoice, IInvoiceTableFilters, IInvoiceTableFilterValue } from 'src/types/invoice';
+import { IDocument, IDocumentTableFilters, IDocumentTableFilterValue } from 'src/types/document';
 //
 import DocumentsAnalytic from '../documents-analytic';
 import DocumentsTableRow from '../documents-table-row';
 import DocumentsTableToolbar from '../documents-table-toolbar';
 import DocumentsTableFiltersResult from '../documents-table-filters-result';
+import { useGetDocuments } from 'src/api/document';
+import { useGetDivision } from 'src/api/division';
+import { isEqual } from 'lodash';
 
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
-  { id: 'invoiceNumber', label: 'Customer' },
-  { id: 'createDate', label: 'Create' },
-  { id: 'dueDate', label: 'Due' },
-  { id: 'price', label: 'Amount' },
-  { id: 'sent', label: 'Sent', align: 'center' },
-  { id: 'status', label: 'Status' },
+  { id: 'document_number', label: 'Doc Number' },
+  { id: 'job_title', label: 'Job Title' },
+  { id: 'created_at', label: 'Create' },
+  { id: 'updated_at', label: 'Update' },
+  { id: 'division', label: 'Division' },
   { id: '' },
 ];
 
-const defaultFilters: IInvoiceTableFilters = {
-  name: '',
-  service: [],
-  status: 'all',
-  startDate: null,
-  endDate: null,
+const defaultFilters: IDocumentTableFilters = {
+  document_number: '',
+  job_title: '',
+  id_division: 'all',
+  created_at: null,
+  updated_at: null,
 };
 
 // ----------------------------------------------------------------------
@@ -76,19 +79,36 @@ export default function DocumentsListView() {
 
   const settings = useSettingsContext();
 
+  const { document, documentLoading, documentEmpty } = useGetDocuments();
+  const { division } = useGetDivision();
+
   const router = useRouter();
 
-  const table = useTable({ defaultOrderBy: 'createDate' });
+  const table = useTable({ defaultOrderBy: 'id_technical_document', defaultOrder: 'desc' });
 
   const confirm = useBoolean();
 
-  const [tableData, setTableData] = useState(_invoices);
+  const [tableData, setTableData] = useState<any[]>([]);
 
   const [filters, setFilters] = useState(defaultFilters);
 
+  const divisionColors: Record<string, any> = {
+    Automation: 'warning',
+    Laboratory: 'success',
+    RnD: 'error',
+    'IT Enggineer': 'info',
+    Finance: 'secondary',
+  };
+
+  useEffect(() => {
+    if (document.length) {
+      setTableData(document);
+    }
+  }, [document]);
+
   const dateError =
-    filters.startDate && filters.endDate
-      ? filters.startDate.getTime() > filters.endDate.getTime()
+    filters.created_at && filters.updated_at
+      ? filters.created_at.getTime() > filters.updated_at.getTime()
       : false;
 
   const dataFiltered = applyFilter({
@@ -105,56 +125,31 @@ export default function DocumentsListView() {
 
   const denseHeight = table.dense ? 56 : 76;
 
-  const canReset =
-    !!filters.name ||
-    !!filters.service.length ||
-    filters.status !== 'all' ||
-    (!!filters.startDate && !!filters.endDate);
+  const canReset = !isEqual(defaultFilters, filters);
 
   const notFound = (!dataFiltered.length && canReset) || !dataFiltered.length;
 
-  const getDocumentsLength = (status: string) =>
-    tableData.filter((item) => item.status === status).length;
+  const getDivisionLength = (divisionName: string) => {
+    return tableData.filter((item) => item.division?.division_name === divisionName).length;
+  };
 
-  const getTotalAmount = (status: string) =>
-    sumBy(
-      tableData.filter((item) => item.status === status),
-      'totalAmount'
-    );
-
-  const getPercentByStatus = (status: string) =>
-    (getDocumentsLength(status) / tableData.length) * 100;
+  const getPercentByDivision = (divisionName: string) => {
+    if (!tableData.length) return 0;
+    return (getDivisionLength(divisionName) / tableData.length) * 100;
+  };
 
   const TABS = [
     { value: 'all', label: 'All', color: 'default', count: tableData.length },
-    {
-      value: 'paid',
-      label: 'Paid',
-      color: 'success',
-      count: getDocumentsLength('paid'),
-    },
-    {
-      value: 'pending',
-      label: 'Pending',
-      color: 'warning',
-      count: getDocumentsLength('pending'),
-    },
-    {
-      value: 'overdue',
-      label: 'Overdue',
-      color: 'error',
-      count: getDocumentsLength('overdue'),
-    },
-    {
-      value: 'draft',
-      label: 'Draft',
-      color: 'default',
-      count: getDocumentsLength('draft'),
-    },
-  ] as const;
+    ...division.map((d) => ({
+      value: d.division_name,
+      label: d.division_name,
+      count: getDivisionLength(d.division_name),
+      color: divisionColors[d.division_name] || 'default',
+    })),
+  ];
 
   const handleFilters = useCallback(
-    (name: string, value: IInvoiceTableFilterValue) => {
+    (name: string, value: IDocumentTableFilterValue) => {
       table.onResetPage();
       setFilters((prevState) => ({
         ...prevState,
@@ -166,7 +161,7 @@ export default function DocumentsListView() {
 
   const handleDeleteRow = useCallback(
     (id: string) => {
-      const deleteRow = tableData.filter((row) => row.id !== id);
+      const deleteRow = tableData.filter((row) => row.id_technical_document !== id);
       setTableData(deleteRow);
 
       table.onUpdatePageDeleteRow(dataInPage.length);
@@ -175,7 +170,9 @@ export default function DocumentsListView() {
   );
 
   const handleDeleteRows = useCallback(() => {
-    const deleteRows = tableData.filter((row) => !table.selected.includes(row.id));
+    const deleteRows = tableData.filter(
+      (row) => !table.selected.includes(row.id_technical_document)
+    );
     setTableData(deleteRows);
 
     table.onUpdatePageDeleteRows({
@@ -187,21 +184,21 @@ export default function DocumentsListView() {
 
   const handleEditRow = useCallback(
     (id: string) => {
-      router.push(paths.dashboard.invoice.edit(id));
+      router.push(paths.dashboard.techincalDocument.edit(id));
     },
     [router]
   );
 
   const handleViewRow = useCallback(
     (id: string) => {
-      router.push(paths.dashboard.invoice.details(id));
+      router.push(paths.dashboard.techincalDocument.details(id));
     },
     [router]
   );
 
-  const handleFilterStatus = useCallback(
+  const handleFilterDivision = useCallback(
     (event: React.SyntheticEvent, newValue: string) => {
-      handleFilters('status', newValue);
+      handleFilters('id_division', newValue);
     },
     [handleFilters]
   );
@@ -222,7 +219,7 @@ export default function DocumentsListView() {
             },
             {
               name: 'Documents',
-              href: paths.dashboard.invoice.root,
+              href: paths.dashboard.techincalDocument.root,
             },
             {
               name: 'List',
@@ -258,45 +255,47 @@ export default function DocumentsListView() {
                 title="Total"
                 total={tableData.length}
                 percent={100}
-                price={sumBy(tableData, 'totalAmount')}
                 icon="solar:bill-list-bold-duotone"
-                color={theme.palette.info.main}
+                color={theme.palette.text.secondary}
               />
 
               <DocumentsAnalytic
-                title="Paid"
-                total={getDocumentsLength('paid')}
-                percent={getPercentByStatus('paid')}
-                price={getTotalAmount('paid')}
-                icon="solar:file-check-bold-duotone"
-                color={theme.palette.success.main}
-              />
-
-              <DocumentsAnalytic
-                title="Pending"
-                total={getDocumentsLength('pending')}
-                percent={getPercentByStatus('pending')}
-                price={getTotalAmount('pending')}
-                icon="solar:sort-by-time-bold-duotone"
+                title="Automation"
+                total={getDivisionLength('Automation')}
+                percent={getPercentByDivision('Automation')}
+                icon="solar:cpu-linear"
                 color={theme.palette.warning.main}
               />
 
               <DocumentsAnalytic
-                title="Overdue"
-                total={getDocumentsLength('overdue')}
-                percent={getPercentByStatus('overdue')}
-                price={getTotalAmount('overdue')}
-                icon="solar:bell-bing-bold-duotone"
+                title="Laboratory"
+                total={getDivisionLength('Laboratory')}
+                percent={getPercentByDivision('Laboratory')}
+                icon="entypo:lab-flask"
+                color={theme.palette.success.main}
+              />
+
+              <DocumentsAnalytic
+                title="RnD"
+                total={getDivisionLength('RnD')}
+                percent={getPercentByDivision('RnD')}
+                icon="streamline-ultimate:factory-industrial-robot-arm-1"
                 color={theme.palette.error.main}
               />
 
               <DocumentsAnalytic
-                title="Draft"
-                total={getDocumentsLength('draft')}
-                percent={getPercentByStatus('draft')}
-                price={getTotalAmount('draft')}
-                icon="solar:file-corrupted-bold-duotone"
-                color={theme.palette.text.secondary}
+                title="IT Engineer"
+                total={getDivisionLength('IT Enggineer')}
+                percent={getPercentByDivision('IT Enggineer')}
+                icon="solar:laptop-line-duotone"
+                color={theme.palette.info.main}
+              />
+              <DocumentsAnalytic
+                title="Finance"
+                total={getDivisionLength('Finance')}
+                percent={getPercentByDivision('Finance')}
+                icon="arcticons:home-finance"
+                color={theme.palette.secondary.main}
               />
             </Stack>
           </Scrollbar>
@@ -304,8 +303,8 @@ export default function DocumentsListView() {
 
         <Card>
           <Tabs
-            value={filters.status}
-            onChange={handleFilterStatus}
+            value={filters.id_division}
+            onChange={handleFilterDivision}
             sx={{
               px: 2.5,
               boxShadow: `inset 0 -2px 0 0 ${alpha(theme.palette.grey[500], 0.08)}`,
@@ -320,7 +319,8 @@ export default function DocumentsListView() {
                 icon={
                   <Label
                     variant={
-                      ((tab.value === 'all' || tab.value === filters.status) && 'filled') || 'soft'
+                      ((tab.value === 'all' || tab.value === filters.id_division) && 'filled') ||
+                      'soft'
                     }
                     color={tab.color}
                   >
@@ -330,14 +330,7 @@ export default function DocumentsListView() {
               />
             ))}
           </Tabs>
-
-          <DocumentsTableToolbar
-            filters={filters}
-            onFilters={handleFilters}
-            //
-            dateError={dateError}
-            serviceOptions={INVOICE_SERVICE_OPTIONS.map((option) => option.name)}
-          />
+          <DocumentsTableToolbar filters={filters} onFilters={handleFilters} />
 
           {canReset && (
             <DocumentsTableFiltersResult
@@ -359,7 +352,7 @@ export default function DocumentsListView() {
               onSelectAllRows={(checked) =>
                 table.onSelectAllRows(
                   checked,
-                  tableData.map((row) => row.id)
+                  tableData.map((row) => row.id_technical_document)
                 )
               }
               action={
@@ -403,28 +396,41 @@ export default function DocumentsListView() {
                   onSelectAllRows={(checked) =>
                     table.onSelectAllRows(
                       checked,
-                      tableData.map((row) => row.id)
+                      tableData.map((row) => row.id_technical_document)
                     )
                   }
                 />
 
                 <TableBody>
-                  {dataFiltered
-                    .slice(
-                      table.page * table.rowsPerPage,
-                      table.page * table.rowsPerPage + table.rowsPerPage
-                    )
-                    .map((row) => (
-                      <DocumentsTableRow
-                        key={row.id}
-                        row={row}
-                        selected={table.selected.includes(row.id)}
-                        onSelectRow={() => table.onSelectRow(row.id)}
-                        onViewRow={() => handleViewRow(row.id)}
-                        onEditRow={() => handleEditRow(row.id)}
-                        onDeleteRow={() => handleDeleteRow(row.id)}
-                      />
-                    ))}
+                  {documentLoading ? (
+                    [...Array(table.rowsPerPage)].map((i, index) => (
+                      <TableSkeleton key={index} sx={{ height: denseHeight }} />
+                    ))
+                  ) : (
+                    <>
+                      {dataFiltered
+                        .slice(
+                          table.page * table.rowsPerPage,
+                          table.page * table.rowsPerPage + table.rowsPerPage
+                        )
+                        .map((row) => (
+                          <DocumentsTableRow
+                            key={row.id_technical_document}
+                            row={row}
+                            divisionList={division}
+                            selected={table.selected.includes(row.id_technical_document.toString())}
+                            onSelectRow={() =>
+                              table.onSelectRow(row.id_technical_document.toString())
+                            }
+                            onViewRow={() => handleViewRow(row.id_technical_document.toString())}
+                            onEditRow={() => handleEditRow(row.id_technical_document.toString())}
+                            onDeleteRow={() =>
+                              handleDeleteRow(row.id_technical_document.toString())
+                            }
+                          />
+                        ))}
+                    </>
+                  )}
 
                   <TableEmptyRows
                     height={denseHeight}
@@ -484,12 +490,12 @@ function applyFilter({
   filters,
   dateError,
 }: {
-  inputData: IInvoice[];
+  inputData: IDocument[];
   comparator: (a: any, b: any) => number;
-  filters: IInvoiceTableFilters;
+  filters: IDocumentTableFilters;
   dateError: boolean;
 }) {
-  const { name, status, service, startDate, endDate } = filters;
+  const { document_number, job_title, created_at, updated_at, id_division } = filters;
 
   const stabilizedThis = inputData.map((el, index) => [el, index] as const);
 
@@ -501,30 +507,29 @@ function applyFilter({
 
   inputData = stabilizedThis.map((el) => el[0]);
 
-  if (name) {
+  if (document_number) {
     inputData = inputData.filter(
-      (invoice) =>
-        invoice.invoiceNumber.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
-        invoice.invoiceTo.name.toLowerCase().indexOf(name.toLowerCase()) !== -1
+      (document) =>
+        document.document_number.toLowerCase().indexOf(document_number.toLowerCase()) !== -1
     );
   }
 
-  if (status !== 'all') {
-    inputData = inputData.filter((invoice) => invoice.status === status);
+  if (id_division && id_division !== 'all') {
+    inputData = inputData.filter((document) => document.division?.division_name === id_division);
   }
 
-  if (service.length) {
-    inputData = inputData.filter((invoice) =>
-      invoice.items.some((filterItem) => service.includes(filterItem.service))
-    );
-  }
+  // if (service.length) {
+  //   inputData = inputData.filter((invoice) =>
+  //     invoice.items.some((filterItem) => service.includes(filterItem.service))
+  //   );
+  // }
 
   if (!dateError) {
-    if (startDate && endDate) {
+    if (created_at && updated_at) {
       inputData = inputData.filter(
-        (invoice) =>
-          fTimestamp(invoice.createDate) >= fTimestamp(startDate) &&
-          fTimestamp(invoice.createDate) <= fTimestamp(endDate)
+        (document) =>
+          fTimestamp(document.created_at) >= fTimestamp(created_at) &&
+          fTimestamp(document.created_at) <= fTimestamp(updated_at)
       );
     }
   }

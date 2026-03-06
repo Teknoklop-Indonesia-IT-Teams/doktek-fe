@@ -16,17 +16,21 @@ import { useBoolean } from 'src/hooks/use-boolean';
 // utils
 import { fCurrency } from 'src/utils/format-number';
 // types
-import { IInvoice } from 'src/types/invoice';
+import { IDocument } from 'src/types/document';
 // components
 import Label from 'src/components/label';
 import Iconify from 'src/components/iconify';
 import { ConfirmDialog } from 'src/components/custom-dialog';
 import CustomPopover, { usePopover } from 'src/components/custom-popover';
+import FileThumbnail from 'src/components/file-thumbnail';
+import { useGetDivision } from 'src/api/division';
+import { IDivision } from 'src/types/division';
 
 // ----------------------------------------------------------------------
 
 type Props = {
-  row: IInvoice;
+  row: IDocument;
+  divisionList: IDivision[];
   selected: boolean;
   onSelectRow: VoidFunction;
   onViewRow: VoidFunction;
@@ -36,14 +40,15 @@ type Props = {
 
 export default function DocumentsTableRow({
   row,
+  divisionList,
   selected,
   onSelectRow,
   onViewRow,
   onEditRow,
   onDeleteRow,
 }: Props) {
-  const { sent, invoiceNumber, createDate, dueDate, status, invoiceTo, totalAmount } = row;
-
+  const { document_number, job_title, created_at, updated_at } = row;
+  const divisionObj = divisionList.find((d) => d.id_division === row.division.id_division);
   const confirm = useBoolean();
 
   const popover = usePopover();
@@ -55,35 +60,31 @@ export default function DocumentsTableRow({
           <Checkbox checked={selected} onClick={onSelectRow} />
         </TableCell>
 
-        <TableCell sx={{ display: 'flex', alignItems: 'center' }}>
-          <Avatar alt={invoiceTo.name} sx={{ mr: 2 }}>
-            {invoiceTo.name.charAt(0).toUpperCase()}
-          </Avatar>
-
+        <TableCell>
           <ListItemText
             disableTypography
             primary={
               <Typography variant="body2" noWrap>
-                {invoiceTo.name}
+                {document_number}
               </Typography>
             }
-            secondary={
-              <Link
-                noWrap
-                variant="body2"
-                onClick={onViewRow}
-                sx={{ color: 'text.disabled', cursor: 'pointer' }}
-              >
-                {invoiceNumber}
-              </Link>
+          />
+        </TableCell>
+        <TableCell>
+          <ListItemText
+            disableTypography
+            primary={
+              <Typography variant="body2" noWrap>
+                {job_title}
+              </Typography>
             }
           />
         </TableCell>
 
         <TableCell>
           <ListItemText
-            primary={format(new Date(createDate), 'dd MMM yyyy')}
-            secondary={format(new Date(createDate), 'p')}
+            primary={format(new Date(created_at), 'dd MMM yyyy')}
+            secondary={format(new Date(created_at), 'p')}
             primaryTypographyProps={{ typography: 'body2', noWrap: true }}
             secondaryTypographyProps={{
               mt: 0.5,
@@ -95,8 +96,8 @@ export default function DocumentsTableRow({
 
         <TableCell>
           <ListItemText
-            primary={format(new Date(dueDate), 'dd MMM yyyy')}
-            secondary={format(new Date(dueDate), 'p')}
+            primary={format(new Date(updated_at), 'dd MMM yyyy')}
+            secondary={format(new Date(updated_at), 'p')}
             primaryTypographyProps={{ typography: 'body2', noWrap: true }}
             secondaryTypographyProps={{
               mt: 0.5,
@@ -105,22 +106,20 @@ export default function DocumentsTableRow({
             }}
           />
         </TableCell>
-
-        <TableCell>{fCurrency(totalAmount)}</TableCell>
-
-        <TableCell align="center">{sent}</TableCell>
 
         <TableCell>
           <Label
             variant="soft"
             color={
-              (status === 'paid' && 'success') ||
-              (status === 'pending' && 'warning') ||
-              (status === 'overdue' && 'error') ||
+              (divisionObj?.division_name === 'Laboratory' && 'success') ||
+              (divisionObj?.division_name === 'Automation' && 'warning') ||
+              (divisionObj?.division_name === 'RnD' && 'error') ||
+              (divisionObj?.division_name === 'IT Enggineer' && 'info') ||
+              (divisionObj?.division_name === 'Finance' && 'secondary') ||
               'default'
             }
           >
-            {status}
+            {divisionObj?.division_name}
           </Label>
         </TableCell>
 

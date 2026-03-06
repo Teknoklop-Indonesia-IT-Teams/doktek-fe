@@ -73,6 +73,8 @@ const TourEditPage = lazy(() => import('src/pages/dashboard/tour/edit'));
 import TypeDocumentListPage from 'src/pages/dashboard/type-document/list';
 import TypeDocumentEditPage from 'src/pages/dashboard/type-document/edit';
 import TypeDocumentsCreatePage from 'src/pages/dashboard/type-document/new';
+import DocumentItemsCreatePage from 'src/pages/dashboard/technical-document-items/new';
+import DocumentItemsEditPage from 'src/pages/dashboard/technical-document-items/edit';
 // FILE MANAGER
 const FileManagerPage = lazy(() => import('src/pages/dashboard/file-manager'));
 // APP
@@ -136,6 +138,14 @@ export const dashboardRoutes = [
           { path: ':id', element: <DocumentsDetailsPage /> },
           { path: 'new', element: <DocumentsCreatePage /> },
           { path: ':id/edit', element: <DocumentsEditPage /> },
+        ],
+      },
+      {
+        path: 'technical-document-items',
+        children: [
+          { path: ':id', element: <DocumentsDetailsPage /> },
+          { path: 'new', element: <DocumentItemsCreatePage /> },
+          { path: ':id/edit', element: <DocumentItemsEditPage /> },
         ],
       },
       {

@@ -96,7 +96,11 @@ export default function UserTableToolbar({
           >
             {roleOptions.map((option) => (
               <MenuItem key={option.id_role} value={option.role_name}>
-                <Checkbox disableRipple size="small" checked={filters.role.includes(option.role_name)} />
+                <Checkbox
+                  disableRipple
+                  size="small"
+                  checked={filters.role.includes(option.role_name)}
+                />
                 {option.role_name}
               </MenuItem>
             ))}
@@ -125,7 +129,11 @@ export default function UserTableToolbar({
           >
             {divisionOptions.map((option) => (
               <MenuItem key={option.id_division} value={option.division_name}>
-                <Checkbox disableRipple size="small" checked={filters.division.includes(option.division_name)} />
+                <Checkbox
+                  disableRipple
+                  size="small"
+                  checked={filters.division.includes(option.division_name)}
+                />
                 {option.division_name}
               </MenuItem>
             ))}
@@ -160,17 +168,29 @@ export default function UserTableToolbar({
         arrow="right-top"
         sx={{ width: 140 }}
       >
-        <MenuItem onClick={() => { popover.onClose(); }}>
+        <MenuItem
+          onClick={() => {
+            popover.onClose();
+          }}
+        >
           <Iconify icon="solar:printer-minimalistic-bold" />
           Print
         </MenuItem>
 
-        <MenuItem onClick={() => { popover.onClose(); }}>
+        <MenuItem
+          onClick={() => {
+            popover.onClose();
+          }}
+        >
           <Iconify icon="solar:import-bold" />
           Import
         </MenuItem>
 
-        <MenuItem onClick={() => { popover.onClose(); }}>
+        <MenuItem
+          onClick={() => {
+            popover.onClose();
+          }}
+        >
           <Iconify icon="solar:export-bold" />
           Export
         </MenuItem>

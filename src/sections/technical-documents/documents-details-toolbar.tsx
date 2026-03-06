@@ -1,0 +1,44 @@
+// @mui
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import type { StackProps } from '@mui/material/Stack';
+import Stack from '@mui/material/Stack';
+// components
+import { RouterLink } from 'src/routes/components';
+import SvgColor from 'src/components/svg-color';
+
+// ----------------------------------------------------------------------
+
+const icon = (name: string) => (
+  <SvgColor src={`/assets/icons/app/${name}.svg`} sx={{ width: '16px', height: '16px' }} />
+);
+
+const ICONS = {
+  back: icon('ic_back'),
+};
+
+type Props = StackProps & {
+  backLink: string;
+};
+
+export default function DocumentDetailsToolbar({ backLink, sx, ...other }: Props) {
+  return (
+    <>
+      <Stack
+        spacing={1.5}
+        direction="row"
+        sx={{
+          mb: { xs: 3, md: 5 },
+          ...sx,
+        }}
+        {...other}
+      >
+        <Button component={RouterLink} href={backLink} startIcon={ICONS.back}>
+          Back
+        </Button>
+
+        <Box sx={{ flexGrow: 1 }} />
+      </Stack>
+    </>
+  );
+}

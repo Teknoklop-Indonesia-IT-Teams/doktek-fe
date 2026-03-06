@@ -9,7 +9,7 @@ import TableContainer from '@mui/material/TableContainer';
 import { tableCellClasses } from '@mui/material/TableCell';
 import { tablePaginationClasses } from '@mui/material/TablePagination';
 // types
-import { IType, ITypeManager } from 'src/types/type';
+import { ITypeManager } from 'src/types/type';
 // components
 import Iconify from 'src/components/iconify';
 import {

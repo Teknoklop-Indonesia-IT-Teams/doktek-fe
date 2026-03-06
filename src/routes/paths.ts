@@ -134,9 +134,10 @@ export const paths = {
       new: `${ROOTS.DASHBOARD}/techincal-document/new`,
       details: (id: string) => `${ROOTS.DASHBOARD}/techincal-document/${id}`,
       edit: (id: string) => `${ROOTS.DASHBOARD}/techincal-document/${id}/edit`,
-      demo: {
-        details: `${ROOTS.DASHBOARD}/techincal-document/${MOCK_ID}`,
-        edit: `${ROOTS.DASHBOARD}/techincal-document/${MOCK_ID}/edit`,
+      item: {
+        new: `${ROOTS.DASHBOARD}/technical-document-items/new`,
+        details: (id: string) => `${ROOTS.DASHBOARD}/technical-document-items/${id}`,
+        edit: (id: string) => `${ROOTS.DASHBOARD}/technical-document-items/${id}/edit`,
       },
     },
     activity: {

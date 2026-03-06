@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 // @mui
 import { useTheme } from '@mui/material/styles';
 import Stack from '@mui/material/Stack';
@@ -12,7 +12,7 @@ import { paths } from 'src/routes/paths';
 import { useBoolean } from 'src/hooks/use-boolean';
 import { useResponsive } from 'src/hooks/use-responsive';
 // _mock
-import { _folders, _files } from 'src/_mock';
+import { _folders, _files, _types } from 'src/_mock';
 // components
 import Iconify from 'src/components/iconify';
 import Scrollbar from 'src/components/scrollbar';
@@ -21,13 +21,15 @@ import { useSettingsContext } from 'src/components/settings';
 //
 import FileWidget from '../../../file-manager/file-widget';
 import FileUpgrade from '../../../file-manager/file-upgrade';
-import FileRecentItem from '../../../file-manager/file-recent-item';
+import FileRecentItem from '../../../type-document/file-recent-item';
 import FileDataActivity from '../../../file-manager/file-data-activity';
 import FileStorageOverview from '../../../file-manager/file-storage-overview';
 //
 import FileManagerPanel from '../../../file-manager/file-manager-panel';
 import FileManagerFolderItem from '../../../file-manager/file-manager-folder-item';
 import FileManagerNewFolderDialog from '../../../file-manager/file-manager-new-folder-dialog';
+import { useGetTypes } from 'src/api/type';
+import { ITypeManager } from 'src/types/type';
 
 // ----------------------------------------------------------------------
 
@@ -55,6 +57,8 @@ export default function OverviewFileView() {
   const newFolder = useBoolean();
 
   const upload = useBoolean();
+
+  const { type } = useGetTypes();
 
   const handleChangeFolderName = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     setFolderName(event.target.value);
@@ -122,10 +126,10 @@ export default function OverviewFileView() {
 
           <Grid xs={12} sm={6} md={4}>
             <FileWidget
-              title="Dropbox"
+              title="User"
               value={GB / 10}
               total={GB}
-              icon="/assets/icons/app/ic_dropbox.svg"
+              icon="/assets/icons/app/ic_user.svg"
             />
           </Grid>
 
@@ -204,8 +208,8 @@ export default function OverviewFileView() {
 
             <div>
               <FileManagerPanel
-                title="Folders"
-                link={paths.dashboard.fileManager}
+                title="Documents"
+                link={paths.dashboard.techincalDocument.root}
                 onOpen={newFolder.onTrue}
                 sx={{ mt: 5 }}
               />
@@ -228,18 +232,19 @@ export default function OverviewFileView() {
               </Scrollbar>
 
               <FileManagerPanel
-                title="Recent Files"
-                link={paths.dashboard.fileManager}
+                title="Type Documents"
+                link={paths.dashboard.typeDocument.root}
                 onOpen={upload.onTrue}
                 sx={{ mt: 2 }}
               />
 
               <Stack spacing={2}>
-                {_files.slice(0, 5).map((file) => (
+                {type.slice(0, 5).map((file) => (
                   <FileRecentItem
-                    key={file.id}
+                    key={file.id_type_document}
                     file={file}
-                    onDelete={() => console.info('DELETE', file.id)}
+                    onEdit={() => console.info('EDIT', file.id_type_document)}
+                    onDelete={() => console.info('DELETE', file.id_type_document)}
                   />
                 ))}
               </Stack>
@@ -247,23 +252,6 @@ export default function OverviewFileView() {
           </Grid>
 
           <Grid xs={12} md={6} lg={4}>
-            <UploadBox
-              onDrop={handleDrop}
-              placeholder={
-                <Stack spacing={0.5} alignItems="center" sx={{ color: 'text.disabled' }}>
-                  <Iconify icon="eva:cloud-upload-fill" width={40} />
-                  <Typography variant="body2">Upload file</Typography>
-                </Stack>
-              }
-              sx={{
-                mb: 3,
-                py: 2.5,
-                width: 'auto',
-                height: 'auto',
-                borderRadius: 1.5,
-              }}
-            />
-
             <Box sx={{ display: { xs: 'none', sm: 'block' } }}>{renderStorageOverview}</Box>
           </Grid>
         </Grid>

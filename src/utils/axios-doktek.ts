@@ -93,6 +93,34 @@ export const patcherDoktek = async (url: string, data: any, config?: AxiosReques
 };
 // ----------------------------------------------------------------------
 
+export const putDoktek = async (url: string, data: any, config?: AxiosRequestConfig) => {
+  // const [url, config] = Array.isArray(args) ? args : [args];
+  // console.log('Fetching data with args:', args);
+
+  try {
+    console.log(data);
+    const response: AxiosResponse = await apiDoktek.put(url, data, config);
+
+    if (response.status === 201) {
+      // Resource created successfully
+      return response.data;
+    }
+    if (response.status === 200 || response.status === 204) {
+      // Request processed successfully, but no additional data to return
+      return null;
+    }
+    // Handle other status codes here
+    // You can throw an error or handle the response accordingly
+    throw new Error(`Unexpected status code: ${response.status}`);
+  } catch (error) {
+    // Handle request errors (e.g., network issues)
+    console.error('Request error:', error);
+    throw error;
+  }
+};
+
+// ----------------------------------------------------------------------
+
 export const removerDoktek = async (url: string) => {
   const res = await apiDoktek.delete(url);
   return res.data;
@@ -141,68 +169,19 @@ export const epDoktek = {
     list: '/type-documents',
     details: (id: string) => `/type-documents/${id}`,
   },
-  product: {
-    create: '/product',
-    list: '/product',
-    findAllProduct: `/product/findAllProduct`,
-    details: (id: string) => `/product/${id}`,
-    delete: (id: string) => `/product/${id}`,
-    search: '/product/q',
-    variant: {
-      create: '/product-variant',
-      list: '/product-variant',
-      details: (id: string) => `/product-variant/${id}`,
-      search: '/product-variant/q',
-      all: '/product-variant/all',
-    },
-    series: {
-      list: '/product-series',
-      edit: (id: number) => `/product-series/${id}`,
-      details: (id: string) => `/product-series/${id}`,
-      search: '/product-series/q',
-      create: '/product-series',
-    },
-    lubeGuide: {
-      list: '/product-lube-guide',
-      details: (id: string) => `/product-lube-guide/${id}`,
-      search: '/product-lube-guide/q',
-      create: '/product-lube-guide',
-    },
-
-    approval: {
-      list: '/product-approval',
-      create: '/product-approval',
-      details: (id: string) => `/product-approval/${id}`,
-      search: '/product-approval/q',
-    },
-    vg: {
-      list: '/product-vg',
-      create: '/product-vg',
-      details: (id: string) => `/product-vg/${id}`,
-      search: '/product-vg/q',
-    },
+  document: {
+    postDocument: '/technical-documents',
+    list: '/technical-documents',
+    edit: (id: string) => `/technical-documents/${id}`,
+    search: '/technical-documents/q',
+    details: (id: string) => `/technical-documents/${id}`,
   },
-  pmu: {
-    list: '/pmu',
-    details: (id: number) => `/pmu/${id}`,
-    search: '/pmu/q',
-    edit: (id: number) => `/pmu/${id}`,
-    new: '/pmu',
-    delete: (id: number) => `/pmu/${id}`,
-  },
-  parameter: {
-    postParameter: '/parameter',
-    list: '/parameter',
-    details: (id: number) => `/parameter/${id}`,
-    search: '/parameter/q',
-    edit: (id: number) => `/parameter/${id}`,
-  },
-  method: {
-    postMethod: '/method',
-    list: '/method',
-    details: (id: number) => `/method/${id}`,
-    search: '/method/q',
-    edit: (id: number) => `/method/${id}`,
+  documentItem: {
+    postDocumentItem: '/technical-document-items',
+    list: '/technical-document-items',
+    edit: (id: string) => `/technical-document-items/${id}`,
+    search: '/technical-document-items/q',
+    details: (id: string) => `/technical-document-items/${id}`,
   },
   unit: {
     postUnit: '/unit',
