@@ -30,6 +30,9 @@ import FileManagerFolderItem from '../../../file-manager/file-manager-folder-ite
 import FileManagerNewFolderDialog from '../../../file-manager/file-manager-new-folder-dialog';
 import { useGetTypes } from 'src/api/type';
 import { ITypeManager } from 'src/types/type';
+import { useGetDocuments } from 'src/api/document';
+import FileDocumentRecentItem from 'src/sections/technical-documents/file-recent-item';
+import { useGetUsers } from 'src/api/user';
 
 // ----------------------------------------------------------------------
 
@@ -59,6 +62,8 @@ export default function OverviewFileView() {
   const upload = useBoolean();
 
   const { type } = useGetTypes();
+  const { document } = useGetDocuments();
+  const { users } = useGetUsers();
 
   const handleChangeFolderName = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     setFolderName(event.target.value);
@@ -125,29 +130,22 @@ export default function OverviewFileView() {
           {smDown && <Grid xs={12}>{renderStorageOverview}</Grid>}
 
           <Grid xs={12} sm={6} md={4}>
+            <FileWidget title="User" total={users.length} icon="/assets/icons/app/ic_user.svg" />
+          </Grid>
+
+          <Grid xs={12} sm={6} md={4}>
             <FileWidget
-              title="User"
-              value={GB / 10}
-              total={GB}
-              icon="/assets/icons/app/ic_user.svg"
+              title="Document"
+              total={document.length}
+              icon="/assets/icons/app/ic_documents.svg"
             />
           </Grid>
 
           <Grid xs={12} sm={6} md={4}>
             <FileWidget
-              title="Drive"
-              value={GB / 5}
-              total={GB}
-              icon="/assets/icons/app/ic_drive.svg"
-            />
-          </Grid>
-
-          <Grid xs={12} sm={6} md={4}>
-            <FileWidget
-              title="OneDrive"
-              value={GB / 2}
-              total={GB}
-              icon="/assets/icons/app/ic_onedrive.svg"
+              title="Type Document"
+              total={type.length}
+              icon="/assets/icons/app/ic_type.svg"
             />
           </Grid>
 
@@ -216,16 +214,22 @@ export default function OverviewFileView() {
 
               <Scrollbar>
                 <Stack direction="row" spacing={3} sx={{ pb: 3 }}>
-                  {_folders.map((folder) => (
-                    <FileManagerFolderItem
-                      key={folder.id}
-                      folder={folder}
-                      onDelete={() => console.info('DELETE', folder.id)}
-                      sx={{
-                        ...(_folders.length > 3 && {
-                          minWidth: 222,
-                        }),
+                  {document.map((d) => (
+                    <FileDocumentRecentItem
+                      file={{
+                        id_technical_document: d.id_technical_document,
+                        document_number: d.document_number,
+                        job_title: d.job_title,
+                        created_at: d.created_at,
+                        updated_at: d.updated_at,
+                        division: {
+                          id_division: d.division.id_division,
+                          division_name: d.division.division_name,
+                        },
+                        items: [],
                       }}
+                      onEdit={() => console.info('EDIT', d.id_technical_document)}
+                      onDelete={() => console.info('DELETE', d.id_technical_document)}
                     />
                   ))}
                 </Stack>

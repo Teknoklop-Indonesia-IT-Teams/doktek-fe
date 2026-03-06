@@ -22,24 +22,23 @@ import Iconify from 'src/components/iconify';
 import { useSnackbar } from 'src/components/snackbar';
 import CustomPopover, { usePopover } from 'src/components/custom-popover';
 import FileThumbnail from 'src/components/file-thumbnail';
-//
-import TypeDocumentFileDetails from './type-document-file-details';
 import { Typography } from '@mui/material';
+import { IDocument } from 'src/types/document';
 
 // ----------------------------------------------------------------------
 
 interface Props extends StackProps {
-  file: ITypeManager;
+  file: IDocument;
   onEdit: VoidFunction;
   onDelete: VoidFunction;
 }
 
-export default function FileRecentItem({ file, onEdit, onDelete, sx, ...other }: Props) {
+export default function FileDocumentRecentItem({ file, onEdit, onDelete, sx, ...other }: Props) {
   const { enqueueSnackbar } = useSnackbar();
 
   const { copy } = useCopyToClipboard();
 
-  const { type_document, code_document } = file;
+  const { document_number, division, job_title } = file;
 
   const smUp = useResponsive('up', 'sm');
 
@@ -61,13 +60,13 @@ export default function FileRecentItem({ file, onEdit, onDelete, sx, ...other }:
           ...sx,
         }}
       >
-        {/* <FileThumbnail file={type_document} sx={{ width: 36, height: 36 }} /> */}
+        <FileThumbnail file={document_number} sx={{ width: 36, height: 36 }} />
 
         <Stack>
-          <Typography variant="subtitle2">{type_document}</Typography>
+          <Typography variant="subtitle2">{job_title}</Typography>
 
           <Typography variant="body2" color="text.secondary">
-            {code_document}
+            {division.division_name}
           </Typography>
         </Stack>
       </Stack>
@@ -109,20 +108,6 @@ export default function FileRecentItem({ file, onEdit, onDelete, sx, ...other }:
           Delete
         </MenuItem>
       </CustomPopover>
-
-      <TypeDocumentFileDetails
-        item={file}
-        open={details.value}
-        onClose={details.onFalse}
-        onEdit={() => {
-          details.onFalse();
-          onEdit();
-        }}
-        onDelete={() => {
-          details.onFalse();
-          onDelete();
-        }}
-      />
     </>
   );
 }

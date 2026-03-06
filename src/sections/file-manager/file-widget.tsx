@@ -11,12 +11,11 @@ import { fData } from 'src/utils/format-number';
 
 interface Props extends CardProps {
   title: string;
-  value: number;
   total: number;
   icon: string;
 }
 
-export default function FileWidget({ title, value, total, icon, sx, ...other }: Props) {
+export default function FileWidget({ title, total, icon, sx, ...other }: Props) {
   return (
     <Card sx={{ p: 3, ...sx }} {...other}>
       <Box component="img" src={icon} sx={{ width: 48, height: 48 }} />
@@ -45,17 +44,7 @@ export default function FileWidget({ title, value, total, icon, sx, ...other }: 
         justifyContent="flex-end"
         sx={{ typography: 'subtitle2' }}
       >
-        <Box
-          sx={{
-            mr: 0.5,
-            typography: 'body2',
-            color: 'text.disabled',
-          }}
-        >
-          {fData(value)}
-        </Box>
-
-        {` / ${fData(total)}`}
+        {`${total} Data`}
       </Stack>
     </Card>
   );
