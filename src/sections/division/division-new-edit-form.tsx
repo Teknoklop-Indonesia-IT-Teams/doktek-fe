@@ -34,7 +34,7 @@ import FormProvider, {
   RHFUpload,
 } from 'src/components/hook-form';
 // types
-import { IDivision } from 'src/types/division';
+import { IDivision, IDivisionInput } from 'src/types/division';
 import { useResponsive } from 'src/hooks/use-responsive';
 import { useSnackbar } from 'src/components/snackbar';
 import {
@@ -48,6 +48,8 @@ import {
   Switch,
   Typography,
 } from '@mui/material';
+import { epDoktek, posterDoktek, putDoktek } from 'src/utils/axios-doktek';
+import { mutate } from 'swr';
 
 // ----------------------------------------------------------------------
 
@@ -94,13 +96,54 @@ export default function DivisionNewEditForm({ currentDivision }: Props) {
     }
   }, [currentDivision, defaultValues, reset]);
 
+  const postDivision = (data: IDivisionInput) => {
+    const dataDivision = data;
+    if (currentDivision) {
+      const URLEdit = epDoktek.division.edit(currentDivision?.id_division);
+      putDoktek(URLEdit, dataDivision, {})
+        .then((response: any) => {
+          enqueueSnackbar(currentDivision ? 'Update success!' : 'Create success!');
+          router.push(paths.dashboard.division.root);
+          console.info('DATA', response);
+        })
+        .catch((error: any) => {
+          console.error(error);
+          enqueueSnackbar(
+            currentDivision ? `Update failed! ${error.message}` : `Create failed! ${error.message}`,
+            {
+              variant: 'error',
+            }
+          );
+        });
+    } else {
+      const URL = epDoktek.division.postDivision;
+      posterDoktek(URL, dataDivision, {})
+        .then((response) => {
+          enqueueSnackbar(currentDivision ? 'Update success!' : 'Create success!');
+          router.push(paths.dashboard.division.root);
+          console.info('DATA', response);
+        })
+        .catch((error) => {
+          console.error(error);
+          enqueueSnackbar(
+            currentDivision ? `Update failed! ${error.message}` : `Create failed! ${error.message}`,
+            {
+              variant: 'error',
+            }
+          );
+        });
+    }
+  };
+
   const onSubmit = handleSubmit(async (data) => {
+    const payload: IDivisionInput = {
+      ...data,
+    };
     try {
       await new Promise((resolve) => setTimeout(resolve, 500));
+      postDivision(payload);
+      mutate(epDoktek.division.search);
       reset();
-      enqueueSnackbar(currentDivision ? 'Update success!' : 'Create success!');
-      router.push(paths.dashboard.division.root);
-      console.info('DATA', data);
     } catch (error) {
       console.error(error);
     }

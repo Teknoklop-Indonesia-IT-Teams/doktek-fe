@@ -129,11 +129,11 @@ export const paths = {
         edit: `${ROOTS.DASHBOARD}/product/${MOCK_ID}/edit`,
       },
     },
-    techincalDocument: {
-      root: `${ROOTS.DASHBOARD}/techincal-document`,
-      new: `${ROOTS.DASHBOARD}/techincal-document/new`,
-      details: (id: string) => `${ROOTS.DASHBOARD}/techincal-document/${id}`,
-      edit: (id: string) => `${ROOTS.DASHBOARD}/techincal-document/${id}/edit`,
+    technicalDocument: {
+      root: `${ROOTS.DASHBOARD}/technical-document`,
+      new: `${ROOTS.DASHBOARD}/technical-document/new`,
+      details: (id: string) => `${ROOTS.DASHBOARD}/technical-document/${id}`,
+      edit: (id: string) => `${ROOTS.DASHBOARD}/technical-document/${id}/edit`,
       item: {
         new: `${ROOTS.DASHBOARD}/technical-document-items/new`,
         details: (id: string) => `${ROOTS.DASHBOARD}/technical-document-items/${id}`,

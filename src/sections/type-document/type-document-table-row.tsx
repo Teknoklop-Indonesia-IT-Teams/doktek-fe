@@ -17,7 +17,7 @@ import { useCopyToClipboard } from 'src/hooks/use-copy-to-clipboard';
 // utils
 import { fData } from 'src/utils/format-number';
 // types
-import { ITypeManager } from 'src/types/type';
+import { ITypeDocument } from 'src/types/type';
 // components
 import Iconify from 'src/components/iconify';
 import CustomPopover, { usePopover } from 'src/components/custom-popover';
@@ -32,7 +32,7 @@ import { IconButton } from '@mui/material';
 // ----------------------------------------------------------------------
 
 type Props = {
-  row: ITypeManager;
+  row: ITypeDocument;
   selected: boolean;
   onSelectRow: VoidFunction;
   onEditRow: VoidFunction;

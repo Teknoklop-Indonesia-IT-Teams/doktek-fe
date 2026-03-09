@@ -9,7 +9,7 @@ import TableContainer from '@mui/material/TableContainer';
 import { tableCellClasses } from '@mui/material/TableCell';
 import { tablePaginationClasses } from '@mui/material/TablePagination';
 // types
-import { ITypeManager } from 'src/types/type';
+import { ITypeDocument } from 'src/types/type';
 // components
 import Iconify from 'src/components/iconify';
 import {
@@ -38,9 +38,9 @@ const TABLE_HEAD = [
 
 type Props = {
   table: TableProps;
-  tableData: ITypeManager[];
+  tableData: ITypeDocument[];
   notFound: boolean;
-  dataFiltered: ITypeManager[];
+  dataFiltered: ITypeDocument[];
   onEditRow: (id: string) => void;
   onOpenConfirm: VoidFunction;
   onDeleteRow: (id: string) => void;

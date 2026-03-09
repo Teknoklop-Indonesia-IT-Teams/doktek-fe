@@ -64,7 +64,7 @@ const TABLE_HEAD = [
 
 const defaultFilters: IRoleTableFilters = {
   number: 0,
-  name: '',
+  role_name: '',
 };
 
 // ----------------------------------------------------------------------
@@ -363,7 +363,7 @@ function applyFilter({
   comparator: (a: any, b: any) => number;
   filters: IRoleTableFilters;
 }) {
-  const { name } = filters;
+  const { role_name } = filters;
 
   const stabilizedThis = inputData.map((el, index) => [el, index] as const);
 
@@ -375,9 +375,9 @@ function applyFilter({
 
   inputData = stabilizedThis.map((el) => el[0]);
 
-  if (name) {
+  if (role_name) {
     inputData = inputData.filter(
-      (roles) => roles.role_name.toLowerCase().indexOf(name.toLowerCase()) !== -1
+      (roles) => roles.role_name.toLowerCase().indexOf(role_name.toLowerCase()) !== -1
     );
   }
 

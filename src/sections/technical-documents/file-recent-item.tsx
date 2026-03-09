@@ -16,7 +16,7 @@ import { useCopyToClipboard } from 'src/hooks/use-copy-to-clipboard';
 import { fData } from 'src/utils/format-number';
 import { fDateTime } from 'src/utils/format-time';
 // types
-import { ITypeManager } from 'src/types/type';
+import { ITypeDocument } from 'src/types/type';
 // components
 import Iconify from 'src/components/iconify';
 import { useSnackbar } from 'src/components/snackbar';

@@ -17,7 +17,7 @@ import { ConfirmDialog } from 'src/components/custom-dialog';
 import { useSettingsContext } from 'src/components/settings';
 import { useTable, getComparator } from 'src/components/table';
 // types
-import { ITypeManager, ITypeFilters, ITypeFilterValue } from 'src/types/type';
+import { ITypeDocument, ITypeFilters, ITypeFilterValue } from 'src/types/type';
 //
 import TypeDocumentTable from '../type-document-table';
 import TypeDocumentFilters from '../type-document-filters';
@@ -51,7 +51,7 @@ export default function TypeDocumentView() {
 
   const { type, typeLoading, typeEmpty } = useGetTypes();
 
-  const [tableData, setTableData] = useState<ITypeManager[]>([]);
+  const [tableData, setTableData] = useState<ITypeDocument[]>([]);
 
   const [filters, setFilters] = useState(defaultFilters);
 
@@ -259,7 +259,7 @@ function applyFilter({
   comparator,
   filters,
 }: {
-  inputData: ITypeManager[];
+  inputData: ITypeDocument[];
   comparator: (a: any, b: any) => number;
   filters: ITypeFilters;
 }) {

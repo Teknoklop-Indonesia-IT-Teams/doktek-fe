@@ -22,7 +22,7 @@ export default function RolesEditView({ id }: Props) {
   const settings = useSettingsContext();
 
   const { roles: currentRole } = useGetRolesDetails(id);
-  const currentRoles = _role.find((role) => role.id_role.toString() === id);
+  // const currentRoles = _role.find((role) => role.id_role.toString() === id);
 
   return (
     <Container maxWidth={settings.themeStretch ? false : 'lg'}>
@@ -37,7 +37,7 @@ export default function RolesEditView({ id }: Props) {
             name: 'Roles',
             href: paths.dashboard.roles.root,
           },
-          { name: currentRoles?.role_name },
+          { name: currentRole?.role_name },
         ]}
         sx={{
           mb: { xs: 3, md: 5 },

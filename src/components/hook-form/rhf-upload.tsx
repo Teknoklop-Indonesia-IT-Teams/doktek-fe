@@ -87,7 +87,7 @@ export function RHFUpload({ name, multiple, helperText, ...other }: Props) {
         ) : (
           <Upload
             accept={documentAccept}
-            file={field.value}
+            file={Array.isArray(field.value) ? field.value[0] : field.value}
             error={!!error}
             helperText={
               (!!error || helperText) && (

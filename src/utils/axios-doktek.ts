@@ -146,7 +146,7 @@ export const epDoktek = {
     new: `/users`,
   },
   roles: {
-    edit: (id: number) => `/role/${id}`,
+    edit: (id: string) => `/role/${id}`,
     delete: (id: number) => `/role/${id}`,
     search: `/role/q`,
     postRole: `/role`,
@@ -154,7 +154,7 @@ export const epDoktek = {
     details: (id: string) => `/role/${id}`,
   },
   division: {
-    edit: (id: number) => `/divisions/${id}`,
+    edit: (id: string) => `/divisions/${id}`,
     delete: (id: number) => `/divisions/${id}`,
     search: `/divisions/q`,
     postDivision: `/divisions`,
@@ -162,7 +162,7 @@ export const epDoktek = {
     details: (id: string) => `/divisions/${id}`,
   },
   type: {
-    edit: (id: number) => `/type-documents/${id}`,
+    edit: (id: string) => `/type-documents/${id}`,
     delete: (id: number) => `/type-documents/${id}`,
     search: `/type-documents/q`,
     postType: `/type-documents`,

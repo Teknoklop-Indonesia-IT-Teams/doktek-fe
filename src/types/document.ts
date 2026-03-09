@@ -1,7 +1,7 @@
 // ----------------------------------------------------------------------
 
 import { IDivision } from './division';
-import { ITypeManager } from './type';
+import { ITypeDocument } from './type';
 
 export type IDocumentTableFilterValue = string | string | Date | Date | string;
 
@@ -17,7 +17,7 @@ export type IDocumentItemTableFilterValue = string | string | Date | Date | stri
 
 export type IDocumentItemTableFilters = {
   document_number: string;
-  upload_doc: string;
+  document_file: string;
   created_at: Date | null;
   updated_at: Date | null;
   id_technical_document: string;
@@ -29,15 +29,15 @@ export type IDocumentItemTableFilters = {
 export type IDocumentItem = {
   id_technical_document_item: number;
   document_number: string;
-  upload_doc: (File | string)[];
+  document_file: (File | string)[] | null;
   created_at: string;
   updated_at: string;
   technicalDocument: IDocument;
-  typeDocument: ITypeManager;
+  typeDocument: ITypeDocument;
 };
 
 export type IDocumentItemsInput = {
-  upload_doc?: (File | string)[];
+  document_file?: (File | string)[];
   id_type_manager?: number;
   id_technical_document?: number;
 };

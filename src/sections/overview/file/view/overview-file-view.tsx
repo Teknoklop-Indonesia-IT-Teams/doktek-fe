@@ -29,10 +29,14 @@ import FileManagerPanel from '../../../file-manager/file-manager-panel';
 import FileManagerFolderItem from '../../../file-manager/file-manager-folder-item';
 import FileManagerNewFolderDialog from '../../../file-manager/file-manager-new-folder-dialog';
 import { useGetTypes } from 'src/api/type';
-import { ITypeManager } from 'src/types/type';
+import { ITypeDocument } from 'src/types/type';
 import { useGetDocuments } from 'src/api/document';
 import FileDocumentRecentItem from 'src/sections/technical-documents/file-recent-item';
 import { useGetUsers } from 'src/api/user';
+import AppWelcome from '../../app/app-welcome';
+import { SeoIllustration } from 'src/assets/illustrations';
+import { useMockedUser } from 'src/hooks/use-mocked-user';
+import { Button } from '@mui/material';
 
 // ----------------------------------------------------------------------
 
@@ -64,6 +68,7 @@ export default function OverviewFileView() {
   const { type } = useGetTypes();
   const { document } = useGetDocuments();
   const { users } = useGetUsers();
+  const { user } = useMockedUser();
 
   const handleChangeFolderName = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     setFolderName(event.target.value);
@@ -127,6 +132,18 @@ export default function OverviewFileView() {
     <>
       <Container maxWidth={settings.themeStretch ? false : 'xl'}>
         <Grid container spacing={3}>
+          <Grid xs={12} md={12}>
+            <AppWelcome
+              title={`Welcome back 👋 \n ${user?.displayName}`}
+              description="If you are going to use a passage of Lorem Ipsum, you need to be sure there isn't anything."
+              img={<SeoIllustration />}
+              action={
+                <Button variant="contained" color="primary">
+                  Go Now
+                </Button>
+              }
+            />
+          </Grid>
           {smDown && <Grid xs={12}>{renderStorageOverview}</Grid>}
 
           <Grid xs={12} sm={6} md={4}>
@@ -207,7 +224,7 @@ export default function OverviewFileView() {
             <div>
               <FileManagerPanel
                 title="Documents"
-                link={paths.dashboard.techincalDocument.root}
+                link={paths.dashboard.technicalDocument.root}
                 onOpen={newFolder.onTrue}
                 sx={{ mt: 5 }}
               />

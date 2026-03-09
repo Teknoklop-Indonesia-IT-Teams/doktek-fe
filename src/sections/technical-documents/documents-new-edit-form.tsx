@@ -76,7 +76,7 @@ export default function DocumentNewEditForm({ currentDocument }: Props) {
       putDoktek(URLEdit, dataDocument, {})
         .then((response: any) => {
           enqueueSnackbar(currentDocument ? 'Update success!' : 'Create success!');
-          router.push(paths.dashboard.techincalDocument.root);
+          router.push(paths.dashboard.technicalDocument.root);
           console.info('DATA', response);
         })
         .catch((error: any) => {
@@ -93,7 +93,7 @@ export default function DocumentNewEditForm({ currentDocument }: Props) {
       posterDoktek(URL, dataDocument, {})
         .then((response) => {
           enqueueSnackbar(currentDocument ? 'Update success!' : 'Create success!');
-          router.push(paths.dashboard.techincalDocument.root);
+          router.push(paths.dashboard.technicalDocument.root);
           console.info('DATA', response);
         })
         .catch((error) => {

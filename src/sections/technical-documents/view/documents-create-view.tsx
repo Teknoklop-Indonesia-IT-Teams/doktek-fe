@@ -24,7 +24,7 @@ export default function DocumentsCreateView() {
           },
           {
             name: 'All Documents',
-            href: paths.dashboard.techincalDocument.root,
+            href: paths.dashboard.technicalDocument.root,
           },
           {
             name: 'New techincal documents',

@@ -34,7 +34,7 @@ import FormProvider, {
   RHFUpload,
 } from 'src/components/hook-form';
 // types
-import { IRole } from 'src/types/role';
+import { IRole, IRoleInput } from 'src/types/role';
 import { useResponsive } from 'src/hooks/use-responsive';
 import { useSnackbar } from 'src/components/snackbar';
 import {
@@ -48,6 +48,8 @@ import {
   Switch,
   Typography,
 } from '@mui/material';
+import { epDoktek, posterDoktek, putDoktek } from 'src/utils/axios-doktek';
+import { mutate } from 'swr';
 
 // ----------------------------------------------------------------------
 
@@ -63,12 +65,12 @@ export default function RolesNewEditForm({ currentRoles }: Props) {
   const { enqueueSnackbar } = useSnackbar();
 
   const NewRolesSchema = Yup.object().shape({
-    name: Yup.string().required('Name is required'),
+    role_name: Yup.string().required('Name is required'),
   });
 
   const defaultValues = useMemo(
     () => ({
-      name: currentRoles?.role_name || '',
+      role_name: currentRoles?.role_name || '',
     }),
     [currentRoles]
   );
@@ -94,13 +96,54 @@ export default function RolesNewEditForm({ currentRoles }: Props) {
     }
   }, [currentRoles, defaultValues, reset]);
 
+  const postRole = (data: IRoleInput) => {
+    const dataRole = data;
+    if (currentRoles) {
+      const URLEdit = epDoktek.roles.edit(currentRoles?.id_role);
+      putDoktek(URLEdit, dataRole, {})
+        .then((response: any) => {
+          enqueueSnackbar(currentRoles ? 'Update success!' : 'Create success!');
+          router.push(paths.dashboard.roles.root);
+          console.info('DATA', response);
+        })
+        .catch((error: any) => {
+          console.error(error);
+          enqueueSnackbar(
+            currentRoles ? `Update failed! ${error.message}` : `Create failed! ${error.message}`,
+            {
+              variant: 'error',
+            }
+          );
+        });
+    } else {
+      const URL = epDoktek.roles.postRole;
+      posterDoktek(URL, dataRole, {})
+        .then((response) => {
+          enqueueSnackbar(currentRoles ? 'Update success!' : 'Create success!');
+          router.push(paths.dashboard.roles.root);
+          console.info('DATA', response);
+        })
+        .catch((error) => {
+          console.error(error);
+          enqueueSnackbar(
+            currentRoles ? `Update failed! ${error.message}` : `Create failed! ${error.message}`,
+            {
+              variant: 'error',
+            }
+          );
+        });
+    }
+  };
+
   const onSubmit = handleSubmit(async (data) => {
+    const payload: IRoleInput = {
+      ...data,
+    };
     try {
       await new Promise((resolve) => setTimeout(resolve, 500));
+      postRole(payload);
+      mutate(epDoktek.roles.search);
       reset();
-      enqueueSnackbar(currentRoles ? 'Update success!' : 'Create success!');
-      router.push(paths.dashboard.roles.root);
-      console.info('DATA', data);
     } catch (error) {
       console.error(error);
     }
@@ -124,7 +167,7 @@ export default function RolesNewEditForm({ currentRoles }: Props) {
           {!mdUp && <CardHeader title="Details" />}
 
           <Stack spacing={3} sx={{ p: 3 }}>
-            <RHFTextField name="name" label="Roles Name" />
+            <RHFTextField name="role_name" label="Roles Name" />
           </Stack>
         </Card>
       </Grid>

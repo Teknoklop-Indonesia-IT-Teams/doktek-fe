@@ -21,7 +21,7 @@ export default function TypeDocumentsEditView({ id }: Props) {
   const settings = useSettingsContext();
 
   const { type: currentType } = useGetTypeDetails(id);
-  const currentTypeDocuments = _types.find((type) => type.id === id);
+  // const currentTypeDocuments = _types.find((type) => type.id === id);
 
   return (
     <Container maxWidth={settings.themeStretch ? false : 'lg'}>
@@ -36,7 +36,7 @@ export default function TypeDocumentsEditView({ id }: Props) {
             name: 'Type Documents',
             href: paths.dashboard.typeDocument.root,
           },
-          { name: currentTypeDocuments?.type_document },
+          { name: currentType?.type_document },
         ]}
         sx={{
           mb: { xs: 3, md: 5 },

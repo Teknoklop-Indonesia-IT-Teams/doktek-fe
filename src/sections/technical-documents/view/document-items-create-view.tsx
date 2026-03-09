@@ -7,11 +7,16 @@ import { useSettingsContext } from 'src/components/settings';
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 //
 import DocumentItemsNewEditForm from '../document-items-new-edit-form';
+import { useLocation } from 'react-router';
+import { useGetDocumentByID } from 'src/api/document';
 
 // ----------------------------------------------------------------------
 
 export default function DocumentItemsCreateView() {
   const settings = useSettingsContext();
+  const location = useLocation();
+  const idTechnicalDocument = location.state?.id_technical_document;
+  const { document: currentDocument } = useGetDocumentByID(idTechnicalDocument);
 
   return (
     <Container maxWidth={settings.themeStretch ? false : 'lg'}>
@@ -24,7 +29,7 @@ export default function DocumentItemsCreateView() {
           },
           {
             name: 'All Document Items',
-            href: paths.dashboard.techincalDocument.root,
+            href: paths.dashboard.technicalDocument.root,
           },
           {
             name: 'New techincal document item',
@@ -35,7 +40,9 @@ export default function DocumentItemsCreateView() {
         }}
       />
 
-      <DocumentItemsNewEditForm />
+      <DocumentItemsNewEditForm
+        id_technical_documents={currentDocument.id_technical_document.toString()}
+      />
     </Container>
   );
 }

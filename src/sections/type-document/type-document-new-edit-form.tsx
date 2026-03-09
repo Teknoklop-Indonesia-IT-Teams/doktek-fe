@@ -10,7 +10,7 @@ import Stack from '@mui/material/Stack';
 import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
 // types
-import { ITypeManager } from 'src/types/type';
+import { ITypeDocumentInput, ITypeDocument } from 'src/types/type';
 // _mock
 import { _addressBooks } from 'src/_mock';
 // types
@@ -18,11 +18,13 @@ import { useResponsive } from 'src/hooks/use-responsive';
 import { useSnackbar } from 'src/components/snackbar';
 import { CardHeader, Grid, Typography } from '@mui/material';
 import FormProvider, { RHFTextField } from 'src/components/hook-form';
+import { epDoktek, posterDoktek, putDoktek } from 'src/utils/axios-doktek';
+import { mutate } from 'swr';
 
 // ----------------------------------------------------------------------
 
 type Props = {
-  currentTypes?: ITypeManager;
+  currentTypes?: ITypeDocument;
 };
 
 export default function TypeDocumentNewEditForm({ currentTypes }: Props) {
@@ -39,7 +41,6 @@ export default function TypeDocumentNewEditForm({ currentTypes }: Props) {
 
   const defaultValues = useMemo(
     () => ({
-      id: currentTypes?.id_type_document || '',
       type_document: currentTypes?.type_document || '',
       code_document: currentTypes?.code_document || '',
     }),
@@ -67,13 +68,54 @@ export default function TypeDocumentNewEditForm({ currentTypes }: Props) {
     }
   }, [currentTypes, defaultValues, reset]);
 
+  const postType = (data: ITypeDocumentInput) => {
+    const dataType = data;
+    if (currentTypes) {
+      const URLEdit = epDoktek.type.edit(currentTypes?.id_type_document);
+      putDoktek(URLEdit, dataType, {})
+        .then((response: any) => {
+          enqueueSnackbar(currentTypes ? 'Update success!' : 'Create success!');
+          router.push(paths.dashboard.typeDocument.root);
+          console.info('DATA', response);
+        })
+        .catch((error: any) => {
+          console.error(error);
+          enqueueSnackbar(
+            currentTypes ? `Update failed! ${error.message}` : `Create failed! ${error.message}`,
+            {
+              variant: 'error',
+            }
+          );
+        });
+    } else {
+      const URL = epDoktek.type.postType;
+      posterDoktek(URL, dataType, {})
+        .then((response) => {
+          enqueueSnackbar(currentTypes ? 'Update success!' : 'Create success!');
+          router.push(paths.dashboard.typeDocument.root);
+          console.info('DATA', response);
+        })
+        .catch((error) => {
+          console.error(error);
+          enqueueSnackbar(
+            currentTypes ? `Update failed! ${error.message}` : `Create failed! ${error.message}`,
+            {
+              variant: 'error',
+            }
+          );
+        });
+    }
+  };
+
   const onSubmit = handleSubmit(async (data) => {
+    const payload: ITypeDocumentInput = {
+      ...data,
+    };
     try {
       await new Promise((resolve) => setTimeout(resolve, 500));
+      postType(payload);
+      mutate(epDoktek.type.search);
       reset();
-      enqueueSnackbar(currentTypes ? 'Update success!' : 'Create success!');
-      router.push(paths.dashboard.typeDocument.root);
-      console.info('DATA', data);
     } catch (error) {
       console.error(error);
     }

@@ -9,3 +9,7 @@ export type IDivision = {
   id_division: string;
   division_name: string;
 };
+
+export type IDivisionInput = {
+  division_name?: string;
+};

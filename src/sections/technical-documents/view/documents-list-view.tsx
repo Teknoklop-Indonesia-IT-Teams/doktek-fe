@@ -184,14 +184,14 @@ export default function DocumentsListView() {
 
   const handleEditRow = useCallback(
     (id: string) => {
-      router.push(paths.dashboard.techincalDocument.edit(id));
+      router.push(paths.dashboard.technicalDocument.edit(id));
     },
     [router]
   );
 
   const handleViewRow = useCallback(
     (id: string) => {
-      router.push(paths.dashboard.techincalDocument.details(id));
+      router.push(paths.dashboard.technicalDocument.details(id));
     },
     [router]
   );
@@ -219,7 +219,7 @@ export default function DocumentsListView() {
             },
             {
               name: 'Documents',
-              href: paths.dashboard.techincalDocument.root,
+              href: paths.dashboard.technicalDocument.root,
             },
             {
               name: 'List',
@@ -228,7 +228,7 @@ export default function DocumentsListView() {
           action={
             <Button
               component={RouterLink}
-              href={paths.dashboard.techincalDocument.new}
+              href={paths.dashboard.technicalDocument.new}
               variant="contained"
               startIcon={<Iconify icon="mingcute:add-line" />}
             >

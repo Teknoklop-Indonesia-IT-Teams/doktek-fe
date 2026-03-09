@@ -39,7 +39,7 @@ type Props = {
 type FormValues = {
   id_technical_document: string;
   id_type_document: string;
-  upload_doc: (File | string)[];
+  document_file: (File | string)[];
 };
 
 export default function DocumentItemsNewEditForm({
@@ -55,7 +55,7 @@ export default function DocumentItemsNewEditForm({
 
   const NewDocumentItemsSchema = Yup.object().shape({
     id_technical_document: Yup.string(),
-    upload_doc: Yup.array().max(1, 'Only one file allowed'),
+    document_file: Yup.array().max(1, 'Only one file allowed').nullable().notRequired(),
     id_type_document: Yup.string().required('Type is required'),
   });
 
@@ -63,10 +63,10 @@ export default function DocumentItemsNewEditForm({
     () => ({
       id_technical_document:
         currentDocumentItems?.technicalDocument.id_technical_document?.toString() || '',
-      upload_doc: currentDocumentItems?.upload_doc || [],
+      document_file: currentDocumentItems?.document_file || [],
       id_type_document: currentDocumentItems?.typeDocument.id_type_document?.toString() || '',
     }),
-    [currentDocumentItems]
+    [currentDocumentItems, type]
   );
 
   const methods = useForm({
@@ -113,7 +113,10 @@ export default function DocumentItemsNewEditForm({
       putDoktek(URLEdit, dataDocumentItems, {})
         .then((response: any) => {
           enqueueSnackbar(currentDocumentItems ? 'Update success!' : 'Create success!');
-          router.push(paths.dashboard.techincalDocument.root);
+
+          if (id_technical_documents) {
+            router.push(paths.dashboard.technicalDocument.details(id_technical_documents));
+          }
           console.info('DATA', response);
         })
         .catch((error: any) => {
@@ -132,7 +135,9 @@ export default function DocumentItemsNewEditForm({
       posterDoktek(URL, dataDocumentItems, {})
         .then((response) => {
           enqueueSnackbar(currentDocumentItems ? 'Update success!' : 'Create success!');
-          router.push(paths.dashboard.techincalDocument.root);
+          if (id_technical_documents) {
+            router.push(paths.dashboard.technicalDocument.details(id_technical_documents));
+          }
           console.info('DATA', response);
         })
         .catch((error) => {
@@ -150,113 +155,136 @@ export default function DocumentItemsNewEditForm({
   };
 
   const onSubmit = handleSubmit(async (data) => {
-    const payload: IDocumentItemsInput = {
-      upload_doc: data.upload_doc,
-      id_type_manager: Number(data.id_type_document),
-      id_technical_document: Number(id_technical_documents),
-    };
-
-    console.log({
-      upload_doc: data.upload_doc,
-      id_type_manager: Number(data.id_type_document),
-      id_technical_document: Number(data.id_technical_document),
-    });
+    console.log('DATA', data);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      postDocumentItems(payload);
+      const formData = new FormData();
+
+      // cek perubahan type document
+      if (
+        data.id_type_document &&
+        data.id_type_document !== currentDocumentItems?.typeDocument?.id_type_document?.toString()
+      ) {
+        formData.append('id_type_document', data.id_type_document);
+      }
+
+      // cek perubahan file
+      if (data.document_file && data.document_file.length > 0) {
+        const file = data.document_file[0];
+
+        // jika file baru (File object)
+        if (file instanceof File) {
+          formData.append('file', file);
+        }
+      }
+
+      // jika create
+      if (!currentDocumentItems) {
+        formData.append('id_technical_document', id_technical_documents || '');
+      }
+
+      // jika edit
+      if (currentDocumentItems) {
+        await putDoktek(
+          epDoktek.documentItem.edit(currentDocumentItems.id_technical_document_item.toString()),
+          formData,
+          {
+            headers: { 'Content-Type': 'multipart/form-data' },
+          }
+        );
+      } else {
+        await posterDoktek(epDoktek.documentItem.postDocumentItem, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+      }
+
+      enqueueSnackbar(currentDocumentItems ? 'Update success!' : 'Create success!');
+
       if (id_technical_documents) {
         mutate(epDoktek.document.details(id_technical_documents));
       }
+
       reset();
-    } catch (error) {
-      console.error(error);
+    } catch (error: any) {
+      enqueueSnackbar(`Save failed! ${error.message}`, {
+        variant: 'error',
+      });
     }
   });
 
   const handleDrop = useCallback(
     (acceptedFiles: File[]) => {
-      const files = values.upload_doc || [];
+      const files = values.document_file || [];
 
       const newFiles = acceptedFiles.map((file) => file);
 
-      setValue('upload_doc', [...files, ...newFiles], { shouldValidate: true });
+      setValue('document_file', acceptedFiles, { shouldValidate: true });
     },
-    [setValue, values.upload_doc]
+    [setValue, values.document_file]
   );
 
   const handleRemoveFile = useCallback(
     (inputFile: File | string) => {
-      const filtered = values.upload_doc && values.upload_doc?.filter((file) => file !== inputFile);
-      setValue('upload_doc', filtered);
+      const filtered =
+        values.document_file && values.document_file?.filter((file) => file !== inputFile);
+      setValue('document_file', filtered);
     },
-    [setValue, values.upload_doc]
+    [setValue, values.document_file]
   );
 
   const handleRemoveAllFiles = useCallback(() => {
-    setValue('upload_doc', []);
+    setValue('document_file', []);
   }, [setValue]);
 
   const renderDetails = (
-    <>
-      {mdUp && (
-        <Grid md={4}>
-          <Typography variant="h6" sx={{ mb: 0.5 }}>
-            Details
-          </Typography>
-          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            Title, short description, image...
-          </Typography>
-        </Grid>
-      )}
+    <Grid xs={12}>
+      <Card>
+        <CardHeader title="Document Item" />
 
-      <Grid xs={12} md={8}>
-        <Card>
-          {!mdUp && <CardHeader title="Details" />}
+        <Stack spacing={3} sx={{ p: 3 }}>
+          <RHFSelect
+            native
+            name="id_type_document"
+            label="Type Document"
+            InputLabelProps={{ shrink: true }}
+          >
+            <option value="" />
 
-          <Stack spacing={3} sx={{ p: 3 }}>
-            <RHFSelect
-              native
-              name="id_type_document"
-              label="Type Document"
-              InputLabelProps={{ shrink: true }}
-            >
-              {type.map((category) => (
-                <option key={category.id_type_document} value={category.id_type_document}>
-                  {category.code_document}
-                </option>
-              ))}
-            </RHFSelect>
-            <Stack spacing={1.5}>
-              <Typography variant="subtitle2">File</Typography>
-              <RHFUpload
-                name="upload_doc"
-                maxSize={3145728}
-                onDrop={handleDrop}
-                onRemove={handleRemoveFile}
-                onRemoveAll={handleRemoveAllFiles}
-                onUpload={() => console.info('ON UPLOAD')}
-              />
-            </Stack>
+            {type.map((item) => (
+              <option key={item.id_type_document} value={item.id_type_document}>
+                {item.code_document}
+              </option>
+            ))}
+          </RHFSelect>
+
+          <Stack spacing={1}>
+            <Typography variant="subtitle2">Upload File</Typography>
+
+            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+              Optional (max 1 file)
+            </Typography>
+
+            <RHFUpload
+              name="document_file"
+              // files={values.document_file}
+              maxSize={3145728}
+              multiple={false}
+              onDrop={handleDrop}
+              onRemove={handleRemoveFile}
+              onRemoveAll={handleRemoveAllFiles}
+            />
           </Stack>
-        </Card>
-      </Grid>
-    </>
+        </Stack>
+      </Card>
+    </Grid>
   );
 
   const renderActions = (
-    <>
-      {mdUp && <Grid md={4} />}
-      <Grid
-        xs={12}
-        md={8}
-        sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}
-      >
-        <LoadingButton type="submit" variant="contained" size="large" loading={isSubmitting}>
-          {!currentDocumentItems ? 'Create Document Items' : 'Save Changes'}
-        </LoadingButton>
-      </Grid>
-    </>
+    <Grid xs={12} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+      <LoadingButton type="submit" variant="contained" size="large" loading={isSubmitting}>
+        {!currentDocumentItems ? 'Create Document Item' : 'Save Changes'}
+      </LoadingButton>
+    </Grid>
   );
 
   return (

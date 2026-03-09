@@ -131,7 +131,7 @@ export const dashboardRoutes = [
         ],
       },
       {
-        path: 'techincal-document',
+        path: 'technical-document',
         children: [
           { element: <DocumentsListPage />, index: true },
           { path: 'list', element: <DocumentsListPage /> },

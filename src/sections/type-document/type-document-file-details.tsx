@@ -15,7 +15,7 @@ import Drawer, { DrawerProps } from '@mui/material/Drawer';
 import { fData } from 'src/utils/format-number';
 import { fDateTime } from 'src/utils/format-time';
 // types
-import { ITypeManager } from 'src/types/type';
+import { ITypeDocument } from 'src/types/type';
 // hooks
 import { useBoolean } from 'src/hooks/use-boolean';
 // components
@@ -29,7 +29,7 @@ import TypeDocumentInvitedItem from './type-document-invited-item';
 // ----------------------------------------------------------------------
 
 type Props = DrawerProps & {
-  item: ITypeManager;
+  item: ITypeDocument;
   onEdit: VoidFunction;
   onClose: VoidFunction;
   onDelete: VoidFunction;

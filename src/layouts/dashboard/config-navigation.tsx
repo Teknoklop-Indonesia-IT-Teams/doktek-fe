@@ -62,11 +62,11 @@ export function useNavData() {
       {
         subheader: t('overview'),
         items: [
-          {
-            title: t('dashboard'),
-            path: paths.dashboard.root,
-            icon: ICONS.dashboard,
-          },
+          // {
+          //   title: t('dashboard'),
+          //   path: paths.dashboard.root,
+          //   icon: ICONS.dashboard,
+          // },
           {
             title: t('app'),
             path: paths.dashboard.general.file,
@@ -82,7 +82,7 @@ export function useNavData() {
         items: [
           {
             title: t('documents'),
-            path: paths.dashboard.techincalDocument.root,
+            path: paths.dashboard.technicalDocument.root,
             icon: ICONS.documents,
           },
           {

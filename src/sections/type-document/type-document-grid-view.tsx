@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 // types
-import { ITypeManager } from 'src/types/type';
+import { ITypeDocument } from 'src/types/type';
 // hooks
 import { useBoolean } from 'src/hooks/use-boolean';
 // components
@@ -18,8 +18,8 @@ import Iconify from 'src/components/iconify';
 
 type Props = {
   table: TableProps;
-  data: ITypeManager[];
-  dataFiltered: ITypeManager[];
+  data: ITypeDocument[];
+  dataFiltered: ITypeDocument[];
   onEditItem: (id: string) => void;
   onOpenConfirm: VoidFunction;
   onDeleteItem: (id: string) => void;

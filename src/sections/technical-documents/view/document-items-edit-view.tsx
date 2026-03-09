@@ -20,7 +20,6 @@ type Props = {
 
 export default function DocumentItemsEditView({ id }: Props) {
   const settings = useSettingsContext();
-  const { id_technical_document } = useParams();
 
   const { documentItem: currentDocumentItem } = useGetDocumentItemsByID(id);
   // const currentDocumentItems = _invoices.find((invoice) => invoice.id === id);
@@ -36,7 +35,7 @@ export default function DocumentItemsEditView({ id }: Props) {
           },
           {
             name: 'Document Items',
-            href: paths.dashboard.techincalDocument.root,
+            href: paths.dashboard.technicalDocument.root,
           },
           { name: currentDocumentItem?.document_number },
         ]}
@@ -45,10 +44,7 @@ export default function DocumentItemsEditView({ id }: Props) {
         }}
       />
 
-      <DocumentItemsNewEditForm
-        currentDocumentItems={currentDocumentItem}
-        id_technical_documents={id_technical_document}
-      />
+      <DocumentItemsNewEditForm currentDocumentItems={currentDocumentItem} />
     </Container>
   );
 }

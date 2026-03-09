@@ -17,7 +17,7 @@ import { useCopyToClipboard } from 'src/hooks/use-copy-to-clipboard';
 import { fDateTime } from 'src/utils/format-time';
 import { fData } from 'src/utils/format-number';
 // types
-import { ITypeManager } from 'src/types/type';
+import { ITypeDocument } from 'src/types/type';
 // components
 import Iconify from 'src/components/iconify';
 import CustomPopover, { usePopover } from 'src/components/custom-popover';
@@ -32,7 +32,7 @@ import TypeDocumentFileDetails from './type-document-file-details';
 // ----------------------------------------------------------------------
 
 interface Props extends CardProps {
-  file: ITypeManager;
+  file: ITypeDocument;
   selected?: boolean;
   onSelect?: VoidFunction;
   onEdit: VoidFunction;

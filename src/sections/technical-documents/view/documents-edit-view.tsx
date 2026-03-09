@@ -34,7 +34,7 @@ export default function DocumentsEditView({ id }: Props) {
           },
           {
             name: 'Documents',
-            href: paths.dashboard.techincalDocument.root,
+            href: paths.dashboard.technicalDocument.root,
           },
           { name: currentDocument?.document_number },
         ]}
