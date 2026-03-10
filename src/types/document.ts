@@ -2,6 +2,7 @@
 
 import { IDivision } from './division';
 import { ITypeDocument } from './type';
+import { IUserItem } from './user';
 
 export type IDocumentTableFilterValue = string | string | Date | Date | string;
 
@@ -55,4 +56,13 @@ export type IDocument = {
 export type IDocumentInput = {
   job_title?: string;
   id_division?: number;
+};
+
+export type IDocumentItemsLog = {
+  id_technical_document_item_log: number;
+  technicalDocumentItem: IDocumentItem;
+  users: IUserItem;
+  activity: string;
+  note: string;
+  created_at: string;
 };

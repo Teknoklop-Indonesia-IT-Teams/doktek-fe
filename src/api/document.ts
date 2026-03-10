@@ -3,7 +3,7 @@ import useSWR from 'swr';
 // utils
 import { epDoktek, fetcherDoktek } from 'src/utils/axios-doktek';
 // types
-import type { IDocument, IDocumentItem } from 'src/types/document';
+import type { IDocument, IDocumentItem, IDocumentItemsLog } from 'src/types/document';
 
 // ----------------------------------------------------------------------
 
@@ -133,6 +133,27 @@ export function useSearchDocuments(query: unknown) {
       searchEmpty: !isLoading && !data?.document?.length,
     }),
     [data, error, isLoading, isValidating]
+  );
+
+  return memoizedValue;
+}
+
+export function useGetDocumentItemsLog() {
+  const URL = epDoktek.documentItem.log;
+
+  const { data, isLoading, error, isValidating } = useSWR(URL, fetcherDoktek, {
+    revalidateOnFocus: false,
+  });
+
+  const memoizedValue = useMemo(
+    () => ({
+      documentItemsLog: (data?.data as IDocumentItemsLog[]) || [],
+      documentItemsLogLoading: isLoading,
+      documentItemsLogError: error,
+      documentItemsLogValidating: isValidating,
+      documentItemsLogEmpty: !isLoading && !data?.data?.length,
+    }),
+    [data?.data, error, isLoading, isValidating]
   );
 
   return memoizedValue;

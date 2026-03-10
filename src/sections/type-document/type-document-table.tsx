@@ -76,7 +76,6 @@ export default function TypeDocumentTable({
 
   const denseHeight = dense ? 58 : 78;
   const { type, typeLoading, typeEmpty } = useGetTypes();
-  console.log('ID', tableData);
   return (
     <>
       <Box

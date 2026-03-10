@@ -27,19 +27,12 @@ export default function UserTableRow({ row, index, onEditRow }: Props) {
         <Avatar alt={username} sx={{ mr: 2 }}>
           {username?.charAt(0).toUpperCase()}
         </Avatar>
-        <ListItemText
-          primary={username}
-          primaryTypographyProps={{ typography: 'body2' }}
-        />
+        <ListItemText primary={username} primaryTypographyProps={{ typography: 'body2' }} />
       </TableCell>
 
-      <TableCell sx={{ whiteSpace: 'nowrap' }}>
-        {division?.division_name}
-      </TableCell>
+      <TableCell sx={{ whiteSpace: 'nowrap' }}>{division?.division_name}</TableCell>
 
-      <TableCell sx={{ whiteSpace: 'nowrap' }}>
-        {role?.role_name}
-      </TableCell>
+      <TableCell sx={{ whiteSpace: 'nowrap' }}>{role?.role_name}</TableCell>
 
       <TableCell>
         <Label variant="soft" color={flag_active ? 'success' : 'error'}>

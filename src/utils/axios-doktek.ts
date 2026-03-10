@@ -182,6 +182,7 @@ export const epDoktek = {
     edit: (id: string) => `/technical-document-items/${id}`,
     search: '/technical-document-items/q',
     details: (id: string) => `/technical-document-items/${id}`,
+    log: '/technical-document-item-logs',
   },
   unit: {
     postUnit: '/unit',

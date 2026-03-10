@@ -20,7 +20,12 @@ import { fCurrency } from 'src/utils/format-number';
 // _mock
 import { INVOICE_STATUS_OPTIONS } from 'src/_mock';
 // types
-import { IDocument, IDocumentItem, IDocumentTableFilters } from 'src/types/document';
+import {
+  IDocument,
+  IDocumentItem,
+  IDocumentItemTableFilters,
+  IDocumentTableFilters,
+} from 'src/types/document';
 // components
 import Label from 'src/components/label';
 import Scrollbar from 'src/components/scrollbar';
@@ -29,16 +34,31 @@ import DocumentsToolbar from './documents-toolbar';
 import { IDivision } from 'src/types/division';
 import { useBoolean } from 'src/hooks/use-boolean';
 import CustomPopover, { usePopover } from 'src/components/custom-popover';
-import { Button, Checkbox, IconButton, Link, ListItemText, MenuItem } from '@mui/material';
+import Button from '@mui/material/Button';
+import { Checkbox, IconButton, Link, ListItemText, MenuItem } from '@mui/material';
 import Iconify from 'src/components/iconify';
 import { ConfirmDialog } from 'src/components/custom-dialog';
 import { useGetDivision } from 'src/api/division';
-import { getComparator, TableHeadCustom, useTable } from 'src/components/table';
+import {
+  emptyRows,
+  getComparator,
+  TableEmptyRows,
+  TableHeadCustom,
+  TableNoData,
+  TablePaginationCustom,
+  TableSkeleton,
+  useTable,
+} from 'src/components/table';
 import { useRouter } from 'src/routes/hooks';
 import { paths } from 'src/routes/paths';
 import { useGetType, useGetTypes } from 'src/api/type';
-import { useGetDocumentItems, useGetDocuments } from 'src/api/document';
+import { useGetDocumentItems, useGetDocumentItemsLog, useGetDocuments } from 'src/api/document';
 import LoadingButton from '@mui/lab/LoadingButton';
+import { deleterDoktek, epDoktek } from 'src/utils/axios-doktek';
+import { enqueueSnackbar } from 'src/components/snackbar';
+import { mutate } from 'swr';
+import { isEqual } from 'lodash';
+import DocumentItemsTableRow from './document-items-table-row';
 // ----------------------------------------------------------------------
 
 type Props = {
@@ -55,37 +75,69 @@ const TABLE_HEAD = [
   { id: '' },
 ];
 
+const defaultFilters: IDocumentItemTableFilters = {
+  document_number: '',
+  document_file: '',
+  id_type_document: '',
+  id_technical_document: '',
+  created_at: null,
+  updated_at: null,
+};
+
 export default function DocumentDetails({ documents, onEditItem }: Props) {
   if (!documents) return null;
   const { division } = useGetDivision();
+  const { type } = useGetTypes();
   const table = useTable({ defaultOrderBy: 'createDate' });
-  const { documentItem } = useGetDocumentItems();
+  const { documentItem, documentItemEmpty, documentItemLoading } = useGetDocumentItems();
+  const { documentItemsLog } = useGetDocumentItemsLog();
   const [selectedRow, setSelectedRow] = useState<IDocumentItem | null>(null);
   const [loadingId, setLoadingId] = useState<number | null>(null);
-  const [downloadLoadingId, setDownloadLoadingId] = useState<number | null>(null);
+  const [filters, setFilters] = useState(defaultFilters);
 
   const tableData: IDocumentItem[] =
     documentItem?.filter(
-      (item) => item.technicalDocument?.id_technical_document === documents.id_technical_document
+      (item) =>
+        item.technicalDocument.id_technical_document === documents.id_technical_document ||
+        item.technicalDocument?.id_technical_document === documents.id_technical_document
     ) || [];
 
   const { document_number, job_title, created_at, updated_at } = documents;
   const divisionObj = division.find((d) => d.id_division === documents.division.id_division);
+  console.log('documentItem:', documentItem);
+  console.log('documents:', documents);
+  console.log('TABLE DATA', tableData);
 
   const confirm = useBoolean();
   const router = useRouter();
 
   const popover = usePopover();
-  // const dataFiltered = applyFilter({
-  //   inputData: tableData,
-  //   comparator: getComparator(table.order, table.orderBy),
-  //   filters,
-  // });
-  // const dataInPage = dataFiltered.slice(
-  //   table.page * table.rowsPerPage,
-  //   table.page * table.rowsPerPage + table.rowsPerPage
-  // );
+  const dataFiltered = applyFilter({
+    inputData: tableData,
+    comparator: getComparator(table.order, table.orderBy),
+    filters,
+  });
+  const dataInPage = dataFiltered.slice(
+    table.page * table.rowsPerPage,
+    table.page * table.rowsPerPage + table.rowsPerPage
+  );
 
+  const denseHeight = table.dense ? 56 : 76;
+
+  const canReset = !isEqual(defaultFilters, filters);
+
+  const notFound = (!dataFiltered.length && canReset) || !dataFiltered.length;
+
+  const handleFilters = useCallback(
+    (name: string, value: IDocumentItemTableFilters) => {
+      table.onResetPage();
+      setFilters((prevState) => ({
+        ...prevState,
+        [name]: value,
+      }));
+    },
+    [table]
+  );
   const handleEditRow = useCallback(
     (id: string) => {
       router.push(paths.dashboard.technicalDocument.item.edit(id));
@@ -93,51 +145,37 @@ export default function DocumentDetails({ documents, onEditItem }: Props) {
     [router]
   );
 
-  // const handleDeleteRow = useCallback(
-  //   (id: string) => {
-  //     const deleteRow = tableData.filter((row) => row.id_technical_document.toString() !== id);
-  //     setTableData(deleteRow);
+  const handleDeleteItem = useCallback(
+    (id: string) => {
+      const URL = epDoktek.documentItem.details(id);
+      deleterDoktek(URL)
+        .then((res) => enqueueSnackbar('Delete Success', 'success' as any))
+        .catch((e) => enqueueSnackbar(e, 'error' as any));
+      mutate(epDoktek.documentItem.list);
 
-  //     table.onUpdatePageDeleteRow(dataInPage.length);
-  //   },
-  //   [dataInPage.length, table, tableData]
-  // );
-  const handleViewFile = (row: IDocumentItem) => {
-    const file = row.document_file?.toString();
+      table.onUpdatePageDeleteRow(dataInPage.length);
+    },
+    [dataInPage.length, table]
+  );
+  const activityLogs =
+    documentItemsLog?.filter(
+      (log) =>
+        log.technicalDocumentItem?.document_number &&
+        tableData.some(
+          (item) =>
+            item.id_technical_document_item === log.technicalDocumentItem.id_technical_document_item
+        )
+    ) || [];
 
-    if (!file) return;
-
-    const fileUrl = typeof file === 'string' ? file : URL.createObjectURL(file);
-
-    window.open(fileUrl, '_blank');
-  };
-
-  const handleDownloadFile = (row: IDocumentItem) => {
-    const file = row.document_file?.toString();
-
-    if (!file) return;
-
-    const fileUrl = typeof file === 'string' ? file : URL.createObjectURL(file);
-
-    const link = document.createElement('a');
-    link.href = fileUrl;
-
-    const fileName = typeof file === 'string' ? file.split('/').pop() : file;
-
-    link.download = fileName || 'document';
-
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+  const handleResetFilters = useCallback(() => {
+    setFilters(defaultFilters);
+  }, []);
 
   return (
     <Box sx={{ flexGrow: 1 }}>
       <Grid container spacing={3}>
-        {/* LEFT SIDE */}
         <Grid item xs={12} md={3}>
           <Stack spacing={3}>
-            {/* DOCUMENT INFO */}
             <Card>
               <Stack sx={{ p: 3 }}>
                 <ListItemText
@@ -154,57 +192,68 @@ export default function DocumentDetails({ documents, onEditItem }: Props) {
                 />
 
                 <Stack direction="row" spacing={1} alignItems="center">
-                  <Iconify width={16} icon="solar:users-group-rounded-bold" />
+                  <Iconify width={16} icon="hugeicons:job-search" />
                   <Typography variant="body2">{job_title}</Typography>
                 </Stack>
-
-                <Typography variant="body2" color="text.secondary">
-                  {divisionObj?.division_name}
-                </Typography>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <Iconify width={16} icon="solar:buildings-2-bold" />
+                  <Typography variant="body2" color="text.secondary">
+                    {divisionObj?.division_name}
+                  </Typography>
+                </Stack>
               </Stack>
             </Card>
 
-            {/* ACTIVITY LOG */}
             <Card>
               <Stack sx={{ p: 3 }}>
                 <Typography variant="subtitle1" sx={{ mb: 2 }}>
                   Activity Log
                 </Typography>
 
-                <Stack spacing={2}>
-                  <Stack direction="row" spacing={2} alignItems="center">
-                    <Iconify icon="solar:clock-circle-bold" width={18} />
-                    <Box>
-                      <Typography variant="body2">Document Created</Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {format(new Date(created_at), 'dd MMM yyyy HH:mm')}
-                      </Typography>
-                    </Box>
-                  </Stack>
+                <Stack
+                  spacing={2}
+                  sx={{
+                    maxHeight: 300,
+                    overflowY: 'auto',
+                    pr: 1,
+                  }}
+                >
+                  {activityLogs.map((log) => (
+                    <Stack
+                      key={log.id_technical_document_item_log}
+                      direction="row"
+                      spacing={2}
+                      alignItems="flex-start"
+                    >
+                      <Iconify icon="solar:clock-circle-bold" width={18} />
 
-                  <Divider />
+                      <Box>
+                        <Typography variant="body2" fontWeight={600}>
+                          {log.activity}
+                        </Typography>
 
-                  <Stack direction="row" spacing={2} alignItems="center">
-                    <Iconify icon="solar:pen-bold" width={18} />
-                    <Box>
-                      <Typography variant="body2">Last Updated</Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {format(new Date(updated_at), 'dd MMM yyyy HH:mm')}
-                      </Typography>
-                    </Box>
-                  </Stack>
+                        <Typography variant="body2" color="text.secondary">
+                          {log.note}
+                        </Typography>
+
+                        <Typography variant="caption" color="text.disabled">
+                          by {log.users?.username} •{' '}
+                          {format(new Date(log.created_at), 'dd MMM yyyy HH:mm')}
+                        </Typography>
+                      </Box>
+                    </Stack>
+                  ))}
                 </Stack>
               </Stack>
             </Card>
           </Stack>
         </Grid>
 
-        {/* RIGHT SIDE - TABLE */}
         <Grid item xs={12} md={9}>
           <Card>
-            <TableContainer>
+            <TableContainer sx={{ position: 'relative', overflow: 'unset' }}>
               <Scrollbar>
-                <Table size={table.dense ? 'small' : 'medium'}>
+                <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 800 }}>
                   <TableHeadCustom
                     order={table.order}
                     orderBy={table.orderBy}
@@ -212,100 +261,116 @@ export default function DocumentDetails({ documents, onEditItem }: Props) {
                     rowCount={tableData.length}
                     numSelected={table.selected.length}
                     onSort={table.onSort}
+                    onSelectAllRows={(checked) =>
+                      table.onSelectAllRows(
+                        checked,
+                        tableData.map((row) => row.id_technical_document_item.toString())
+                      )
+                    }
                   />
 
                   <TableBody>
-                    {tableData.map((row) => (
+                    {documentItemLoading ? (
+                      [...Array(table.rowsPerPage)].map((_, index) => (
+                        <TableSkeleton key={index} sx={{ height: denseHeight }} />
+                      ))
+                    ) : (
                       <>
-                        <TableRow hover key={row.id_technical_document_item}>
-                          <TableCell>
-                            <Typography variant="body2" noWrap>
-                              {row.document_number}
-                            </Typography>
-                          </TableCell>
-
-                          <TableCell>
-                            <Label variant="soft">{row.typeDocument?.code_document}</Label>
-                          </TableCell>
-
-                          <TableCell>
-                            {row.document_file ? (
-                              <Stack direction="row" spacing={1}>
-                                <LoadingButton
-                                  size="small"
-                                  variant="outlined"
-                                  startIcon={<Iconify icon="solar:eye-bold" />}
-                                  onClick={() => handleViewFile(row)}
-                                >
-                                  View
-                                </LoadingButton>
-
-                                <LoadingButton
-                                  size="small"
-                                  variant="contained"
-                                  startIcon={<Iconify icon="solar:download-bold" />}
-                                  onClick={() => handleDownloadFile(row)}
-                                >
-                                  Download
-                                </LoadingButton>
-                              </Stack>
-                            ) : (
-                              <Typography variant="body2" color="text.secondary">
-                                No File
-                              </Typography>
-                            )}
-                          </TableCell>
-
-                          <TableCell>{format(new Date(row.created_at), 'dd MMM yyyy')}</TableCell>
-
-                          <TableCell>{format(new Date(row.updated_at), 'dd MMM yyyy')}</TableCell>
-
-                          <TableCell align="right">
-                            <IconButton
-                              onClick={(e) => {
-                                setSelectedRow(row);
-                                popover.onOpen(e);
-                              }}
-                            >
-                              <Iconify icon="eva:more-vertical-fill" />
-                            </IconButton>
-                          </TableCell>
-                        </TableRow>
-                        <CustomPopover
-                          open={popover.open}
-                          onClose={popover.onClose}
-                          arrow="right-top"
-                          sx={{ width: 160 }}
-                        >
-                          <MenuItem
-                            onClick={() => {
-                              if (selectedRow) {
-                                onEditItem?.(selectedRow);
+                        {dataFiltered
+                          .slice(
+                            table.page * table.rowsPerPage,
+                            table.page * table.rowsPerPage + table.rowsPerPage
+                          )
+                          .map((row, index) => (
+                            <DocumentItemsTableRow
+                              key={row.id_technical_document_item}
+                              row={row}
+                              typeList={type || []}
+                              index={table.page * table.rowsPerPage + index}
+                              selected={table.selected.includes(
+                                row.id_technical_document_item.toString()
+                              )}
+                              onSelectRow={() =>
+                                table.onSelectRow(row.id_technical_document_item.toString())
                               }
-                              popover.onClose();
-                            }}
-                          >
-                            <Iconify icon="solar:pen-bold" /> Edit
-                          </MenuItem>
-                          <Divider sx={{ borderStyle: 'dashed' }} />
-                          <MenuItem
-                            onClick={() => {
-                              if (selectedRow) {
-                                confirm.onTrue();
+                              onViewRow={() => {}}
+                              onEditRow={() => onEditItem?.(row)}
+                              onDeleteRow={() =>
+                                handleDeleteItem(row.id_technical_document_item.toString())
                               }
-                              popover.onClose();
-                            }}
-                            sx={{ color: 'error.main' }}
-                          >
-                            <Iconify icon="solar:trash-bin-trash-bold" /> Delete
-                          </MenuItem>
-                        </CustomPopover>
+                            />
+                          ))}
+
+                        <TableEmptyRows
+                          height={denseHeight}
+                          emptyRows={emptyRows(table.page, table.rowsPerPage, tableData.length)}
+                        />
+
+                        <TableNoData notFound={notFound} />
                       </>
-                    ))}
+                    )}
                   </TableBody>
                 </Table>
               </Scrollbar>
             </TableContainer>
+            <CustomPopover
+              open={popover.open}
+              onClose={popover.onClose}
+              arrow="right-top"
+              sx={{ width: 160 }}
+            >
+              <MenuItem
+                onClick={() => {
+                  if (selectedRow) {
+                    onEditItem?.(selectedRow);
+                  }
+                  popover.onClose();
+                }}
+              >
+                <Iconify icon="solar:pen-bold" /> Edit
+              </MenuItem>
+
+              <Divider sx={{ borderStyle: 'dashed' }} />
+
+              <MenuItem
+                onClick={() => {
+                  confirm.onTrue();
+                  popover.onClose();
+                }}
+                sx={{ color: 'error.main' }}
+              >
+                <Iconify icon="solar:trash-bin-trash-bold" /> Delete
+              </MenuItem>
+            </CustomPopover>
+            <ConfirmDialog
+              open={confirm.value}
+              onClose={confirm.onFalse}
+              title="Delete"
+              content="Are you sure want to delete?"
+              action={
+                <Button
+                  variant="contained"
+                  color="error"
+                  onClick={() => {
+                    if (selectedRow) {
+                      handleDeleteItem(selectedRow.id_technical_document_item.toString());
+                    }
+                  }}
+                >
+                  Delete
+                </Button>
+              }
+            />
+            <TablePaginationCustom
+              count={dataFiltered.length}
+              page={table.page}
+              rowsPerPage={table.rowsPerPage}
+              onPageChange={table.onChangePage}
+              onRowsPerPageChange={table.onChangeRowsPerPage}
+              //
+              dense={table.dense}
+              onChangeDense={table.onChangeDense}
+            />
           </Card>
         </Grid>
       </Grid>
@@ -315,37 +380,44 @@ export default function DocumentDetails({ documents, onEditItem }: Props) {
 
 // ----------------------------------------------------------------------
 
-// function applyFilter({
-//   inputData,
-//   comparator,
-//   filters,
-// }: {
-//   inputData: IDocument[];
-//   comparator: (a: any, b: any) => number;
-//   filters: IDocumentTableFilters;
-// }) {
-//   const { document_number, job_title, created_at, updated_at, id_division } = filters;
+function applyFilter({
+  inputData,
+  comparator,
+  filters,
+}: {
+  inputData: IDocumentItem[];
+  comparator: (a: any, b: any) => number;
+  filters: IDocumentItemTableFilters;
+}) {
+  const {
+    document_number,
+    document_file,
+    id_type_document,
+    id_technical_document,
+    created_at,
+    updated_at,
+  } = filters;
 
-//   const stabilizedThis = inputData.map((el, index) => [el, index] as const);
+  const stabilizedThis = inputData.map((el, index) => [el, index] as const);
 
-//   stabilizedThis.sort((a, b) => {
-//     const order = comparator(a[0], b[0]);
-//     if (order !== 0) return order;
-//     return a[1] - b[1];
-//   });
+  stabilizedThis.sort((a, b) => {
+    const order = comparator(a[0], b[0]);
+    if (order !== 0) return order;
+    return a[1] - b[1];
+  });
 
-//   inputData = stabilizedThis.map((el) => el[0]);
+  inputData = stabilizedThis.map((el) => el[0]);
 
-//   if (document_number) {
-//     inputData = inputData.filter(
-//       (document) =>
-//         document.document_number.toLowerCase().indexOf(document_number.toLowerCase()) !== -1
-//     );
-//   }
+  if (document_number) {
+    inputData = inputData.filter(
+      (document) =>
+        document.document_number.toLowerCase().indexOf(document_number.toLowerCase()) !== -1
+    );
+  }
 
-//   if (id_division && id_division !== 'all') {
-//     inputData = inputData.filter((document) => document.division?.division_name === id_division);
-//   }
+  // if (id_division && id_division !== 'all') {
+  //   inputData = inputData.filter((document) => document.division?.division_name === id_division);
+  // }
 
-//   return inputData;
-// }
+  return inputData;
+}

@@ -52,6 +52,9 @@ import DocumentsTableFiltersResult from '../documents-table-filters-result';
 import { useGetDocuments } from 'src/api/document';
 import { useGetDivision } from 'src/api/division';
 import { isEqual } from 'lodash';
+import { deleterDoktek, epDoktek } from 'src/utils/axios-doktek';
+import { enqueueSnackbar } from 'src/components/snackbar';
+import { mutate } from 'swr';
 
 // ----------------------------------------------------------------------
 
@@ -161,12 +164,15 @@ export default function DocumentsListView() {
 
   const handleDeleteRow = useCallback(
     (id: string) => {
-      const deleteRow = tableData.filter((row) => row.id_technical_document !== id);
-      setTableData(deleteRow);
+      const URL = epDoktek.document.details(id);
+      deleterDoktek(URL)
+        .then((res) => enqueueSnackbar('Delete Success', 'success' as any))
+        .catch((e) => enqueueSnackbar(e, 'error' as any));
+      mutate(epDoktek.document.list);
 
       table.onUpdatePageDeleteRow(dataInPage.length);
     },
-    [dataInPage.length, table, tableData]
+    [dataInPage.length, table]
   );
 
   const handleDeleteRows = useCallback(() => {

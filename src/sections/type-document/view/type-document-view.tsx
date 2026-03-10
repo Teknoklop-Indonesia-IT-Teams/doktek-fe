@@ -29,6 +29,9 @@ import { RouterLink } from 'src/routes/components';
 import { useGetTypes } from 'src/api/type';
 import { isEqual } from 'lodash';
 import { useRouter } from 'src/routes/hooks';
+import { deleterDoktek, epDoktek } from 'src/utils/axios-doktek';
+import { enqueueSnackbar } from 'src/components/snackbar';
+import { mutate } from 'swr';
 
 // ----------------------------------------------------------------------
 
@@ -100,12 +103,15 @@ export default function TypeDocumentView() {
 
   const handleDeleteItem = useCallback(
     (id: string) => {
-      const deleteRow = tableData.filter((row) => row.id_type_document !== id);
-      setTableData(deleteRow);
+      const URL = epDoktek.type.details(id);
+      deleterDoktek(URL)
+        .then((res) => enqueueSnackbar('Delete Success', 'success' as any))
+        .catch((e) => enqueueSnackbar(e, 'error' as any));
+      mutate(epDoktek.type.list);
 
       table.onUpdatePageDeleteRow(dataInPage.length);
     },
-    [dataInPage.length, table, tableData]
+    [dataInPage.length, table]
   );
 
   const handleEditRow = useCallback(

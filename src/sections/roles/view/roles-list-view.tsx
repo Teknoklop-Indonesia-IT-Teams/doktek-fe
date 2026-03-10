@@ -53,6 +53,9 @@ import RolesTableToolbar from '../roles-table-toolbar';
 import RolesTableFiltersResult from '../roles-table-filters-result';
 import { _role, ROLE_NAME } from 'src/_mock/_role';
 import { isEqual } from 'lodash';
+import { deleterDoktek, epDoktek } from 'src/utils/axios-doktek';
+import { enqueueSnackbar } from 'src/components/snackbar';
+import { mutate } from 'swr';
 
 // ----------------------------------------------------------------------
 
@@ -122,12 +125,15 @@ export default function RolesListView() {
 
   const handleDeleteRow = useCallback(
     (id: string) => {
-      const deleteRow = tableData.filter((row) => row.id_role !== id);
-      setTableData(deleteRow);
+      const URL = epDoktek.roles.details(id);
+      deleterDoktek(URL)
+        .then((res) => enqueueSnackbar('Delete Success', 'success' as any))
+        .catch((e) => enqueueSnackbar(e, 'error' as any));
+      mutate(epDoktek.roles.list);
 
       table.onUpdatePageDeleteRow(dataInPage.length);
     },
-    [dataInPage.length, table, tableData]
+    [dataInPage.length, table]
   );
 
   const handleDeleteRows = useCallback(() => {

@@ -15,10 +15,14 @@ import { RouterLink } from 'src/routes/components';
 import Iconify from 'src/components/iconify';
 import DocumentDetailsToolbar from '../documents-details-toolbar';
 import { useRouter } from 'src/routes/hooks';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Box, Dialog, Typography } from '@mui/material';
 import DocumentItemsNewEditForm from '../document-items-new-edit-form';
 import { IDocumentItem } from 'src/types/document';
+import { deleterDoktek, epDoktek } from 'src/utils/axios-doktek';
+import { enqueueSnackbar } from 'src/components/snackbar';
+import { mutate } from 'swr';
+import { useTable } from 'src/components/table';
 
 // ----------------------------------------------------------------------
 
@@ -93,7 +97,6 @@ export default function DocumentsDetailsView({ id }: Props) {
           />
         </Box>
       </Dialog>
-      ;
     </>
   );
 }

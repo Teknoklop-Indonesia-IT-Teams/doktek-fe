@@ -30,7 +30,7 @@ import FileManagerFolderItem from '../../../file-manager/file-manager-folder-ite
 import FileManagerNewFolderDialog from '../../../file-manager/file-manager-new-folder-dialog';
 import { useGetTypes } from 'src/api/type';
 import { ITypeDocument } from 'src/types/type';
-import { useGetDocuments } from 'src/api/document';
+import { useGetDocumentItemsLog, useGetDocuments } from 'src/api/document';
 import FileDocumentRecentItem from 'src/sections/technical-documents/file-recent-item';
 import { useGetUsers } from 'src/api/user';
 import AppWelcome from '../../app/app-welcome';
@@ -69,6 +69,46 @@ export default function OverviewFileView() {
   const { document } = useGetDocuments();
   const { users } = useGetUsers();
   const { user } = useMockedUser();
+  const { documentItemsLog } = useGetDocumentItemsLog();
+
+  const divisions = Array.from(
+    new Set(
+      documentItemsLog
+        ?.map((log) => log?.technicalDocumentItem?.technicalDocument?.division?.division_name)
+        .filter(Boolean) || []
+    )
+  );
+  const divisionCounts = divisions.map(
+    (division) =>
+      documentItemsLog?.filter(
+        (log) => log?.technicalDocumentItem?.technicalDocument?.division?.division_name === division
+      ).length || 0
+  );
+
+  const weekMap: Record<string, number> = {};
+  const monthMap: Record<string, number> = {};
+  const yearMap: Record<string, number> = {};
+
+  (documentItemsLog || []).forEach((item: any) => {
+    const date = new Date(item.created_at);
+
+    const week = `Week ${Math.ceil(date.getDate() / 7)}`;
+    const month = date.toLocaleString('default', { month: 'short' });
+    const year = date.getFullYear().toString();
+
+    weekMap[week] = (weekMap[week] || 0) + 1;
+    monthMap[month] = (monthMap[month] || 0) + 1;
+    yearMap[year] = (yearMap[year] || 0) + 1;
+  });
+
+  const weekLabels = Object.keys(weekMap);
+  const weekData = Object.values(weekMap);
+
+  const monthLabels = Object.keys(monthMap);
+  const monthData = Object.values(monthMap);
+
+  const yearLabels = Object.keys(yearMap);
+  const yearData = Object.values(yearMap);
 
   const handleChangeFolderName = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     setFolderName(event.target.value);
@@ -170,7 +210,11 @@ export default function OverviewFileView() {
             <FileDataActivity
               title="Data Activity"
               chart={{
-                labels: TIME_LABELS,
+                labels: {
+                  Week: weekLabels,
+                  Month: monthLabels,
+                  Year: yearLabels,
+                },
                 colors: [
                   theme.palette.primary.main,
                   theme.palette.error.main,
@@ -181,40 +225,28 @@ export default function OverviewFileView() {
                   {
                     type: 'Week',
                     data: [
-                      { name: 'Images', data: [20, 34, 48, 65, 37, 48] },
-                      { name: 'Media', data: [10, 34, 13, 26, 27, 28] },
-                      { name: 'Documents', data: [10, 14, 13, 16, 17, 18] },
-                      { name: 'Other', data: [5, 12, 6, 7, 8, 9] },
+                      {
+                        name: 'Activity',
+                        data: weekData,
+                      },
                     ],
                   },
                   {
                     type: 'Month',
                     data: [
                       {
-                        name: 'Images',
-                        data: [10, 34, 13, 56, 77, 88, 99, 77, 45, 12, 43, 34],
-                      },
-                      {
-                        name: 'Media',
-                        data: [10, 34, 13, 56, 77, 88, 99, 77, 45, 12, 43, 34],
-                      },
-                      {
-                        name: 'Documents',
-                        data: [10, 34, 13, 56, 77, 88, 99, 77, 45, 12, 43, 34],
-                      },
-                      {
-                        name: 'Other',
-                        data: [10, 34, 13, 56, 77, 88, 99, 77, 45, 12, 43, 34],
+                        name: 'Activity',
+                        data: monthData,
                       },
                     ],
                   },
                   {
                     type: 'Year',
                     data: [
-                      { name: 'Images', data: [10, 34, 13, 56, 77] },
-                      { name: 'Media', data: [10, 34, 13, 56, 77] },
-                      { name: 'Documents', data: [10, 34, 13, 56, 77] },
-                      { name: 'Other', data: [10, 34, 13, 56, 77] },
+                      {
+                        name: 'Activity',
+                        data: yearData,
+                      },
                     ],
                   },
                 ],

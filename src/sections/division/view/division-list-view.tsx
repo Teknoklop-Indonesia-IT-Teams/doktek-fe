@@ -49,6 +49,9 @@ import DivisionTableRow from '../division-table-row';
 import DivisionTableToolbar from '../division-table-toolbar';
 import { useGetDivision } from 'src/api/division';
 import { isEqual } from 'lodash';
+import { deleterDoktek, epDoktek } from 'src/utils/axios-doktek';
+import { enqueueSnackbar } from 'src/components/snackbar';
+import { mutate } from 'swr';
 
 // ----------------------------------------------------------------------
 
@@ -117,13 +120,16 @@ export default function DivisionListView() {
   );
 
   const handleDeleteRow = useCallback(
-    (id_division: string) => {
-      const deleteRow = tableData.filter((row) => row.id_division !== id_division);
-      setTableData(deleteRow);
+    (id: string) => {
+      const URL = epDoktek.division.details(id);
+      deleterDoktek(URL)
+        .then((res) => enqueueSnackbar('Delete Success', 'success' as any))
+        .catch((e) => enqueueSnackbar(e, 'error' as any));
+      mutate(epDoktek.division.list);
 
       table.onUpdatePageDeleteRow(dataInPage.length);
     },
-    [dataInPage.length, table, tableData]
+    [dataInPage.length, table]
   );
 
   const handleEditRow = useCallback(

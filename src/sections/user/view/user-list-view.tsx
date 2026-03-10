@@ -173,8 +173,7 @@ export default function UserListView() {
                     (tab.value === 'non-active' && 'warning') ||
                     'default'
                   }
-                >
-                </Label>
+                ></Label>
               }
             />
           ))}
@@ -288,9 +287,7 @@ function applyFilter({
   }
 
   if (filters.division.length) {
-    inputData = inputData.filter((user) =>
-      filters.division.includes(user.division?.division_name)
-    );
+    inputData = inputData.filter((user) => filters.division.includes(user.division?.division_name));
   }
 
   return inputData;
