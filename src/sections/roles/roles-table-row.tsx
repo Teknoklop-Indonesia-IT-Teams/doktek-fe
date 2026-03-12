@@ -1,11 +1,6 @@
 // @mui
-import Link from '@mui/material/Link';
 import Button from '@mui/material/Button';
-import Avatar from '@mui/material/Avatar';
-import Divider from '@mui/material/Divider';
-import MenuItem from '@mui/material/MenuItem';
 import TableRow from '@mui/material/TableRow';
-import Checkbox from '@mui/material/Checkbox';
 import TableCell from '@mui/material/TableCell';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
@@ -16,7 +11,6 @@ import { useBoolean } from 'src/hooks/use-boolean';
 import Label from 'src/components/label';
 import Iconify from 'src/components/iconify';
 import { ConfirmDialog } from 'src/components/custom-dialog';
-import CustomPopover, { usePopover } from 'src/components/custom-popover';
 import { IRole } from 'src/types/role';
 
 // ----------------------------------------------------------------------
@@ -24,8 +18,6 @@ import { IRole } from 'src/types/role';
 type Props = {
   row: IRole;
   index: number;
-  selected: boolean;
-  onSelectRow: VoidFunction;
   onViewRow: VoidFunction;
   onEditRow: VoidFunction;
   onDeleteRow: VoidFunction;
@@ -34,8 +26,6 @@ type Props = {
 export default function RolesTableRow({
   row,
   index,
-  selected,
-  onSelectRow,
   onViewRow,
   onEditRow,
   onDeleteRow,
@@ -44,15 +34,9 @@ export default function RolesTableRow({
 
   const confirm = useBoolean();
 
-  const popover = usePopover();
-
   return (
     <>
-      <TableRow hover selected={selected}>
-        <TableCell padding="checkbox">
-          <Checkbox checked={selected} onClick={onSelectRow} />
-        </TableCell>
-
+      <TableRow hover>
         <TableCell sx={{ display: 'flex', alignItems: 'center' }}>
           <ListItemText
             disableTypography
@@ -79,41 +63,11 @@ export default function RolesTableRow({
         </TableCell>
 
         <TableCell align="right" sx={{ px: 1 }}>
-          <IconButton color={popover.open ? 'inherit' : 'default'} onClick={popover.onOpen}>
-            <Iconify icon="eva:more-vertical-fill" />
+          <IconButton color="error" onClick={confirm.onTrue}>
+            <Iconify icon="solar:trash-bin-trash-bold" />
           </IconButton>
         </TableCell>
       </TableRow>
-
-      <CustomPopover
-        open={popover.open}
-        onClose={popover.onClose}
-        arrow="right-top"
-        sx={{ width: 160 }}
-      >
-        <MenuItem
-          onClick={() => {
-            onViewRow();
-            popover.onClose();
-          }}
-        >
-          <Iconify icon="solar:eye-bold" />
-          View
-        </MenuItem>
-
-        <Divider sx={{ borderStyle: 'dashed' }} />
-
-        <MenuItem
-          onClick={() => {
-            confirm.onTrue();
-            popover.onClose();
-          }}
-          sx={{ color: 'error.main' }}
-        >
-          <Iconify icon="solar:trash-bin-trash-bold" />
-          Delete
-        </MenuItem>
-      </CustomPopover>
 
       <ConfirmDialog
         open={confirm.value}
