@@ -173,7 +173,7 @@ export default function RolesListView() {
           links={[
             {
               name: 'Dashboard',
-              href: paths.dashboard.root,
+              href: paths.dashboard.general.file,
             },
             {
               name: 'Roles',

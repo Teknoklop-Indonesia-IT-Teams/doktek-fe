@@ -291,7 +291,6 @@ export default function DocumentDetails({ documents, onEditItem }: Props) {
                               onSelectRow={() =>
                                 table.onSelectRow(row.id_technical_document_item.toString())
                               }
-                              onViewRow={() => {}}
                               onEditRow={() => onEditItem?.(row)}
                               onDeleteRow={() =>
                                 handleDeleteItem(row.id_technical_document_item.toString())

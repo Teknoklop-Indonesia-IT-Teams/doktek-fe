@@ -20,6 +20,9 @@ import ProfileCover from '../profile-cover';
 import ProfileFriends from '../profile-friends';
 import ProfileGallery from '../profile-gallery';
 import ProfileFollowers from '../profile-followers';
+import { useAuthContext } from 'src/auth/hooks';
+import { useGetRoles } from 'src/api/role';
+import { useGetUsers } from 'src/api/user';
 
 // ----------------------------------------------------------------------
 
@@ -51,7 +54,9 @@ const TABS = [
 export default function UserProfileView() {
   const settings = useSettingsContext();
 
-  const { user } = useMockedUser();
+  const { user } = useAuthContext();
+  // const { users} = useGetUsers();
+  const { roles } = useGetRoles();
 
   const [searchFriends, setSearchFriends] = useState('');
 
@@ -65,6 +70,8 @@ export default function UserProfileView() {
     setSearchFriends(event.target.value);
   }, []);
 
+  const roleName = roles?.find((role) => role.id_role === user?.id_role)?.role_name || 'Unknown';
+
   return (
     <Container maxWidth={settings.themeStretch ? false : 'lg'}>
       <CustomBreadcrumbs
@@ -72,7 +79,7 @@ export default function UserProfileView() {
         links={[
           { name: 'Dashboard', href: paths.dashboard.root },
           { name: 'User', href: paths.dashboard.user.root },
-          { name: user?.displayName },
+          { name: user?.username },
         ]}
         sx={{
           mb: { xs: 3, md: 5 },
@@ -86,49 +93,12 @@ export default function UserProfileView() {
         }}
       >
         <ProfileCover
-          role={_userAbout.role}
-          name={user?.displayName}
+          role={roleName}
+          name={user?.username}
           avatarUrl={user?.photoURL}
           coverUrl={_userAbout.coverUrl}
         />
-
-        <Tabs
-          value={currentTab}
-          onChange={handleChangeTab}
-          sx={{
-            width: 1,
-            bottom: 0,
-            zIndex: 9,
-            position: 'absolute',
-            bgcolor: 'background.paper',
-            [`& .${tabsClasses.flexContainer}`]: {
-              pr: { md: 3 },
-              justifyContent: {
-                sm: 'center',
-                md: 'flex-end',
-              },
-            },
-          }}
-        >
-          {TABS.map((tab) => (
-            <Tab key={tab.value} value={tab.value} icon={tab.icon} label={tab.label} />
-          ))}
-        </Tabs>
       </Card>
-
-      {currentTab === 'profile' && <ProfileHome info={_userAbout} posts={_userFeeds} />}
-
-      {currentTab === 'followers' && <ProfileFollowers followers={_userFollowers} />}
-
-      {currentTab === 'friends' && (
-        <ProfileFriends
-          friends={_userFriends}
-          searchFriends={searchFriends}
-          onSearchFriends={handleSearchFriends}
-        />
-      )}
-
-      {currentTab === 'gallery' && <ProfileGallery gallery={_userGallery} />}
     </Container>
   );
 }

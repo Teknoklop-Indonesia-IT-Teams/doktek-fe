@@ -17,8 +17,8 @@ function SeoIllustration({ ...other }: BoxProps) {
   return (
     <Box
       component="svg"
-      width="100%"
-      height="100%"
+      width="90%"
+      height="90%"
       viewBox="0 0 480 360"
       xmlns="http://www.w3.org/2000/svg"
       {...other}

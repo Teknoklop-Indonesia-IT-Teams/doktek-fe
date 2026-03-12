@@ -23,6 +23,7 @@ import AppAreaInstalled from '../app-area-installed';
 import AppWidgetSummary from '../app-widget-summary';
 import AppCurrentDownload from '../app-current-download';
 import AppTopInstalledCountries from '../app-top-installed-countries';
+import Iconify from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
@@ -56,7 +57,7 @@ export default function OverviewAppView() {
         <Grid xs={12} md={4}>
           <AppWidgetSummary
             title="Total Active Users"
-            percent={2.6}
+            icon={undefined}
             total={18765}
             chart={{
               series: [5, 18, 12, 51, 68, 11, 39, 37, 27, 20],
@@ -67,7 +68,7 @@ export default function OverviewAppView() {
         <Grid xs={12} md={4}>
           <AppWidgetSummary
             title="Total Installed"
-            percent={0.2}
+            icon={undefined}
             total={4876}
             chart={{
               colors: [theme.palette.info.light, theme.palette.info.main],
@@ -79,12 +80,13 @@ export default function OverviewAppView() {
         <Grid xs={12} md={4}>
           <AppWidgetSummary
             title="Total Downloads"
-            percent={-0.1}
+            // percent={-0.1}
             total={678}
             chart={{
               colors: [theme.palette.warning.light, theme.palette.warning.main],
               series: [8, 9, 31, 8, 16, 37, 8, 33, 46, 31],
             }}
+            icon={undefined}
           />
         </Grid>
 

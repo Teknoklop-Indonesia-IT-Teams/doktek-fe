@@ -221,7 +221,7 @@ export default function DocumentsListView() {
           links={[
             {
               name: 'Dashboard',
-              href: paths.dashboard.root,
+              href: paths.dashboard.general.file,
             },
             {
               name: 'Documents',

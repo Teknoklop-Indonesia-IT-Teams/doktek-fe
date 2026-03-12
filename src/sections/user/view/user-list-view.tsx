@@ -129,7 +129,7 @@ export default function UserListView() {
       <CustomBreadcrumbs
         heading="List"
         links={[
-          { name: 'Dashboard', href: paths.dashboard.root },
+          { name: 'Dashboard', href: paths.dashboard.general.file },
           { name: 'User', href: paths.dashboard.user.root },
           { name: 'List' },
         ]}

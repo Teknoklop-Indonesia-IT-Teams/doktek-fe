@@ -10,21 +10,22 @@ import { fNumber, fPercent } from 'src/utils/format-number';
 // components
 import Iconify from 'src/components/iconify';
 import Chart from 'src/components/chart';
+import { ReactNode } from 'react';
 
 // ----------------------------------------------------------------------
 
 interface Props extends CardProps {
   title: string;
   total: number;
-  percent: number;
   chart: {
     colors?: string[];
     series: number[];
     options?: ApexOptions;
   };
+  icon: ReactNode;
 }
 
-export default function AppWidgetSummary({ title, percent, total, chart, sx, ...other }: Props) {
+export default function AppWidgetSummary({ title, total, chart, icon, sx, ...other }: Props) {
   const theme = useTheme();
 
   const {
@@ -70,10 +71,21 @@ export default function AppWidgetSummary({ title, percent, total, chart, sx, ...
 
   return (
     <Card sx={{ display: 'flex', alignItems: 'center', p: 3, ...sx }} {...other}>
+      <Box
+        sx={{
+          width: 48,
+          height: 48,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        {icon}
+      </Box>
       <Box sx={{ flexGrow: 1 }}>
         <Typography variant="subtitle2">{title}</Typography>
 
-        <Stack direction="row" alignItems="center" sx={{ mt: 2, mb: 1 }}>
+        {/* <Stack direction="row" alignItems="center" sx={{ mt: 2, mb: 1 }}>
           <Iconify
             width={24}
             icon={
@@ -95,7 +107,7 @@ export default function AppWidgetSummary({ title, percent, total, chart, sx, ...
 
             {fPercent(percent)}
           </Typography>
-        </Stack>
+        </Stack> */}
 
         <Typography variant="h3">{fNumber(total)}</Typography>
       </Box>

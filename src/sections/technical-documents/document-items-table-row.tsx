@@ -37,7 +37,6 @@ type Props = {
   typeList: ITypeDocument[];
   selected: boolean;
   onSelectRow: VoidFunction;
-  onViewRow: VoidFunction;
   onEditRow: VoidFunction;
   onDeleteRow: VoidFunction;
 };
@@ -47,7 +46,6 @@ export default function DocumentItemsTableRow({
   typeList,
   selected,
   onSelectRow,
-  onViewRow,
   onEditRow,
   onDeleteRow,
 }: Props) {
@@ -159,16 +157,6 @@ export default function DocumentItemsTableRow({
         arrow="right-top"
         sx={{ width: 160 }}
       >
-        <MenuItem
-          onClick={() => {
-            onViewRow();
-            popover.onClose();
-          }}
-        >
-          <Iconify icon="solar:eye-bold" />
-          View
-        </MenuItem>
-
         <MenuItem
           onClick={() => {
             onEditRow();

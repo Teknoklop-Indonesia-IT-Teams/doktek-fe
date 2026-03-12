@@ -18,9 +18,6 @@ import Iconify from 'src/components/iconify';
 import Scrollbar from 'src/components/scrollbar';
 import { UploadBox } from 'src/components/upload';
 import { useSettingsContext } from 'src/components/settings';
-//
-import FileWidget from '../../../file-manager/file-widget';
-import FileUpgrade from '../../../file-manager/file-upgrade';
 import FileRecentItem from '../../../type-document/file-recent-item';
 import FileDataActivity from '../../../file-manager/file-data-activity';
 import FileStorageOverview from '../../../file-manager/file-storage-overview';
@@ -31,12 +28,15 @@ import FileManagerNewFolderDialog from '../../../file-manager/file-manager-new-f
 import { useGetTypes } from 'src/api/type';
 import { ITypeDocument } from 'src/types/type';
 import { useGetDocumentItemsLog, useGetDocuments } from 'src/api/document';
-import FileDocumentRecentItem from 'src/sections/technical-documents/file-recent-item';
 import { useGetUsers } from 'src/api/user';
 import AppWelcome from '../../app/app-welcome';
 import { SeoIllustration } from 'src/assets/illustrations';
 import { useMockedUser } from 'src/hooks/use-mocked-user';
 import { Button } from '@mui/material';
+import { useAuthContext } from 'src/auth/hooks';
+import AppWidgetSummary from '../../app/app-widget-summary';
+import FileDocumentItemRecent from 'src/sections/technical-documents/file-document-item-recent';
+import FileDocumentRecent from 'src/sections/technical-documents/file-document-recent';
 
 // ----------------------------------------------------------------------
 
@@ -68,8 +68,13 @@ export default function OverviewFileView() {
   const { type } = useGetTypes();
   const { document } = useGetDocuments();
   const { users } = useGetUsers();
-  const { user } = useMockedUser();
+  const { user } = useAuthContext();
   const { documentItemsLog } = useGetDocumentItemsLog();
+
+  const totalUsers = users?.length || 0;
+  const totalDocuments = document?.length || 0;
+  const totalTypes = type?.length || 0;
+  const totalActivities = documentItemsLog?.length || 0;
 
   const divisions = Array.from(
     new Set(
@@ -174,40 +179,59 @@ export default function OverviewFileView() {
         <Grid container spacing={3}>
           <Grid xs={12} md={12}>
             <AppWelcome
-              title={`Welcome back 👋 \n ${user?.displayName}`}
-              description="If you are going to use a passage of Lorem Ipsum, you need to be sure there isn't anything."
+              title={`Welcome back 👋 ${user?.username}`}
+              description={`You have ${totalDocuments} documents across ${totalTypes} types.`}
               img={<SeoIllustration />}
-              action={
-                <Button variant="contained" color="primary">
-                  Go Now
-                </Button>
-              }
             />
           </Grid>
           {smDown && <Grid xs={12}>{renderStorageOverview}</Grid>}
 
-          <Grid xs={12} sm={6} md={4}>
-            <FileWidget title="User" total={users.length} icon="/assets/icons/app/ic_user.svg" />
-          </Grid>
-
-          <Grid xs={12} sm={6} md={4}>
-            <FileWidget
-              title="Document"
-              total={document.length}
-              icon="/assets/icons/app/ic_documents.svg"
+          <Grid xs={12} sm={6} md={3}>
+            <AppWidgetSummary
+              title="Total Users"
+              total={totalUsers}
+              icon={<Iconify icon="solar:users-group-rounded-bold" width={24} />}
+              chart={{
+                series: [5, 10, 8, 15, 20, 18],
+              }}
             />
           </Grid>
 
-          <Grid xs={12} sm={6} md={4}>
-            <FileWidget
-              title="Type Document"
-              total={type.length}
-              icon="/assets/icons/app/ic_type.svg"
+          <Grid xs={12} sm={6} md={3}>
+            <AppWidgetSummary
+              title="Total Documents"
+              total={totalDocuments}
+              icon={<Iconify icon="solar:document-bold" width={24} />}
+              chart={{
+                series: [8, 12, 10, 25, 20, 30],
+              }}
+            />
+          </Grid>
+
+          <Grid xs={12} sm={6} md={3}>
+            <AppWidgetSummary
+              title="Document Types"
+              total={totalTypes}
+              icon={<Iconify icon="solar:folder-with-files-bold" width={24} />}
+              chart={{
+                series: [2, 5, 8, 10, 12, 14],
+              }}
+            />
+          </Grid>
+
+          <Grid xs={12} sm={6} md={3}>
+            <AppWidgetSummary
+              title="Activity Logs"
+              total={totalActivities}
+              icon={<Iconify icon="solar:clock-circle-bold" width={24} />}
+              chart={{
+                series: [1, 3, 5, 8, 12, 15],
+              }}
             />
           </Grid>
 
           <Grid xs={12} md={6} lg={8}>
-            <FileDataActivity
+            {/* <FileDataActivity
               title="Data Activity"
               chart={{
                 labels: {
@@ -251,44 +275,48 @@ export default function OverviewFileView() {
                   },
                 ],
               }}
-            />
+            /> */}
 
             <div>
               <FileManagerPanel
                 title="Documents"
                 link={paths.dashboard.technicalDocument.root}
-                onOpen={newFolder.onTrue}
-                sx={{ mt: 5 }}
+                // onOpen={newFolder.onTrue}
+                sx={{ mt: 6 }}
               />
 
               <Scrollbar>
                 <Stack direction="row" spacing={3} sx={{ pb: 3 }}>
-                  {document.map((d) => (
-                    <FileDocumentRecentItem
-                      file={{
-                        id_technical_document: d.id_technical_document,
-                        document_number: d.document_number,
-                        job_title: d.job_title,
-                        created_at: d.created_at,
-                        updated_at: d.updated_at,
-                        division: {
-                          id_division: d.division.id_division,
-                          division_name: d.division.division_name,
-                        },
-                        items: [],
-                      }}
-                      onEdit={() => console.info('EDIT', d.id_technical_document)}
-                      onDelete={() => console.info('DELETE', d.id_technical_document)}
-                    />
-                  ))}
+                  <Grid container spacing={2}>
+                    {document.slice(0, 6).map((d) => (
+                      <Grid xs={12} sm={6} md={4}>
+                        <FileDocumentRecent
+                          file={{
+                            id_technical_document: d.id_technical_document,
+                            document_number: d.document_number,
+                            job_title: d.job_title,
+                            created_at: d.created_at,
+                            updated_at: d.updated_at,
+                            division: {
+                              id_division: d.division.id_division,
+                              division_name: d.division.division_name,
+                            },
+                            items: [],
+                          }}
+                          onEdit={() => console.info('EDIT', d.id_technical_document)}
+                          onDelete={() => console.info('DELETE', d.id_technical_document)}
+                        />
+                      </Grid>
+                    ))}
+                  </Grid>
                 </Stack>
               </Scrollbar>
 
               <FileManagerPanel
                 title="Type Documents"
                 link={paths.dashboard.typeDocument.root}
-                onOpen={upload.onTrue}
-                sx={{ mt: 2 }}
+                // onOpen={upload.onTrue}
+                sx={{ mt: 4 }}
               />
 
               <Stack spacing={2}>
@@ -303,23 +331,28 @@ export default function OverviewFileView() {
               </Stack>
             </div>
           </Grid>
-
           <Grid xs={12} md={6} lg={4}>
-            <Box sx={{ display: { xs: 'none', sm: 'block' } }}>{renderStorageOverview}</Box>
+            <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
+              <FileManagerPanel title="Recent Activity" sx={{ mt: 5 }} />
+
+              <Stack spacing={2}>
+                {documentItemsLog
+                  .slice(0, 5)
+                  .map((log) =>
+                    log.technicalDocumentItem ? (
+                      <FileDocumentItemRecent
+                        key={log.id_technical_document_item_log}
+                        file={log}
+                        onEdit={() => console.log('edit')}
+                        onDelete={() => console.log('delete')}
+                      />
+                    ) : null
+                  )}
+              </Stack>
+            </Box>
           </Grid>
         </Grid>
       </Container>
-
-      <FileManagerNewFolderDialog open={upload.value} onClose={upload.onFalse} />
-
-      <FileManagerNewFolderDialog
-        open={newFolder.value}
-        onClose={newFolder.onFalse}
-        title="New Folder"
-        folderName={folderName}
-        onChangeFolderName={handleChangeFolderName}
-        onCreate={handleCreateNewFolder}
-      />
     </>
   );
 }

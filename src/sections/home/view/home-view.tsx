@@ -52,36 +52,6 @@ export default function HomeView() {
       <ScrollProgress scrollYProgress={scrollYProgress} />
 
       <HomeHero />
-
-      <Box
-        sx={{
-          overflow: 'hidden',
-          position: 'relative',
-          bgcolor: 'background.default',
-        }}
-      >
-        <HomeMinimal />
-
-        <HomeHugePackElements />
-
-        <Box sx={{ position: 'relative' }}>
-          <StyledPolygon />
-          <HomeForDesigner />
-          <StyledPolygon anchor="bottom" />
-        </Box>
-
-        <HomeDarkMode />
-
-        <HomeColorPresets />
-
-        <HomeCleanInterfaces />
-
-        <HomePricing />
-
-        <HomeLookingFor />
-
-        <HomeAdvertisement />
-      </Box>
     </>
   );
 }

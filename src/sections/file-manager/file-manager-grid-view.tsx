@@ -68,7 +68,7 @@ export default function FileManagerGridView({
         <FileManagerPanel
           title="Folders"
           subTitle={`${data.filter((item) => item.type === 'folder').length} folders`}
-          onOpen={newFolder.onTrue}
+          // onOpen={newFolder.onTrue}
           collapse={folders.value}
           onCollapse={folders.onToggle}
         />
@@ -104,7 +104,7 @@ export default function FileManagerGridView({
         <FileManagerPanel
           title="Files"
           subTitle={`${data.filter((item) => item.type !== 'folder').length} files`}
-          onOpen={upload.onTrue}
+          // onOpen={upload.onTrue}
           collapse={files.value}
           onCollapse={files.onToggle}
         />

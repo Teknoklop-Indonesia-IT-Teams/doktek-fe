@@ -23,28 +23,18 @@ import { useSnackbar } from 'src/components/snackbar';
 import CustomPopover, { usePopover } from 'src/components/custom-popover';
 import FileThumbnail from 'src/components/file-thumbnail';
 import { Typography } from '@mui/material';
-import { IDocument } from 'src/types/document';
+import { IDocument, IDocumentItem, IDocumentItemsLog } from 'src/types/document';
 
 // ----------------------------------------------------------------------
 
 interface Props extends StackProps {
-  file: IDocument;
+  file: IDocumentItemsLog;
   onEdit: VoidFunction;
   onDelete: VoidFunction;
 }
 
-export default function FileDocumentRecentItem({ file, onEdit, onDelete, sx, ...other }: Props) {
-  const { enqueueSnackbar } = useSnackbar();
-
-  const { copy } = useCopyToClipboard();
-
-  const { document_number, division, job_title } = file;
-
-  const smUp = useResponsive('up', 'sm');
-
-  const popover = usePopover();
-
-  const details = useBoolean();
+export default function FileDocumentItemRecent({ file, onEdit, onDelete, sx, ...other }: Props) {
+  const { technicalDocumentItem, activity, created_at } = file;
 
   return (
     <>
@@ -60,18 +50,19 @@ export default function FileDocumentRecentItem({ file, onEdit, onDelete, sx, ...
           ...sx,
         }}
       >
-        <FileThumbnail file={document_number} sx={{ width: 36, height: 36 }} />
+        {/* <FileThumbnail file={technicalDocumentItem?.document_file} sx={{ width: 36, height: 36 }} /> */}
 
         <Stack>
-          <Typography variant="subtitle2">{job_title}</Typography>
+          <Typography variant="subtitle2">{technicalDocumentItem.document_number}</Typography>
+          <Typography variant="subtitle2">{activity}</Typography>
 
           <Typography variant="body2" color="text.secondary">
-            {division.division_name}
+            {created_at}
           </Typography>
         </Stack>
       </Stack>
 
-      <CustomPopover
+      {/* <CustomPopover
         open={popover.open}
         onClose={popover.onClose}
         arrow="right-top"
@@ -107,7 +98,7 @@ export default function FileDocumentRecentItem({ file, onEdit, onDelete, sx, ...
           <Iconify icon="solar:trash-bin-trash-bold" />
           Delete
         </MenuItem>
-      </CustomPopover>
+      </CustomPopover> */}
     </>
   );
 }

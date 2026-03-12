@@ -138,7 +138,7 @@ export default function DivisionListView() {
         links={[
           {
             name: 'Dashboard',
-            href: paths.dashboard.root,
+            href: paths.dashboard.general.file,
           },
           {
             name: 'Division',
@@ -194,7 +194,7 @@ export default function DivisionListView() {
                           key={row.id_division}
                           row={row}
                           index={table.page * table.rowsPerPage + index}
-                          onViewRow={() => handleViewRow(row.id_division)}
+                          // onViewRow={() => handleViewRow(row.id_division)}
                           onEditRow={() => handleEditRow(row.id_division)}
                           onDeleteRow={() => handleDeleteRow(row.id_division)}
                         />

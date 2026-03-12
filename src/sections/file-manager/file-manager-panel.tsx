@@ -15,7 +15,7 @@ interface Props extends StackProps {
   title: string;
   subTitle?: string;
   link?: string;
-  onOpen?: VoidFunction;
+  // onOpen?: VoidFunction;
   collapse?: boolean;
   onCollapse?: VoidFunction;
 }
@@ -24,7 +24,7 @@ export default function FileManagerPanel({
   title,
   subTitle,
   link,
-  onOpen,
+  // onOpen,
   collapse,
   onCollapse,
   sx,
@@ -36,7 +36,7 @@ export default function FileManagerPanel({
         <Stack direction="row" alignItems="center" spacing={1} flexGrow={1}>
           <Typography variant="h6"> {title} </Typography>
 
-          <IconButton
+          {/* <IconButton
             size="small"
             color="primary"
             onClick={onOpen}
@@ -51,7 +51,7 @@ export default function FileManagerPanel({
             }}
           >
             <Iconify icon="mingcute:add-line" />
-          </IconButton>
+          </IconButton> */}
         </Stack>
 
         <Box sx={{ typography: 'body2', color: 'text.disabled', mt: 0.5 }}>{subTitle}</Box>
