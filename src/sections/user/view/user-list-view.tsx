@@ -183,7 +183,10 @@ export default function UserListView() {
           filters={filters}
           onFilters={handleFilters}
           roleOptions={roles}
-          divisionOptions={division}
+          divisionOptions={division.map((item) => ({
+            ...item,
+            id_division: Number(item.id_division),
+          }))}
         />
 
         {canReset && (

@@ -18,6 +18,14 @@ import { USER_STATUS_OPTIONS } from 'src/_mock';
 import { IUserItem } from 'src/types/user';
 // assets
 import { countries } from 'src/assets/data';
+// utils
+import { posterDoktek, epDoktek } from 'src/utils/axios-doktek';
+// Api
+import { useGetDivision } from 'src/api/division';
+import { useGetRoles } from 'src/api/role';
+// routes
+import { paths } from 'src/routes/paths';
+import { useRouter } from 'src/routes/hooks';
 // components
 import Iconify from 'src/components/iconify';
 import { useSnackbar } from 'src/components/snackbar';
@@ -33,32 +41,25 @@ type Props = {
 
 export default function UserQuickEditForm({ currentUser, open, onClose }: Props) {
   const { enqueueSnackbar } = useSnackbar();
+  const router = useRouter();
+  const { division } = useGetDivision();
+  const { roles } = useGetRoles();
 
   const NewUserSchema = Yup.object().shape({
-    name: Yup.string().required('Name is required'),
-    email: Yup.string().required('Email is required').email('Email must be a valid email address'),
-    phoneNumber: Yup.string().required('Phone number is required'),
-    address: Yup.string().required('Address is required'),
-    country: Yup.string().required('Country is required'),
-    company: Yup.string().required('Company is required'),
-    state: Yup.string().required('State is required'),
-    city: Yup.string().required('City is required'),
-    role: Yup.string().required('Role is required'),
+    username: Yup.string().required('Username is required'),
+    password: Yup.string().required('Password is required'),
+    id_division: Yup.number().required('Division is required'),
+    id_role: Yup.number().required('Role is required'),
+    flag_active: Yup.boolean().required(),
   });
 
   const defaultValues = useMemo(
     () => ({
-      name: currentUser?.name || '',
-      email: currentUser?.email || '',
-      phoneNumber: currentUser?.phoneNumber || '',
-      address: currentUser?.address || '',
-      country: currentUser?.country || '',
-      state: currentUser?.state || '',
-      city: currentUser?.city || '',
-      zipCode: currentUser?.zipCode || '',
-      status: currentUser?.status,
-      company: currentUser?.company || '',
-      role: currentUser?.role || '',
+      username: currentUser?.username || '',
+      password: '',
+      id_division: currentUser?.division?.id_division || 0,
+      id_role: currentUser?.role?.id_role || 0,
+      flag_active: currentUser?.flag_active ?? true,
     }),
     [currentUser]
   );
@@ -76,11 +77,9 @@ export default function UserQuickEditForm({ currentUser, open, onClose }: Props)
 
   const onSubmit = handleSubmit(async (data) => {
     try {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      reset();
-      onClose();
-      enqueueSnackbar('Update success!');
-      console.info('DATA', data);
+      await posterDoktek(epDoktek.users.new, data);
+      enqueueSnackbar(currentUser ? 'Update success!' : 'Create success!');
+      router.push(paths.dashboard.user.list);
     } catch (error) {
       console.error(error);
     }

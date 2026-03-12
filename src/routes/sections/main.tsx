@@ -16,8 +16,6 @@ const Page404 = lazy(() => import('src/pages/404'));
 const FaqsPage = lazy(() => import('src/pages/faqs'));
 const AboutPage = lazy(() => import('src/pages/about-us'));
 const ContactPage = lazy(() => import('src/pages/contact-us'));
-const PricingPage = lazy(() => import('src/pages/pricing'));
-const PaymentPage = lazy(() => import('src/pages/payment'));
 const ComingSoonPage = lazy(() => import('src/pages/coming-soon'));
 const MaintenancePage = lazy(() => import('src/pages/maintenance'));
 // PRODUCT
@@ -70,10 +68,6 @@ export const mainRoutes = [
         </Suspense>
       </SimpleLayout>
     ),
-    children: [
-      { path: 'pricing', element: <PricingPage /> },
-      { path: 'payment', element: <PaymentPage /> },
-    ],
   },
   {
     element: (

@@ -17,8 +17,6 @@ import TableContainer from '@mui/material/TableContainer';
 // utils
 import { fDate } from 'src/utils/format-time';
 import { fCurrency } from 'src/utils/format-number';
-// _mock
-import { INVOICE_STATUS_OPTIONS } from 'src/_mock';
 // types
 import {
   IDocument,

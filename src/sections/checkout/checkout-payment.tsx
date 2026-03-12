@@ -19,7 +19,6 @@ import { useCheckoutContext } from './context';
 import CheckoutSummary from './checkout-summary';
 import CheckoutDelivery from './checkout-delivery';
 import CheckoutBillingInfo from './checkout-billing-info';
-import CheckoutPaymentMethods from './checkout-payment-methods';
 
 // ----------------------------------------------------------------------
 
@@ -102,12 +101,6 @@ export default function CheckoutPayment() {
       <Grid container spacing={3}>
         <Grid xs={12} md={8}>
           <CheckoutDelivery onApplyShipping={checkout.onApplyShipping} options={DELIVERY_OPTIONS} />
-
-          <CheckoutPaymentMethods
-            cardOptions={CARDS_OPTIONS}
-            options={PAYMENT_OPTIONS}
-            sx={{ my: 3 }}
-          />
 
           <Button
             size="small"

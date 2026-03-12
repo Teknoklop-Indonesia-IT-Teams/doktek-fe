@@ -16,7 +16,7 @@ export const _role: IRole[] = [...Array(20)].map((_, index) => {
   const roles = ['Super Admin', 'Admin', 'User'];
 
   return {
-    id_role: index + 1,
+    id_role: String(index + 1),
     role_name: roles[index % roles.length],
   };
 });
