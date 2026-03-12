@@ -1,18 +1,10 @@
-import sumBy from 'lodash/sumBy';
 import { useState, useCallback, useEffect } from 'react';
 // @mui
-import { useTheme, alpha } from '@mui/material/styles';
-import Tab from '@mui/material/Tab';
-import Tabs from '@mui/material/Tabs';
 import Card from '@mui/material/Card';
 import Table from '@mui/material/Table';
-import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
-import Divider from '@mui/material/Divider';
-import Tooltip from '@mui/material/Tooltip';
 import Container from '@mui/material/Container';
 import TableBody from '@mui/material/TableBody';
-import IconButton from '@mui/material/IconButton';
 import TableContainer from '@mui/material/TableContainer';
 // routes
 import { paths } from 'src/routes/paths';
@@ -20,15 +12,9 @@ import { useRouter } from 'src/routes/hooks';
 import { RouterLink } from 'src/routes/components';
 // hooks
 import { useBoolean } from 'src/hooks/use-boolean';
-// utils
-import { fTimestamp } from 'src/utils/format-time';
-// _mock
-import { _invoices, INVOICE_SERVICE_OPTIONS } from 'src/_mock';
 // components
-import Label from 'src/components/label';
 import Iconify from 'src/components/iconify';
 import Scrollbar from 'src/components/scrollbar';
-import { ConfirmDialog } from 'src/components/custom-dialog';
 import { useSettingsContext } from 'src/components/settings';
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 import {
@@ -38,7 +24,6 @@ import {
   TableNoData,
   TableEmptyRows,
   TableHeadCustom,
-  TableSelectedAction,
   TablePaginationCustom,
   TableSkeleton,
 } from 'src/components/table';
@@ -69,8 +54,6 @@ const defaultFilters: IDivisionTableFilters = {
 // ----------------------------------------------------------------------
 
 export default function DivisionListView() {
-  const theme = useTheme();
-
   const settings = useSettingsContext();
 
   const { division, divisionLoading, divisionEmpty } = useGetDivision();
@@ -78,8 +61,6 @@ export default function DivisionListView() {
   const router = useRouter();
 
   const table = useTable({ defaultOrderBy: 'createDate' });
-
-  const confirm = useBoolean();
 
   const [tableData, setTableData] = useState<IDivision[]>([]);
 
@@ -145,153 +126,104 @@ export default function DivisionListView() {
     },
     [router]
   );
+
   const handleResetFilters = useCallback(() => {
     setFilters(defaultFilters);
   }, []);
 
   return (
-    <>
-      <Container maxWidth={settings.themeStretch ? false : 'lg'}>
-        <CustomBreadcrumbs
-          heading="List"
-          links={[
-            {
-              name: 'Dashboard',
-              href: paths.dashboard.root,
-            },
-            {
-              name: 'Division',
-              href: paths.dashboard.division.root,
-            },
-            {
-              name: 'List',
-            },
-          ]}
-          action={
-            <Button
-              component={RouterLink}
-              href={paths.dashboard.division.new}
-              variant="contained"
-              startIcon={<Iconify icon="mingcute:add-line" />}
-            >
-              New Division
-            </Button>
-          }
-          sx={{
-            mb: { xs: 3, md: 5 },
-          }}
-        />
+    <Container maxWidth={settings.themeStretch ? false : 'lg'}>
+      <CustomBreadcrumbs
+        heading="List"
+        links={[
+          {
+            name: 'Dashboard',
+            href: paths.dashboard.root,
+          },
+          {
+            name: 'Division',
+            href: paths.dashboard.division.root,
+          },
+          {
+            name: 'List',
+          },
+        ]}
+        action={
+          <Button
+            component={RouterLink}
+            href={paths.dashboard.division.new}
+            variant="contained"
+            startIcon={<Iconify icon="mingcute:add-line" />}
+          >
+            New Division
+          </Button>
+        }
+        sx={{
+          mb: { xs: 3, md: 5 },
+        }}
+      />
 
-        <Card>
-          <DivisionTableToolbar filters={filters} onFilters={handleFilters} />
+      <Card>
+        <DivisionTableToolbar filters={filters} onFilters={handleFilters} />
 
-          <TableContainer sx={{ position: 'relative', overflow: 'unset' }}>
-            <TableSelectedAction
-              dense={table.dense}
-              numSelected={table.selected.length}
-              rowCount={tableData.length}
-              onSelectAllRows={(checked) =>
-                table.onSelectAllRows(
-                  checked,
-                  tableData.map((row) => row.id_division)
-                )
-              }
-              action={
-                <Stack direction="row">
-                  <Tooltip title="Sent">
-                    <IconButton color="primary">
-                      <Iconify icon="iconamoon:send-fill" />
-                    </IconButton>
-                  </Tooltip>
+        <TableContainer sx={{ position: 'relative', overflow: 'unset' }}>
+          <Scrollbar>
+            <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 800 }}>
+              <TableHeadCustom
+                order={table.order}
+                orderBy={table.orderBy}
+                headLabel={TABLE_HEAD}
+                rowCount={tableData.length}
+                onSort={table.onSort}
+              />
 
-                  <Tooltip title="Download">
-                    <IconButton color="primary">
-                      <Iconify icon="eva:download-outline" />
-                    </IconButton>
-                  </Tooltip>
-
-                  <Tooltip title="Print">
-                    <IconButton color="primary">
-                      <Iconify icon="solar:printer-minimalistic-bold" />
-                    </IconButton>
-                  </Tooltip>
-
-                  <Tooltip title="Delete">
-                    <IconButton color="primary" onClick={confirm.onTrue}>
-                      <Iconify icon="solar:trash-bin-trash-bold" />
-                    </IconButton>
-                  </Tooltip>
-                </Stack>
-              }
-            />
-
-            <Scrollbar>
-              <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 800 }}>
-                <TableHeadCustom
-                  order={table.order}
-                  orderBy={table.orderBy}
-                  headLabel={TABLE_HEAD}
-                  rowCount={tableData.length}
-                  numSelected={table.selected.length}
-                  onSort={table.onSort}
-                  onSelectAllRows={(checked) =>
-                    table.onSelectAllRows(
-                      checked,
-                      tableData.map((row) => row.id_division)
-                    )
-                  }
+              <TableBody>
+                {divisionLoading ? (
+                  [...Array(table.rowsPerPage)].map((i, index) => (
+                    <TableSkeleton key={index} sx={{ height: denseHeight }} />
+                  ))
+                ) : (
+                  <>
+                    {dataFiltered
+                      .slice(
+                        table.page * table.rowsPerPage,
+                        table.page * table.rowsPerPage + table.rowsPerPage
+                      )
+                      .map((row, index) => (
+                        <DivisionTableRow
+                          key={row.id_division}
+                          row={row}
+                          index={table.page * table.rowsPerPage + index}
+                          onViewRow={() => handleViewRow(row.id_division)}
+                          onEditRow={() => handleEditRow(row.id_division)}
+                          onDeleteRow={() => handleDeleteRow(row.id_division)}
+                        />
+                      ))}
+                  </>
+                )}
+                <TableEmptyRows
+                  height={denseHeight}
+                  emptyRows={emptyRows(table.page, table.rowsPerPage, tableData.length)}
                 />
 
-                <TableBody>
-                  {divisionLoading ? (
-                    [...Array(table.rowsPerPage)].map((i, index) => (
-                      <TableSkeleton key={index} sx={{ height: denseHeight }} />
-                    ))
-                  ) : (
-                    <>
-                      {dataFiltered
-                        .slice(
-                          table.page * table.rowsPerPage,
-                          table.page * table.rowsPerPage + table.rowsPerPage
-                        )
-                        .map((row, index) => (
-                          <DivisionTableRow
-                            key={row.id_division}
-                            row={row}
-                            index={table.page * table.rowsPerPage + index}
-                            selected={table.selected.includes(row.id_division)}
-                            onSelectRow={() => table.onSelectRow(row.id_division)}
-                            onViewRow={() => handleViewRow(row.id_division)}
-                            onEditRow={() => handleEditRow(row.id_division)}
-                            onDeleteRow={() => handleDeleteRow(row.id_division)}
-                          />
-                        ))}
-                    </>
-                  )}
-                  <TableEmptyRows
-                    height={denseHeight}
-                    emptyRows={emptyRows(table.page, table.rowsPerPage, tableData.length)}
-                  />
+                <TableNoData notFound={notFound} />
+              </TableBody>
+            </Table>
+          </Scrollbar>
+        </TableContainer>
 
-                  <TableNoData notFound={notFound} />
-                </TableBody>
-              </Table>
-            </Scrollbar>
-          </TableContainer>
-
-          <TablePaginationCustom
-            count={dataFiltered.length}
-            page={table.page}
-            rowsPerPage={table.rowsPerPage}
-            onPageChange={table.onChangePage}
-            onRowsPerPageChange={table.onChangeRowsPerPage}
-            //
-            dense={table.dense}
-            onChangeDense={table.onChangeDense}
-          />
-        </Card>
-      </Container>
-    </>
+        <TablePaginationCustom
+          count={dataFiltered.length}
+          page={table.page}
+          rowsPerPage={table.rowsPerPage}
+          onPageChange={table.onChangePage}
+          onRowsPerPageChange={table.onChangeRowsPerPage}
+          //
+          dense={table.dense}
+          onChangeDense={table.onChangeDense}
+        />
+      </Card>
+    </Container>
   );
 }
 

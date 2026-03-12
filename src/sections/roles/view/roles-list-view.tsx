@@ -40,7 +40,6 @@ import {
   TableNoData,
   TableEmptyRows,
   TableHeadCustom,
-  TableSelectedAction,
   TablePaginationCustom,
   TableSkeleton,
 } from 'src/components/table';
@@ -89,6 +88,8 @@ export default function RolesListView() {
 
   const [filters, setFilters] = useState(defaultFilters);
 
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+
   useEffect(() => {
     if (roles.length) {
       setTableData(roles);
@@ -132,20 +133,19 @@ export default function RolesListView() {
       mutate(epDoktek.roles.list);
 
       table.onUpdatePageDeleteRow(dataInPage.length);
+      setDeleteId(null);
+      confirm.onFalse();
     },
-    [dataInPage.length, table]
+    [dataInPage.length, table, confirm]
   );
 
-  const handleDeleteRows = useCallback(() => {
-    const deleteRows = tableData.filter((row) => !table.selected.includes(row.id_role.toString()));
-    setTableData(deleteRows);
-
-    table.onUpdatePageDeleteRows({
-      totalRows: tableData.length,
-      totalRowsInPage: dataInPage.length,
-      totalRowsFiltered: dataFiltered.length,
-    });
-  }, [dataFiltered.length, dataInPage.length, table, tableData]);
+  const handleOpenConfirmDelete = useCallback(
+    (id: string) => {
+      setDeleteId(id);
+      confirm.onTrue();
+    },
+    [confirm]
+  );
 
   const handleEditRow = useCallback(
     (id: string) => {
@@ -159,13 +159,6 @@ export default function RolesListView() {
       router.push(paths.dashboard.roles.details(id));
     },
     [router]
-  );
-
-  const handleFilterStatus = useCallback(
-    (event: React.SyntheticEvent, newValue: string) => {
-      handleFilters('status', newValue);
-    },
-    [handleFilters]
   );
 
   const handleResetFilters = useCallback(() => {
@@ -225,45 +218,6 @@ export default function RolesListView() {
           )}
 
           <TableContainer sx={{ position: 'relative', overflow: 'unset' }}>
-            <TableSelectedAction
-              dense={table.dense}
-              numSelected={table.selected.length}
-              rowCount={tableData.length}
-              onSelectAllRows={(checked) =>
-                table.onSelectAllRows(
-                  checked,
-                  tableData.map((row) => row.id_role.toString())
-                )
-              }
-              action={
-                <Stack direction="row">
-                  <Tooltip title="Sent">
-                    <IconButton color="primary">
-                      <Iconify icon="iconamoon:send-fill" />
-                    </IconButton>
-                  </Tooltip>
-
-                  <Tooltip title="Download">
-                    <IconButton color="primary">
-                      <Iconify icon="eva:download-outline" />
-                    </IconButton>
-                  </Tooltip>
-
-                  <Tooltip title="Print">
-                    <IconButton color="primary">
-                      <Iconify icon="solar:printer-minimalistic-bold" />
-                    </IconButton>
-                  </Tooltip>
-
-                  <Tooltip title="Delete">
-                    <IconButton color="primary" onClick={confirm.onTrue}>
-                      <Iconify icon="solar:trash-bin-trash-bold" />
-                    </IconButton>
-                  </Tooltip>
-                </Stack>
-              }
-            />
-
             <Scrollbar>
               <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 800 }}>
                 <TableHeadCustom
@@ -271,14 +225,7 @@ export default function RolesListView() {
                   orderBy={table.orderBy}
                   headLabel={TABLE_HEAD}
                   rowCount={tableData.length}
-                  numSelected={table.selected.length}
                   onSort={table.onSort}
-                  onSelectAllRows={(checked) =>
-                    table.onSelectAllRows(
-                      checked,
-                      tableData.map((row) => row.id_role.toString())
-                    )
-                  }
                 />
 
                 <TableBody>
@@ -298,11 +245,9 @@ export default function RolesListView() {
                             key={row.id_role}
                             row={row}
                             index={table.page * table.rowsPerPage + index}
-                            selected={table.selected.includes(row.id_role.toString())}
-                            onSelectRow={() => table.onSelectRow(row.id_role.toString())}
                             onViewRow={() => handleViewRow(row.id_role.toString())}
                             onEditRow={() => handleEditRow(row.id_role.toString())}
-                            onDeleteRow={() => handleDeleteRow(row.id_role)}
+                            onDeleteRow={() => handleOpenConfirmDelete(row.id_role.toString())}
                           />
                         ))}
                     </>
@@ -334,20 +279,18 @@ export default function RolesListView() {
 
       <ConfirmDialog
         open={confirm.value}
-        onClose={confirm.onFalse}
+        onClose={() => {
+          confirm.onFalse();
+          setDeleteId(null);
+        }}
         title="Delete"
-        content={
-          <>
-            Are you sure want to delete <strong> {table.selected.length} </strong> items?
-          </>
-        }
+        content={<>Are you sure want to delete this role?</>}
         action={
           <Button
             variant="contained"
             color="error"
             onClick={() => {
-              handleDeleteRows();
-              confirm.onFalse();
+              if (deleteId) handleDeleteRow(deleteId);
             }}
           >
             Delete

@@ -1,12 +1,8 @@
-import { format } from 'date-fns';
 // @mui
-import Link from '@mui/material/Link';
 import Button from '@mui/material/Button';
-import Avatar from '@mui/material/Avatar';
 import Divider from '@mui/material/Divider';
 import MenuItem from '@mui/material/MenuItem';
 import TableRow from '@mui/material/TableRow';
-import Checkbox from '@mui/material/Checkbox';
 import TableCell from '@mui/material/TableCell';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
@@ -25,9 +21,6 @@ import CustomPopover, { usePopover } from 'src/components/custom-popover';
 type Props = {
   row: IDivision;
   index: number;
-  selected: boolean;
-  onSelectRow: VoidFunction;
-  onViewRow: VoidFunction;
   onEditRow: VoidFunction;
   onDeleteRow: VoidFunction;
 };
@@ -35,9 +28,6 @@ type Props = {
 export default function DivisionTableRow({
   row,
   index,
-  selected,
-  onSelectRow,
-  onViewRow,
   onEditRow,
   onDeleteRow,
 }: Props) {
@@ -49,11 +39,7 @@ export default function DivisionTableRow({
 
   return (
     <>
-      <TableRow hover selected={selected}>
-        <TableCell padding="checkbox">
-          <Checkbox checked={selected} onClick={onSelectRow} />
-        </TableCell>
-
+      <TableRow hover>
         <TableCell>
           <ListItemText
             primary={
@@ -88,16 +74,6 @@ export default function DivisionTableRow({
         arrow="right-top"
         sx={{ width: 160 }}
       >
-        <MenuItem
-          onClick={() => {
-            onViewRow();
-            popover.onClose();
-          }}
-        >
-          <Iconify icon="solar:eye-bold" />
-          View
-        </MenuItem>
-
         <MenuItem
           onClick={() => {
             onEditRow();
