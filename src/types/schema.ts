@@ -75,41 +75,19 @@ export interface Location {
   Assets: Asset[] | null;
 }
 
+export interface Role {
+  id_role: number;
+  role_name: string;
+}
+
 export interface Profile {
-  id: string;
-  name: string;
-  nickName: string | null;
-  phone: string | null;
-  birthPlace: string | null;
-  birthDate: Date | null;
-  address: string | null;
-  notes: string | null;
-  joinDate: Date | null;
-  extPhone: string | null;
-  nopek: string | null;
-  prl: number | null;
-  avatarUrl: string | null;
-  signatureUrl: string | null;
-  initialUrl: string | null;
-  User: User | null;
-  userId: string | null;
-  OrgLogs: OrganizationLogs[] | null;
-  updatedAt: Date;
-  BlendingRecordLS: BlendingRecordLS[] | null;
-  FillingRecordLS: FillingRecordLS[] | null;
-  MHInResult: MHInTestResult[] | null;
-  MHInTBResult: MHInTBTestResult[] | null;
-  MHOutTestResult: MHOutTestResult[] | null;
-  BlendingResult: BlendingTestResult[] | null;
-  FillingResult: FillingTestResult[] | null;
-  ProductTestResult: ProductTestResult[] | null;
-  SpecMHLR: SpecMHLR[] | null;
-  SpecProductLR: SpecProductLR[] | null;
-  ReportCOQLR: ReportCOQLR[] | null;
-  ReportCOALR: ReportCOALR[] | null;
-  ReportTRLR: ReportTRLR[] | null;
-  TrialBlendReportLR: TrialBlendReportLR[] | null;
-  SocialMedia: SocialMedia[] | null;
+  id_user: string;
+  username: string | null;
+  flag_active: string | null;
+  id_division: number | null;
+  id_role: number | null;
+  division: DivisionGroup | null;
+  role: Role | null;
 }
 
 export interface Organization {

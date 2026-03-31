@@ -137,10 +137,6 @@ export const epDoktek = {
   },
   users: {
     details: (usersId: string) => `/users/${usersId}`,
-    editAvatar: (usersId: string) => `/users/updateAvatar/${usersId}`,
-    editSignature: (usersId: string) => `/users/updateSignature/${usersId}`,
-    editInitial: (usersId: string) => `/users/updateInitial/${usersId}`,
-    getByLoc: (locId: string) => `/users/getbyloc/${locId}`,
     search: `/users/q/`,
     list: `/users/`,
     new: `/users`,

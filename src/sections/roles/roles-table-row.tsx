@@ -23,13 +23,7 @@ type Props = {
   onDeleteRow: VoidFunction;
 };
 
-export default function RolesTableRow({
-  row,
-  index,
-  onViewRow,
-  onEditRow,
-  onDeleteRow,
-}: Props) {
+export default function RolesTableRow({ row, index, onViewRow, onEditRow, onDeleteRow }: Props) {
   const { role_name } = row;
 
   const confirm = useBoolean();
@@ -75,7 +69,14 @@ export default function RolesTableRow({
         title="Delete"
         content="Are you sure want to delete?"
         action={
-          <Button variant="contained" color="error" onClick={onDeleteRow}>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={() => {
+              onDeleteRow();
+              confirm.onFalse();
+            }}
+          >
             Delete
           </Button>
         }

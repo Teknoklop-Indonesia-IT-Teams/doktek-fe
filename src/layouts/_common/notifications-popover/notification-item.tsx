@@ -220,18 +220,18 @@ export default function NotificationItem({ notification }: NotificationItemProps
         borderBottom: (theme) => `dashed 1px ${theme.palette.divider}`,
       }}
     >
-      {renderUnReadBadge}
+      {/* {renderUnReadBadge}
 
-      {renderAvatar}
+      {renderAvatar} */}
 
-      <Stack sx={{ flexGrow: 1 }}>
-        {renderText}
-        {notification.type === 'friend' && friendAction}
+      {/* <Stack sx={{ flexGrow: 1 }}> */}
+      {/* {renderText} */}
+      {/* {notification.type === 'friend' && friendAction}
         {notification.type === 'project' && projectAction}
         {notification.type === 'file' && fileAction}
         {notification.type === 'tags' && tagsAction}
-        {notification.type === 'payment' && paymentAction}
-      </Stack>
+        {notification.type === 'payment' && paymentAction} */}
+      {/* </Stack> */}
     </ListItemButton>
   );
 }

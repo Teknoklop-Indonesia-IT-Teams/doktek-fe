@@ -7,6 +7,9 @@ import { useLocales } from 'src/locales';
 import Label from 'src/components/label';
 import Iconify from 'src/components/iconify';
 import SvgColor from 'src/components/svg-color';
+import { useAuthContext } from 'src/auth/hooks';
+import { useGetProfiles } from 'src/api/profile';
+import { useGetUsers } from 'src/api/user';
 
 // ----------------------------------------------------------------------
 
@@ -54,67 +57,68 @@ const ICONS = {
 
 export function useNavData() {
   const { t } = useLocales();
+  const { user } = useAuthContext();
+  const { users } = useGetUsers();
+  if (!users || !user) return [];
+
+  const isSuperAdmin = user?.role === 'Super Admin';
+  const isAdmin = user?.role === 'Admin';
 
   const data = useMemo(
-    () => [
-      // OVERVIEW
-      // ----------------------------------------------------------------------
-      {
-        subheader: t('overview'),
-        items: [
-          // {
-          //   title: t('dashboard'),
-          //   path: paths.dashboard.root,
-          //   icon: ICONS.dashboard,
-          // },
-          {
-            title: t('app'),
-            path: paths.dashboard.general.file,
-            icon: ICONS.file,
-          },
-        ],
-      },
+    () =>
+      [
+        {
+          subheader: t('overview'),
+          items: [
+            {
+              title: t('app'),
+              path: paths.dashboard.general.file,
+              icon: ICONS.file,
+            },
+          ],
+        },
+        {
+          subheader: t('technical document'),
+          items: [
+            {
+              title: t('documents'),
+              path: paths.dashboard.technicalDocument.root,
+              icon: ICONS.documents,
+            },
+            {
+              title: t('type document'),
+              path: paths.dashboard.typeDocument.root,
+              icon: ICONS.folder,
+            },
+          ],
+        },
+        (isSuperAdmin || isAdmin) && {
+          subheader: t('master data'),
+          items: [
+            {
+              title: t('user'),
+              path: paths.dashboard.user.list,
+              icon: ICONS.user,
+            },
 
-      // MANAGEMENT
-      // ----------------------------------------------------------------------
-      {
-        subheader: t('technical document'),
-        items: [
-          {
-            title: t('documents'),
-            path: paths.dashboard.technicalDocument.root,
-            icon: ICONS.documents,
-          },
-          {
-            title: t('type document'),
-            path: paths.dashboard.typeDocument.root,
-            icon: ICONS.folder,
-          },
-        ],
-      },
-      {
-        subheader: t('master data'),
-        items: [
-          {
-            title: t('user'),
-            path: paths.dashboard.user.list,
-            icon: ICONS.user,
-          },
-
-          {
-            title: t('division'),
-            path: paths.dashboard.division.root,
-            icon: ICONS.buildings,
-          },
-          {
-            title: t('roles'),
-            path: paths.dashboard.roles.root,
-            icon: ICONS.users,
-          },
-        ],
-      },
-    ],
-    [t]
+            ...(isSuperAdmin
+              ? [
+                  {
+                    title: t('division'),
+                    path: paths.dashboard.division.root,
+                    icon: ICONS.buildings,
+                  },
+                  {
+                    title: t('roles'),
+                    path: paths.dashboard.roles.root,
+                    icon: ICONS.users,
+                  },
+                ]
+              : []),
+          ],
+        },
+      ].filter(Boolean),
+    [t, isSuperAdmin, isAdmin]
   );
 
   return data;

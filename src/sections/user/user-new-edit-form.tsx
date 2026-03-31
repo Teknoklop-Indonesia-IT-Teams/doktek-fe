@@ -35,7 +35,8 @@ import FormProvider, {
   RHFUploadAvatar,
   RHFSelect,
 } from 'src/components/hook-form';
-
+import { useState } from 'react';
+import { IconButton, InputAdornment } from '@mui/material';
 // ----------------------------------------------------------------------
 
 type Props = {
@@ -57,13 +58,15 @@ export default function UserNewEditForm({ currentUser }: Props) {
     flag_active: Yup.boolean().required(),
   });
 
-  const defaultValues = useMemo(() => ({
-    username: currentUser?.username || '',
-    password: '',
-    id_division: currentUser?.division?.id_division || 0,
-    id_role: currentUser?.role?.id_role || 0,
-    flag_active: currentUser?.flag_active ?? true,
-  }), [currentUser]
+  const defaultValues = useMemo(
+    () => ({
+      username: currentUser?.username || '',
+      password: '',
+      id_division: currentUser?.division?.id_division || 0,
+      id_role: currentUser?.role?.id_role || 0,
+      flag_active: currentUser?.flag_active ?? true,
+    }),
+    [currentUser]
   );
 
   const methods = useForm({
@@ -81,6 +84,7 @@ export default function UserNewEditForm({ currentUser }: Props) {
   } = methods;
 
   const values = watch();
+  const [showPassword, setShowPassword] = useState(false);
 
   const onSubmit = handleSubmit(async (data) => {
     try {
@@ -95,7 +99,6 @@ export default function UserNewEditForm({ currentUser }: Props) {
   return (
     <FormProvider methods={methods} onSubmit={onSubmit}>
       <Grid container spacing={3}>
-
         <Grid xs={12} md={12}>
           <Card sx={{ p: 3 }}>
             <Box
@@ -108,7 +111,24 @@ export default function UserNewEditForm({ currentUser }: Props) {
               }}
             >
               <RHFTextField name="username" label="Username" />
-              <RHFTextField name="password" label="Password" type="password" />
+              <RHFTextField
+                name="password"
+                label="Password"
+                type={showPassword ? 'text' : 'password'}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={() => setShowPassword((prev) => !prev)} edge="end">
+                        {showPassword ? (
+                          <Iconify icon="fluent:eye-off-16-filled" width={28} />
+                        ) : (
+                          <Iconify icon="fluent:eye-16-filled" width={28} />
+                        )}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
 
               {/* Untuk division & role perlu useGetDivision dan useGetRoles */}
               <RHFSelect name="id_division" label="Division">

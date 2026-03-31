@@ -158,7 +158,7 @@ export default function TypeDocumentTableRow({
           <Iconify icon="solar:pen-bold" />
           Edit
         </MenuItem>
-        {/* <Divider sx={{ borderStyle: 'dashed' }} />
+        <Divider sx={{ borderStyle: 'dashed' }} />
         <MenuItem
           onClick={() => {
             confirm.onTrue();
@@ -168,7 +168,7 @@ export default function TypeDocumentTableRow({
         >
           <Iconify icon="solar:trash-bin-trash-bold" />
           Delete
-        </MenuItem> */}
+        </MenuItem>
       </CustomPopover>
 
       <TypeDocumentFileDetails
@@ -185,7 +185,14 @@ export default function TypeDocumentTableRow({
         title="Delete"
         content="Are you sure want to delete?"
         action={
-          <Button variant="contained" color="error" onClick={onDeleteRow}>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={() => {
+              onDeleteRow();
+              confirm.onFalse();
+            }}
+          >
             Delete
           </Button>
         }

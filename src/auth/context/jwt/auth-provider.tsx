@@ -103,16 +103,22 @@ export function AuthProvider({ children }: Props) {
         setSessionDoktek(accessToken);
 
         const decoded = jwtDecode<{
-          id_user: number;
+          sub: number;
           username: string;
+          role: string;
+          idRole: number;
+          flag: boolean;
         }>(accessToken);
 
         dispatch({
           type: Types.INITIAL,
           payload: {
             user: {
-              id_user: decoded.id_user,
+              id_user: decoded.sub,
               username: decoded.username,
+              role: decoded.role,
+              idRole: decoded.idRole,
+              flag: decoded.flag,
               accessToken,
             },
           },
@@ -148,16 +154,22 @@ export function AuthProvider({ children }: Props) {
       setSessionDoktek(accessToken);
 
       const decoded = jwtDecode<{
-        id_user: number;
+        sub: number;
         username: string;
+        role: string;
+        idRole: number;
+        flag: boolean;
       }>(accessToken);
 
       dispatch({
         type: Types.LOGIN,
         payload: {
           user: {
-            id_user: decoded.id_user,
+            id_user: decoded.sub,
             username: decoded.username,
+            role: decoded.role,
+            idRole: decoded.idRole,
+            flag: decoded.flag,
             accessToken,
           },
         },
@@ -176,7 +188,6 @@ export function AuthProvider({ children }: Props) {
         firstName,
         lastName,
       };
-      console.log(data);
 
       const res = await apiDoktek.post(epDoktek.auth.register, data);
 
@@ -201,11 +212,17 @@ export function AuthProvider({ children }: Props) {
 
   // LOGOUT
   const logout = useCallback(async () => {
-    // await apiSID.get(epSID.auth.logout);
-    setSessionDoktek(null);
-    dispatch({
-      type: Types.LOGOUT,
-    });
+    try {
+      // optional: call API logout
+      // await apiDoktek.get(epDoktek.auth.logout);
+      localStorage.removeItem(STORAGE_KEY);
+      setSessionDoktek(null);
+      dispatch({
+        type: Types.LOGOUT,
+      });
+    } catch (error) {
+      console.error(error);
+    }
   }, []);
 
   // NEW password

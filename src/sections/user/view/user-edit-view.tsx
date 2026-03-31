@@ -19,8 +19,8 @@ export default function UserEditView({ id }: Props) {
         heading="Edit"
         links={[
           { name: 'Dashboard', href: paths.dashboard.root },
-          { name: 'User', href: paths.dashboard.user.root },
-          { name: user?.username },
+          { name: 'User', href: paths.dashboard.user.list },
+          { name: user?.[0]?.username },
         ]}
         sx={{ mb: { xs: 3, md: 5 } }}
       />

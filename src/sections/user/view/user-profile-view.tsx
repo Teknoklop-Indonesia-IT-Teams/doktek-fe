@@ -70,8 +70,6 @@ export default function UserProfileView() {
     setSearchFriends(event.target.value);
   }, []);
 
-  const roleName = roles?.find((role) => role.id_role === user?.id_role)?.role_name || 'Unknown';
-
   return (
     <Container maxWidth={settings.themeStretch ? false : 'lg'}>
       <CustomBreadcrumbs
@@ -93,7 +91,7 @@ export default function UserProfileView() {
         }}
       >
         <ProfileCover
-          role={roleName}
+          role={user?.role}
           name={user?.username}
           avatarUrl={user?.photoURL}
           coverUrl={_userAbout.coverUrl}

@@ -19,6 +19,7 @@ import { USER_STATUS_OPTIONS } from 'src/_mock';
 import { useGetUsers } from 'src/api/user';
 import { useGetRoles } from 'src/api/role';
 import { useGetDivision } from 'src/api/division';
+import { useAuthContext } from 'src/auth/hooks';
 // components
 import Label from 'src/components/label';
 import Iconify from 'src/components/iconify';
@@ -40,7 +41,7 @@ import { IUserItemDoktek, IUserTableFilters, IUserTableFilterValue } from 'src/t
 import UserTableRow from '../user-table-row';
 import UserTableToolbar from '../user-table-toolbar';
 import UserTableFiltersResult from '../user-table-filters-result';
-
+import { RoleGroup } from 'src/types/schema';
 // ----------------------------------------------------------------------
 
 const STATUS_OPTIONS = [{ value: 'all', label: 'All' }, ...USER_STATUS_OPTIONS];
@@ -71,6 +72,7 @@ export default function UserListView() {
   const router = useRouter();
 
   const { users } = useGetUsers();
+  const { user } = useAuthContext();
   const { roles } = useGetRoles();
   const { division } = useGetDivision();
   const [tableData, setTableData] = useState<any[]>([]);
@@ -120,9 +122,15 @@ export default function UserListView() {
 
   useEffect(() => {
     if (users.length) {
-      setTableData(users);
+      let filteredUsers = users;
+
+      if (user?.role !== 'Super Admin') {
+        filteredUsers = users.filter((u) => u.role?.id_role !== 1);
+      }
+
+      setTableData(filteredUsers);
     }
-  }, [users]);
+  }, [users, user]);
 
   return (
     <Container maxWidth={settings.themeStretch ? false : 'lg'}>
@@ -275,22 +283,22 @@ function applyFilter({
 
   if (name) {
     inputData = inputData.filter(
-      (user) => user.username.toLowerCase().indexOf(name.toLowerCase()) !== -1
+      (u) => u.username.toLowerCase().indexOf(name.toLowerCase()) !== -1
     );
   }
 
   if (status !== 'all') {
-    inputData = inputData.filter((user) =>
-      status === 'active' ? user.flag_active === true : user.flag_active === false
+    inputData = inputData.filter((u) =>
+      status === 'active' ? u.flag_active === true : u.flag_active === false
     );
   }
 
   if (role.length) {
-    inputData = inputData.filter((user) => role.includes(user.role?.role_name));
+    inputData = inputData.filter((u) => role.includes(u.role?.role_name));
   }
 
   if (filters.division.length) {
-    inputData = inputData.filter((user) => filters.division.includes(user.division?.division_name));
+    inputData = inputData.filter((u) => filters.division.includes(u.division?.division_name));
   }
 
   return inputData;

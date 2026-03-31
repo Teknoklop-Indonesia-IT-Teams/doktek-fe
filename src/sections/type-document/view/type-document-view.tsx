@@ -101,18 +101,19 @@ export default function TypeDocumentView() {
     [table]
   );
 
-  const handleDeleteItem = useCallback(
-    (id: string) => {
+  const handleDeleteItem = useCallback(async (id: string) => {
+    try {
       const URL = epDoktek.type.details(id);
-      deleterDoktek(URL)
-        .then((res) => enqueueSnackbar('Delete Success', 'success' as any))
-        .catch((e) => enqueueSnackbar(e, 'error' as any));
-      mutate(epDoktek.type.list);
 
-      table.onUpdatePageDeleteRow(dataInPage.length);
-    },
-    [dataInPage.length, table]
-  );
+      await deleterDoktek(URL); // ✅ tunggu selesai
+
+      enqueueSnackbar('Delete Success', { variant: 'success' });
+
+      await mutate(epDoktek.type.list); // ✅ refresh data
+    } catch (error) {
+      enqueueSnackbar('Delete Failed', { variant: 'error' });
+    }
+  }, []);
 
   const handleEditRow = useCallback(
     (id: string) => {

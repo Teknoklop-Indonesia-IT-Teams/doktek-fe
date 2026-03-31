@@ -32,17 +32,17 @@ const TABS = [
   {
     value: 'all',
     label: 'All',
-    count: 22,
+    count: 0,
   },
   {
     value: 'unread',
     label: 'Unread',
-    count: 12,
+    count: 0,
   },
   {
     value: 'archived',
     label: 'Archived',
-    count: 10,
+    count: 0,
   },
 ];
 
@@ -127,16 +127,16 @@ export default function NotificationsPopover() {
   const renderList = (
     <Scrollbar>
       <List disablePadding>
-        {notifications.map((notification) => (
+        {/* {notifications.map((notification) => (
           <NotificationItem key={notification.id} notification={notification} />
-        ))}
+        ))} */}
       </List>
     </Scrollbar>
   );
 
   return (
     <>
-      <IconButton
+      {/* <IconButton
         component={m.button}
         whileTap="tap"
         whileHover="hover"
@@ -145,9 +145,9 @@ export default function NotificationsPopover() {
         onClick={drawer.onTrue}
       >
         <Badge badgeContent={totalUnRead} color="error">
-          <Iconify icon="solar:bell-bing-bold-duotone" width={24} />
+        <Iconify icon="solar:bell-bing-bold-duotone" width={24} />
         </Badge>
-      </IconButton>
+      </IconButton> */}
 
       <Drawer
         open={drawer.value}

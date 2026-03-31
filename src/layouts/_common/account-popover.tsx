@@ -19,7 +19,7 @@ import { useAuthContext } from 'src/auth/hooks';
 import { varHover } from 'src/components/animate';
 import { useSnackbar } from 'src/components/snackbar';
 import CustomPopover, { usePopover } from 'src/components/custom-popover';
-
+import { useGetProfile } from 'src/api/profile';
 // ----------------------------------------------------------------------
 
 const OPTIONS = [
@@ -41,8 +41,6 @@ const OPTIONS = [
 
 export default function AccountPopover() {
   const router = useRouter();
-
-  // const { user } = useMockedUser();
 
   const { user, logout } = useAuthContext();
 
