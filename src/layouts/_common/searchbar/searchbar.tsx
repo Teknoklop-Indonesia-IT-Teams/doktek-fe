@@ -71,7 +71,7 @@ function Searchbar() {
   }, []);
 
   const dataFiltered = applyFilter({
-    inputData: getAllItems({ data: navData ?? [] }), // ✅ fallback ke array kosong
+    inputData: getAllItems({ data: navData ?? [] }),
     query: searchQuery,
   });
 

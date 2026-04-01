@@ -63,64 +63,68 @@ export function useNavData() {
   const isSuperAdmin = user?.role === 'Super Admin';
   const isAdmin = user?.role === 'Admin';
 
-  const data = useMemo(
-    () => {
-      if (!users || !user) return []; // ✅ pindah guard ke dalam useMemo
+  const data = useMemo(() => {
+    if (!users || !user) return [];
 
-      return [
-        {
-          subheader: t('overview'),
-          items: [
+    return [
+      {
+        subheader: t('overview'),
+        items: [
+          {
+            title: t('app'),
+            path: paths.dashboard.general.file,
+            icon: ICONS.file,
+          },
+        ],
+      },
+      {
+        subheader: t('technical document'),
+        items: [
+          {
+            title: t('documents'),
+            path: paths.dashboard.technicalDocument.root,
+            icon: ICONS.documents,
+          },
+          {
+            title: t('type document'),
+            path: paths.dashboard.typeDocument.root,
+            icon: ICONS.folder,
+          },
+        ],
+      },
+
+      // ✅ FIX DI SINI
+      ...(isSuperAdmin || isAdmin
+        ? [
             {
-              title: t('app'),
-              path: paths.dashboard.general.file,
-              icon: ICONS.file,
-            },
-          ],
-        },
-        {
-          subheader: t('technical document'),
-          items: [
-            {
-              title: t('documents'),
-              path: paths.dashboard.technicalDocument.root,
-              icon: ICONS.documents,
-            },
-            {
-              title: t('type document'),
-              path: paths.dashboard.typeDocument.root,
-              icon: ICONS.folder,
-            },
-          ],
-        },
-        (isSuperAdmin || isAdmin) && {
-          subheader: t('master data'),
-          items: [
-            {
-              title: t('user'),
-              path: paths.dashboard.user.list,
-              icon: ICONS.user,
-            },
-            ...(isSuperAdmin
-              ? [
+              subheader: t('master data'),
+              items: [
                 {
-                  title: t('division'),
-                  path: paths.dashboard.division.root,
-                  icon: ICONS.buildings,
+                  title: t('user'),
+                  path: paths.dashboard.user.list,
+                  icon: ICONS.user,
                 },
-                {
-                  title: t('roles'),
-                  path: paths.dashboard.roles.root,
-                  icon: ICONS.users,
-                },
-              ]
-              : []),
-          ],
-        },
-      ].filter(Boolean);
-    },
-    [t, isSuperAdmin, isAdmin, user, users] // ✅ tambah user dan users ke dependencies
-  );
+
+                ...(isSuperAdmin
+                  ? [
+                      {
+                        title: t('division'),
+                        path: paths.dashboard.division.root,
+                        icon: ICONS.buildings,
+                      },
+                      {
+                        title: t('roles'),
+                        path: paths.dashboard.roles.root,
+                        icon: ICONS.users,
+                      },
+                    ]
+                  : []),
+              ],
+            },
+          ]
+        : []),
+    ];
+  }, [t, isSuperAdmin, isAdmin, user, users]);
 
   return data;
 }
