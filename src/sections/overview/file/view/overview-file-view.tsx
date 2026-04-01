@@ -289,7 +289,7 @@ export default function OverviewFileView() {
                 <Stack direction="row" spacing={3} sx={{ pb: 3 }}>
                   <Grid container spacing={2}>
                     {document.slice(0, 6).map((d) => (
-                      <Grid xs={12} sm={6} md={4}>
+                      <Grid key={d.id_technical_document} xs={12} sm={6} md={4}>
                         <FileDocumentRecent
                           file={{
                             id_technical_document: d.id_technical_document,

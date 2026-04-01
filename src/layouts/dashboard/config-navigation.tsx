@@ -59,14 +59,15 @@ export function useNavData() {
   const { t } = useLocales();
   const { user } = useAuthContext();
   const { users } = useGetUsers();
-  if (!users || !user) return [];
 
   const isSuperAdmin = user?.role === 'Super Admin';
   const isAdmin = user?.role === 'Admin';
 
   const data = useMemo(
-    () =>
-      [
+    () => {
+      if (!users || !user) return []; // ✅ pindah guard ke dalam useMemo
+
+      return [
         {
           subheader: t('overview'),
           items: [
@@ -100,25 +101,25 @@ export function useNavData() {
               path: paths.dashboard.user.list,
               icon: ICONS.user,
             },
-
             ...(isSuperAdmin
               ? [
-                  {
-                    title: t('division'),
-                    path: paths.dashboard.division.root,
-                    icon: ICONS.buildings,
-                  },
-                  {
-                    title: t('roles'),
-                    path: paths.dashboard.roles.root,
-                    icon: ICONS.users,
-                  },
-                ]
+                {
+                  title: t('division'),
+                  path: paths.dashboard.division.root,
+                  icon: ICONS.buildings,
+                },
+                {
+                  title: t('roles'),
+                  path: paths.dashboard.roles.root,
+                  icon: ICONS.users,
+                },
+              ]
               : []),
           ],
         },
-      ].filter(Boolean),
-    [t, isSuperAdmin, isAdmin]
+      ].filter(Boolean);
+    },
+    [t, isSuperAdmin, isAdmin, user, users] // ✅ tambah user dan users ke dependencies
   );
 
   return data;

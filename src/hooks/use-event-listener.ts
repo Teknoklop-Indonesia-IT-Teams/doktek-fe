@@ -49,19 +49,17 @@ export function useEventListener<
   }, [handler]);
 
   useEffect(() => {
-    // Define the listening target
+    // Tambahkan guard untuk window
+    if (typeof window === 'undefined') return;  // ✅ tambah ini
+
     const targetElement: T | Window = element?.current || window;
     if (!(targetElement && targetElement.addEventListener)) {
       return;
     }
 
-    // Create event listener that calls handler function stored in ref
     const eventListener: typeof handler = (event) => savedHandler.current(event);
-
     targetElement.addEventListener(eventName, eventListener, options);
 
-    // Remove event listener on cleanup
-    // eslint-disable-next-line consistent-return
     return () => {
       targetElement.removeEventListener(eventName, eventListener);
     };
