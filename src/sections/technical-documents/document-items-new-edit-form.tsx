@@ -11,7 +11,7 @@ import Grid from '@mui/material/Unstable_Grid2';
 import { paths } from 'src/routes/paths';
 import { useParams, useRouter } from 'src/routes/hooks';
 // types
-import { IDocumentItem, IDocumentItemsInput } from 'src/types/document';
+import { IDocument, IDocumentActivity, IDocumentById, IDocumentInput } from 'src/types/document';
 // components
 import FormProvider, {
   RHFAutocomplete,
@@ -32,13 +32,14 @@ import Chip from '@mui/material/Chip';
 // ----------------------------------------------------------------------
 
 type Props = {
-  currentDocumentItems?: IDocumentItem;
+  currentDocumentItems?: IDocumentActivity;
   id_technical_documents?: string;
 };
 
 type FormValues = {
-  id_technical_document: string;
+  id_technical_document_activity: string;
   id_type_document: string;
+  id_division: string;
   document_file: (File | string)[];
 };
 
@@ -54,19 +55,26 @@ export default function DocumentItemsNewEditForm({
   const { type } = useGetTypes();
 
   const NewDocumentItemsSchema = Yup.object().shape({
-    id_technical_document: Yup.string(),
+    id_technical_document_activity: Yup.string(),
     document_file: Yup.array().max(1, 'Only one file allowed').nullable().notRequired(),
     id_type_document: Yup.string().required('Type is required'),
+    id_division: Yup.string().required('Division is required'),
   });
 
   const defaultValues: FormValues = useMemo(
     () => ({
-      id_technical_document:
-        currentDocumentItems?.technicalDocument.id_technical_document?.toString() || '',
-      document_file: currentDocumentItems?.document_file || [],
-      id_type_document: currentDocumentItems?.typeDocument.id_type_document?.toString() || '',
+      id_technical_document_activity:
+        currentDocumentItems?.id_technical_document_activity?.toString() || '',
+
+      document_file: currentDocumentItems?.document_file
+        ? [currentDocumentItems.document_file]
+        : [],
+
+      id_type_document: currentDocumentItems?.typeDocument?.id_type_document?.toString() || '',
+
+      id_division: currentDocumentItems?.division?.id_division?.toString() || '',
     }),
-    [currentDocumentItems, type]
+    [currentDocumentItems]
   );
 
   const methods = useForm({
@@ -91,24 +99,16 @@ export default function DocumentItemsNewEditForm({
   }, [currentDocumentItems, defaultValues, reset]);
 
   useEffect(() => {
-    if (currentDocumentItems) {
-      setValue(
-        'id_technical_document',
-        currentDocumentItems.technicalDocument.id_technical_document.toString()
-      );
-    }
-  }, [currentDocumentItems, setValue]);
-  useEffect(() => {
     if (id_technical_documents) {
-      setValue('id_technical_document', id_technical_documents);
+      setValue('id_technical_document_activity', id_technical_documents);
     }
   }, [id_technical_documents, setValue]);
 
-  const postDocumentItems = (data: IDocumentItemsInput) => {
+  const postDocumentItems = (data: IDocumentInput) => {
     const dataDocumentItems = data;
     if (currentDocumentItems) {
       const URLEdit = epDoktek.documentItem.edit(
-        currentDocumentItems?.id_technical_document_item.toString()
+        currentDocumentItems?.id_technical_document_activity.toString()
       );
       putDoktek(URLEdit, dataDocumentItems, {})
         .then((response: any) => {
@@ -117,7 +117,6 @@ export default function DocumentItemsNewEditForm({
           if (id_technical_documents) {
             router.push(paths.dashboard.technicalDocument.details(id_technical_documents));
           }
-          console.info('DATA', response);
         })
         .catch((error: any) => {
           console.error(error);
@@ -155,60 +154,48 @@ export default function DocumentItemsNewEditForm({
   };
 
   const onSubmit = handleSubmit(async (data) => {
-    console.log('DATA', data);
-
     try {
       const formData = new FormData();
 
-      // cek perubahan type document
-      if (
-        data.id_type_document &&
-        data.id_type_document !== currentDocumentItems?.typeDocument?.id_type_document?.toString()
-      ) {
-        formData.append('id_type_document', data.id_type_document);
-      }
+      // 🔥 bikin object activity
+      const activities = [
+        {
+          id_division: Number(data.id_division),
+          id_type_document: Number(data.id_type_document),
+          title: currentDocumentItems?.title || '', // atau input kalau ada
+        },
+      ];
 
-      // cek perubahan file
+      // 🔥 WAJIB stringify
+      formData.append('activities', JSON.stringify(activities));
+
+      // 🔥 file (optional)
       if (data.document_file && data.document_file.length > 0) {
         const file = data.document_file[0];
-
-        // jika file baru (File object)
         if (file instanceof File) {
           formData.append('file', file);
         }
       }
 
-      // jika create
-      if (!currentDocumentItems) {
-        formData.append('id_technical_document', id_technical_documents || '');
-      }
-
-      // jika edit
+      // 🔥 EDIT
       if (currentDocumentItems) {
         await putDoktek(
-          epDoktek.documentItem.edit(currentDocumentItems.id_technical_document_item.toString()),
+          epDoktek.document.edit(currentDocumentItems.id_technical_document.toString()),
           formData,
           {
             headers: { 'Content-Type': 'multipart/form-data' },
           }
         );
       } else {
-        await posterDoktek(epDoktek.documentItem.postDocumentItem, formData, {
+        // 🔥 CREATE
+        await posterDoktek(epDoktek.document.postDocument, formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
       }
 
-      enqueueSnackbar(currentDocumentItems ? 'Update success!' : 'Create success!');
-
-      if (id_technical_documents) {
-        mutate(epDoktek.document.details(id_technical_documents));
-      }
-
-      reset();
+      enqueueSnackbar('Success!');
     } catch (error: any) {
-      enqueueSnackbar(`Save failed! ${error.message}`, {
-        variant: 'error',
-      });
+      enqueueSnackbar(`Failed! ${error.message}`, { variant: 'error' });
     }
   });
 
@@ -239,10 +226,10 @@ export default function DocumentItemsNewEditForm({
   const renderDetails = (
     <Grid xs={12}>
       <Card>
-        <CardHeader title="Document Item" />
+        {/* <CardHeader title="Document Item" /> */}
 
         <Stack spacing={3} sx={{ p: 3 }}>
-          <RHFSelect
+          {/* <RHFSelect
             native
             name="id_type_document"
             label="Type Document"
@@ -255,7 +242,7 @@ export default function DocumentItemsNewEditForm({
                 {item.code_document}
               </option>
             ))}
-          </RHFSelect>
+          </RHFSelect> */}
 
           <Stack spacing={1}>
             <Typography variant="subtitle2">Upload File</Typography>

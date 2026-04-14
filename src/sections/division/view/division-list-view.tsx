@@ -37,18 +37,21 @@ import { isEqual } from 'lodash';
 import { deleterDoktek, epDoktek } from 'src/utils/axios-doktek';
 import { enqueueSnackbar } from 'src/components/snackbar';
 import { mutate } from 'swr';
+import { width } from '@mui/system';
 
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
-  { id: 'no', label: 'Number' },
-  { id: 'division_name', label: 'Division' },
-  { id: '' },
+  { id: 'no', label: 'Number', width: 80 },
+  { id: 'division_name', label: 'Division', width: 200 },
+  { id: 'division_code', label: 'Code Division', width: 150 },
+  { id: '', width: 100 },
 ];
 
 const defaultFilters: IDivisionTableFilters = {
   number: 0,
   name: '',
+  code: '',
 };
 
 // ----------------------------------------------------------------------

@@ -13,23 +13,19 @@ import Typography from '@mui/material/Typography';
 import ListItemText from '@mui/material/ListItemText';
 // hooks
 import { useBoolean } from 'src/hooks/use-boolean';
-// utils
-import { fCurrency } from 'src/utils/format-number';
 // types
-import { IDocument } from 'src/types/document';
+import { IDocumentActivity } from 'src/types/document';
 // components
 import Label from 'src/components/label';
 import Iconify from 'src/components/iconify';
 import { ConfirmDialog } from 'src/components/custom-dialog';
 import CustomPopover, { usePopover } from 'src/components/custom-popover';
-import FileThumbnail from 'src/components/file-thumbnail';
-import { useGetDivision } from 'src/api/division';
 import { IDivision } from 'src/types/division';
 
 // ----------------------------------------------------------------------
 
 type Props = {
-  row: IDocument;
+  row: IDocumentActivity;
   divisionList: IDivision[];
   selected: boolean;
   onSelectRow: VoidFunction;
@@ -47,8 +43,9 @@ export default function DocumentsTableRow({
   onEditRow,
   onDeleteRow,
 }: Props) {
-  const { document_number, job_title, created_at, updated_at } = row;
-  const divisionObj = divisionList.find((d) => d.id_division === row.division.id_division);
+  const { title, document_number, division, typeDocument, created_at, updated_at } = row;
+
+  const divisionObj = divisionList.find((d) => d.id_division === division.id_division);
   const confirm = useBoolean();
 
   const popover = usePopover();
@@ -75,7 +72,17 @@ export default function DocumentsTableRow({
             disableTypography
             primary={
               <Typography variant="body2" noWrap>
-                {job_title}
+                {title}
+              </Typography>
+            }
+          />
+        </TableCell>
+        <TableCell>
+          <ListItemText
+            disableTypography
+            primary={
+              <Typography variant="body2" noWrap>
+                {typeDocument.code_document}
               </Typography>
             }
           />

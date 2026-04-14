@@ -9,8 +9,7 @@ import { useSettingsContext } from 'src/components/settings';
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 //
 import DocumentItemsNewEditForm from '../document-items-new-edit-form';
-import { useGetDocumentByID, useGetDocumentItemsByID } from 'src/api/document';
-import { useParams } from 'react-router';
+import { useGetDocumentByID } from 'src/api/document';
 
 // ----------------------------------------------------------------------
 
@@ -21,8 +20,10 @@ type Props = {
 export default function DocumentItemsEditView({ id }: Props) {
   const settings = useSettingsContext();
 
-  const { documentItem: currentDocumentItem } = useGetDocumentItemsByID(id);
-  // const currentDocumentItems = _invoices.find((invoice) => invoice.id === id);
+  const { document: currentDocumentItem } = useGetDocumentByID(id);
+  const activity = currentDocumentItem?.activities.find(
+    (item) => item.id_technical_document_activity.toString() === id
+  );
 
   return (
     <Container maxWidth={settings.themeStretch ? false : 'lg'}>
@@ -37,14 +38,21 @@ export default function DocumentItemsEditView({ id }: Props) {
             name: 'Document Items',
             href: paths.dashboard.technicalDocument.root,
           },
-          { name: currentDocumentItem?.document_number },
+          {
+            name: currentDocumentItem?.activities
+              .map((activity) => activity.document_number)
+              .join(', '),
+          },
         ]}
         sx={{
           mb: { xs: 3, md: 5 },
         }}
       />
 
-      <DocumentItemsNewEditForm currentDocumentItems={currentDocumentItem} />
+      <DocumentItemsNewEditForm
+        currentDocumentItems={activity}
+        id_technical_documents={currentDocumentItem?.id_technical_document.toString()}
+      />
     </Container>
   );
 }

@@ -41,7 +41,7 @@ export default function DocumentItemsCreateView() {
       />
 
       <DocumentItemsNewEditForm
-        id_technical_documents={currentDocument.id_technical_document.toString()}
+        id_technical_documents={currentDocument?.id_technical_document.toString()}
       />
     </Container>
   );

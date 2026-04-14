@@ -168,6 +168,7 @@ export const epDoktek = {
   document: {
     postDocument: '/technical-documents',
     list: '/technical-documents',
+    listActive: '/technical-documents/active',
     edit: (id: string) => `/technical-documents/${id}`,
     search: '/technical-documents/q',
     details: (id: string) => `/technical-documents/${id}`,

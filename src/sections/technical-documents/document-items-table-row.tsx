@@ -16,7 +16,7 @@ import { useBoolean } from 'src/hooks/use-boolean';
 // utils
 import { fCurrency } from 'src/utils/format-number';
 // types
-import { IDocument, IDocumentItem } from 'src/types/document';
+import { IDocument, IDocumentActivity } from 'src/types/document';
 // components
 import Label from 'src/components/label';
 import Iconify from 'src/components/iconify';
@@ -28,11 +28,12 @@ import { IDivision } from 'src/types/division';
 import { ITypeDocument } from 'src/types/type';
 import { Stack } from '@mui/material';
 import LoadingButton from '@mui/lab/LoadingButton';
+import { cr } from '@fullcalendar/core/internal-common';
 
 // ----------------------------------------------------------------------
 
 type Props = {
-  row: IDocumentItem;
+  row: IDocumentActivity;
   index: number;
   typeList: ITypeDocument[];
   selected: boolean;
@@ -49,21 +50,13 @@ export default function DocumentItemsTableRow({
   onEditRow,
   onDeleteRow,
 }: Props) {
-  const {
-    document_number,
-    document_file,
-    technicalDocument,
-    typeDocument,
-    created_at,
-    updated_at,
-  } = row;
-
-  const typeObj = typeList.find((d) => d.id_type_document === typeDocument.id_type_document);
+  const { document_number, document_file, created_at, created_by } = row;
   const confirm = useBoolean();
   console.log('ROW', row);
+  console.log('created by', created_by);
 
   const popover = usePopover();
-  const handleViewFile = (row: IDocumentItem) => {
+  const handleViewFile = (row: IDocumentActivity) => {
     const file = document_file?.toString();
 
     if (!file) return;
@@ -73,7 +66,7 @@ export default function DocumentItemsTableRow({
     window.open(fileUrl, '_blank');
   };
 
-  const handleDownloadFile = (row: IDocumentItem) => {
+  const handleDownloadFile = (row: IDocumentActivity) => {
     const file = document_file?.toString();
 
     if (!file) return;
@@ -94,7 +87,7 @@ export default function DocumentItemsTableRow({
 
   return (
     <>
-      <TableRow hover key={row.id_technical_document_item} selected={selected}>
+      <TableRow hover key={row.id_technical_document_activity} selected={selected}>
         <TableCell padding="checkbox">
           <Checkbox checked={selected} onClick={onSelectRow} />
         </TableCell>
@@ -102,10 +95,6 @@ export default function DocumentItemsTableRow({
           <Typography variant="body2" noWrap>
             {document_number}
           </Typography>
-        </TableCell>
-
-        <TableCell>
-          <Label variant="soft">{typeObj?.code_document}</Label>
         </TableCell>
 
         <TableCell>
@@ -138,7 +127,7 @@ export default function DocumentItemsTableRow({
 
         <TableCell>{format(new Date(created_at), 'dd MMM yyyy')}</TableCell>
 
-        <TableCell>{format(new Date(updated_at), 'dd MMM yyyy')}</TableCell>
+        {/* <TableCell>{format(new Date(updated_at), 'dd MMM yyyy')}</TableCell> */}
 
         <TableCell align="right">
           <IconButton

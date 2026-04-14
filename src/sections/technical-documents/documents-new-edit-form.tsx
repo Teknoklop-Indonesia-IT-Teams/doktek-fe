@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import * as Yup from 'yup';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -11,9 +11,9 @@ import Grid from '@mui/material/Unstable_Grid2';
 import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
 // types
-import { IDocument, IDocumentInput } from 'src/types/document';
+import { IDocument, IDocumentActivity, IDocumentById, IDocumentInput } from 'src/types/document';
 // components
-import FormProvider, { RHFSelect, RHFTextField } from 'src/components/hook-form';
+import FormProvider, { RHFSelect, RHFTextField, RHFUpload } from 'src/components/hook-form';
 import { useResponsive } from 'src/hooks/use-responsive';
 import { useSnackbar } from 'src/components/snackbar';
 import Typography from '@mui/material/Typography';
@@ -21,30 +21,41 @@ import CardHeader from '@mui/material/CardHeader';
 import { useGetDivision } from 'src/api/division';
 import { epDoktek, patcherDoktek, posterDoktek, putDoktek } from 'src/utils/axios-doktek';
 import { mutate } from 'swr';
+import { useGetTypes } from 'src/api/type';
 
 // ----------------------------------------------------------------------
 
 type Props = {
-  currentDocument?: IDocument;
+  currentDocument?: IDocumentById | null;
 };
 
 export default function DocumentNewEditForm({ currentDocument }: Props) {
   const router = useRouter();
 
   const mdUp = useResponsive('up', 'md');
+  console.log('Current Document', currentDocument);
 
   const { enqueueSnackbar } = useSnackbar();
   const { division } = useGetDivision();
+  const { type } = useGetTypes();
 
   const NewDocumentSchema = Yup.object().shape({
-    job_title: Yup.string().required('Job Title is required'),
+    title: Yup.string().required('Job Title is required'),
     id_division: Yup.string().required('Division is required'),
+    id_type_document: Yup.string().required('Type Document is required'),
+    document_file: Yup.array().max(1, 'Only one file allowed').nullable().notRequired(),
   });
+
+  const lastActivity = currentDocument?.activities?.sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  )[0];
 
   const defaultValues = useMemo(
     () => ({
-      job_title: currentDocument?.job_title || '',
-      id_division: currentDocument?.division.id_division || '',
+      title: lastActivity?.title || '',
+      id_division: lastActivity?.division.id_division.toString() || '',
+      id_type_document: lastActivity?.typeDocument.id_type_document.toString() || '',
+      document_file: lastActivity?.document_file ? [lastActivity.document_file] : [],
     }),
     [currentDocument]
   );
@@ -57,6 +68,7 @@ export default function DocumentNewEditForm({ currentDocument }: Props) {
   const {
     reset,
     watch,
+    setValue,
     handleSubmit,
     formState: { isSubmitting },
   } = methods;
@@ -108,19 +120,71 @@ export default function DocumentNewEditForm({ currentDocument }: Props) {
     }
   };
 
-  const onSubmit = handleSubmit(async (data) => {
-    const payload: IDocumentInput = {
-      ...data,
-      id_division: Number(data.id_division),
-    };
+  const handleDrop = useCallback(
+    (acceptedFiles: File[]) => {
+      const files = values.document_file || [];
 
+      const newFiles = acceptedFiles.map((file) => file);
+
+      setValue('document_file', acceptedFiles, { shouldValidate: true });
+    },
+    [setValue, values.document_file]
+  );
+
+  const handleRemoveFile = useCallback(
+    (inputFile: File | string) => {
+      const filtered =
+        values.document_file && values.document_file?.filter((file) => file !== inputFile);
+      setValue('document_file', filtered);
+    },
+    [setValue, values.document_file]
+  );
+
+  const handleRemoveAllFiles = useCallback(() => {
+    setValue('document_file', []);
+  }, [setValue]);
+
+  const onSubmit = handleSubmit(async (data) => {
     try {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      postDocument(payload);
-      mutate(epDoktek.document.search);
-      reset();
-    } catch (error) {
-      console.error(error);
+      const formData = new FormData();
+
+      const activities = [
+        {
+          id_division: Number(data.id_division),
+          id_type_document: Number(data.id_type_document),
+          title: data.title,
+        },
+      ];
+
+      formData.append('activities', JSON.stringify(activities));
+
+      if (data.document_file && data.document_file.length > 0) {
+        const file = data.document_file[0];
+        if (file instanceof File) {
+          formData.append('file', file);
+        }
+      }
+
+      if (currentDocument) {
+        // ✅ EDIT
+        await putDoktek(
+          epDoktek.document.edit(currentDocument.id_technical_document.toString()),
+          formData,
+          {
+            headers: { 'Content-Type': 'multipart/form-data' },
+          }
+        );
+      } else {
+        // ✅ CREATE
+        await posterDoktek(epDoktek.document.postDocument, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+      }
+
+      enqueueSnackbar(currentDocument ? 'Update success!' : 'Create success!');
+      router.push(paths.dashboard.technicalDocument.root);
+    } catch (error: any) {
+      enqueueSnackbar(`Failed! ${error.message}`, { variant: 'error' });
     }
   });
 
@@ -142,7 +206,7 @@ export default function DocumentNewEditForm({ currentDocument }: Props) {
           {!mdUp && <CardHeader title="Details" />}
 
           <Stack spacing={3} sx={{ p: 3 }}>
-            <RHFTextField name="job_title" label="Job Title" />
+            <RHFTextField name="title" label="Job Title" />
 
             <RHFSelect
               native
@@ -156,6 +220,36 @@ export default function DocumentNewEditForm({ currentDocument }: Props) {
                 </option>
               ))}
             </RHFSelect>
+
+            <RHFSelect
+              native
+              name="id_type_document"
+              label="Type Document"
+              InputLabelProps={{ shrink: true }}
+            >
+              {type.map((category) => (
+                <option key={category.id_type_document} value={category.id_type_document}>
+                  {category.type_document}
+                </option>
+              ))}
+            </RHFSelect>
+            <Stack spacing={1}>
+              <Typography variant="subtitle2">Upload File</Typography>
+
+              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                Optional (max 1 file)
+              </Typography>
+
+              <RHFUpload
+                name="document_file"
+                // files={values.document_file}
+                maxSize={3145728}
+                multiple={false}
+                onDrop={handleDrop}
+                onRemove={handleRemoveFile}
+                onRemoveAll={handleRemoveAllFiles}
+              />
+            </Stack>
           </Stack>
         </Card>
       </Grid>

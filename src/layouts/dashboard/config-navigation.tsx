@@ -85,11 +85,6 @@ export function useNavData() {
             path: paths.dashboard.technicalDocument.root,
             icon: ICONS.documents,
           },
-          {
-            title: t('type document'),
-            path: paths.dashboard.typeDocument.root,
-            icon: ICONS.folder,
-          },
         ],
       },
 
@@ -99,6 +94,11 @@ export function useNavData() {
             {
               subheader: t('master data'),
               items: [
+                {
+                  title: t('type document'),
+                  path: paths.dashboard.typeDocument.root,
+                  icon: ICONS.folder,
+                },
                 {
                   title: t('user'),
                   path: paths.dashboard.user.list,

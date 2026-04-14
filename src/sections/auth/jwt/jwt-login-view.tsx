@@ -75,7 +75,9 @@ export default function JwtLoginView() {
 
   const renderHead = (
     <Stack spacing={2} sx={{ mb: 5 }}>
-      <Typography variant="h4">Sign in to Technical Document</Typography>
+      <Typography variant="h4">
+        Sign in to <span style={{ color: 'blue', fontStyle: 'italic' }}>Technical Document</span>
+      </Typography>
 
       {/* <Stack direction="row" spacing={0.5}>
         <Typography variant="body2">New user?</Typography>

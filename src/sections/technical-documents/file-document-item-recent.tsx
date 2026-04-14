@@ -23,18 +23,18 @@ import { useSnackbar } from 'src/components/snackbar';
 import CustomPopover, { usePopover } from 'src/components/custom-popover';
 import FileThumbnail from 'src/components/file-thumbnail';
 import { Typography } from '@mui/material';
-import { IDocument, IDocumentItem, IDocumentItemsLog } from 'src/types/document';
+import { IDocument, IDocumentActivity } from 'src/types/document';
 
 // ----------------------------------------------------------------------
 
 interface Props extends StackProps {
-  file: IDocumentItemsLog;
+  file: IDocumentActivity;
   onEdit: VoidFunction;
   onDelete: VoidFunction;
 }
 
 export default function FileDocumentItemRecent({ file, onEdit, onDelete, sx, ...other }: Props) {
-  const { technicalDocumentItem, activity, created_at } = file;
+  const { document_file, document_number, created_by, created_at } = file;
 
   return (
     <>
@@ -53,8 +53,8 @@ export default function FileDocumentItemRecent({ file, onEdit, onDelete, sx, ...
         {/* <FileThumbnail file={technicalDocumentItem?.document_file} sx={{ width: 36, height: 36 }} /> */}
 
         <Stack>
-          <Typography variant="subtitle2">{technicalDocumentItem.document_number}</Typography>
-          <Typography variant="subtitle2">{activity}</Typography>
+          <Typography variant="subtitle2">{document_number}</Typography>
+          <Typography variant="subtitle2">{created_by}</Typography>
 
           <Typography variant="body2" color="text.secondary">
             {created_at}

@@ -10,19 +10,12 @@ import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 //
 import DocumentDetails from '../documents-details';
 import { useGetDocumentByID } from 'src/api/document';
-import Button from '@mui/material/Button';
-import { RouterLink } from 'src/routes/components';
-import Iconify from 'src/components/iconify';
 import DocumentDetailsToolbar from '../documents-details-toolbar';
 import { useRouter } from 'src/routes/hooks';
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import { Box, Dialog, Typography } from '@mui/material';
 import DocumentItemsNewEditForm from '../document-items-new-edit-form';
-import { IDocumentItem } from 'src/types/document';
-import { deleterDoktek, epDoktek } from 'src/utils/axios-doktek';
-import { enqueueSnackbar } from 'src/components/snackbar';
-import { mutate } from 'swr';
-import { useTable } from 'src/components/table';
+import { IDocumentActivity } from 'src/types/document';
 
 // ----------------------------------------------------------------------
 
@@ -34,12 +27,13 @@ export default function DocumentsDetailsView({ id }: Props) {
   const settings = useSettingsContext();
 
   const { document: currentDocument } = useGetDocumentByID(id);
-  const currentDocuments = _invoices.filter((documents) => documents.id === id)[0];
-  const router = useRouter();
+  const lastActivity = currentDocument?.activities?.sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  )[0];
   const [openModal, setOpenModal] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<IDocumentItem | null>(null);
+  const [selectedItem, setSelectedItem] = useState<IDocumentActivity | null>(null);
 
-  const handleEditItem = (item: IDocumentItem) => {
+  const handleEditItem = (item: IDocumentActivity) => {
     setSelectedItem(item);
     setOpenModal(true);
   };
@@ -59,7 +53,7 @@ export default function DocumentsDetailsView({ id }: Props) {
       <Container maxWidth={settings.themeStretch ? false : 'lg'}>
         <DocumentDetailsToolbar backLink={paths.dashboard.technicalDocument.root} />
         <CustomBreadcrumbs
-          heading={currentDocument?.document_number}
+          heading={lastActivity?.title || ''}
           links={[
             {
               name: 'Dashboard',
@@ -69,17 +63,19 @@ export default function DocumentsDetailsView({ id }: Props) {
               name: 'Documents',
               href: paths.dashboard.technicalDocument.root,
             },
-            { name: currentDocument?.document_number },
+            {
+              name: lastActivity?.title || '',
+            },
           ]}
-          action={
-            <Button
-              variant="contained"
-              startIcon={<Iconify icon="mingcute:add-line" />}
-              onClick={handleCreateItem}
-            >
-              New Document Item
-            </Button>
-          }
+          // action={
+          //   <Button
+          //     variant="contained"
+          //     startIcon={<Iconify icon="mingcute:add-line" />}
+          //     onClick={handleCreateItem}
+          //   >
+          //     New Document Item
+          //   </Button>
+          // }
           sx={{ mb: { xs: 3, md: 5 } }}
         />
 

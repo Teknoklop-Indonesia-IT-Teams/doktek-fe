@@ -23,12 +23,12 @@ import { useSnackbar } from 'src/components/snackbar';
 import CustomPopover, { usePopover } from 'src/components/custom-popover';
 import FileThumbnail from 'src/components/file-thumbnail';
 import { Typography } from '@mui/material';
-import { IDocument } from 'src/types/document';
+import { IDocument, IDocumentActivity } from 'src/types/document';
 
 // ----------------------------------------------------------------------
 
 interface Props extends StackProps {
-  file: IDocument;
+  file: IDocumentActivity;
   onEdit: VoidFunction;
   onDelete: VoidFunction;
 }
@@ -38,7 +38,7 @@ export default function FileDocumentRecent({ file, onEdit, onDelete, sx, ...othe
 
   const { copy } = useCopyToClipboard();
 
-  const { document_number, division, job_title } = file;
+  const { document_number, division, title } = file;
 
   const smUp = useResponsive('up', 'sm');
 
@@ -56,16 +56,18 @@ export default function FileDocumentRecent({ file, onEdit, onDelete, sx, ...othe
         alignItems="center"
         sx={{
           borderRadius: 2,
-          p: 2,
+          p: 1,
           ...sx,
         }}
       >
-        <FileThumbnail file={document_number} sx={{ width: 36, height: 36 }} />
+        <FileThumbnail file={document_number} sx={{ width: 30, height: 30 }} />
 
-        <Stack>
-          <Typography variant="subtitle2">{job_title}</Typography>
+        <Stack sx={{ minWidth: 0 }}>
+          <Typography variant="subtitle2" noWrap sx={{ maxWidth: '100%' }}>
+            {title}
+          </Typography>
 
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant="body2" color="text.secondary" noWrap>
             {division.division_name}
           </Typography>
         </Stack>

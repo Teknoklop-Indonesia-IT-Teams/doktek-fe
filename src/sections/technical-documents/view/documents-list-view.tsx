@@ -1,4 +1,3 @@
-import sumBy from 'lodash/sumBy';
 import { useState, useCallback, useEffect } from 'react';
 // @mui
 import { useTheme, alpha } from '@mui/material/styles';
@@ -22,8 +21,6 @@ import { RouterLink } from 'src/routes/components';
 import { useBoolean } from 'src/hooks/use-boolean';
 // utils
 import { fTimestamp } from 'src/utils/format-time';
-// _mock
-import { DOCUMENT_DIVISION_OPTIONS } from 'src/_mock';
 // components
 import Label from 'src/components/label';
 import Iconify from 'src/components/iconify';
@@ -43,13 +40,17 @@ import {
   TableSkeleton,
 } from 'src/components/table';
 // types
-import { IDocument, IDocumentTableFilters, IDocumentTableFilterValue } from 'src/types/document';
+import {
+  IDocumentActivity,
+  IDocumentTableFilters,
+  IDocumentTableFilterValue,
+} from 'src/types/document';
 //
 import DocumentsAnalytic from '../documents-analytic';
 import DocumentsTableRow from '../documents-table-row';
 import DocumentsTableToolbar from '../documents-table-toolbar';
 import DocumentsTableFiltersResult from '../documents-table-filters-result';
-import { useGetDocuments } from 'src/api/document';
+import { useGetDocumentsActive } from 'src/api/document';
 import { useGetDivision } from 'src/api/division';
 import { isEqual } from 'lodash';
 import { deleterDoktek, epDoktek } from 'src/utils/axios-doktek';
@@ -60,7 +61,8 @@ import { mutate } from 'swr';
 
 const TABLE_HEAD = [
   { id: 'document_number', label: 'Doc Number' },
-  { id: 'job_title', label: 'Job Title' },
+  { id: 'job_title', label: 'Title' },
+  { id: 'type_document', label: 'Type Document' },
   { id: 'created_at', label: 'Create' },
   { id: 'updated_at', label: 'Update' },
   { id: 'division', label: 'Division' },
@@ -68,9 +70,10 @@ const TABLE_HEAD = [
 ];
 
 const defaultFilters: IDocumentTableFilters = {
-  document_number: '',
-  job_title: '',
+  title: '',
   id_division: 'all',
+  id_type_document: '',
+  document_number: '',
   created_at: null,
   updated_at: null,
 };
@@ -81,17 +84,20 @@ export default function DocumentsListView() {
   const theme = useTheme();
 
   const settings = useSettingsContext();
+  const { documentActive, documentActiveLoading } = useGetDocumentsActive();
 
-  const { document, documentLoading, documentEmpty } = useGetDocuments();
   const { division } = useGetDivision();
 
   const router = useRouter();
 
-  const table = useTable({ defaultOrderBy: 'id_technical_document', defaultOrder: 'desc' });
+  const table = useTable({
+    defaultOrderBy: 'id_technical_document_activity',
+    defaultOrder: 'desc',
+  });
 
   const confirm = useBoolean();
 
-  const [tableData, setTableData] = useState<any[]>([]);
+  const [tableData, setTableData] = useState<IDocumentActivity[]>([]);
 
   const [filters, setFilters] = useState(defaultFilters);
 
@@ -104,10 +110,28 @@ export default function DocumentsListView() {
   };
 
   useEffect(() => {
-    if (document.length) {
-      setTableData(document);
+    if (documentActive.length) {
+      setTableData(documentActive);
     }
-  }, [document]);
+  }, [documentActive]);
+
+  const latestActivities = Object.values(
+    tableData.reduce((acc: Record<string, IDocumentActivity>, item) => {
+      const docId = item.id_technical_document_activity;
+
+      if (!acc[docId]) {
+        acc[docId] = item;
+      } else {
+        const existing = acc[docId];
+
+        if (new Date(item.created_at) > new Date(existing.created_at)) {
+          acc[docId] = item;
+        }
+      }
+
+      return acc;
+    }, {})
+  ) as IDocumentActivity[];
 
   const dateError =
     filters.created_at && filters.updated_at
@@ -115,7 +139,7 @@ export default function DocumentsListView() {
       : false;
 
   const dataFiltered = applyFilter({
-    inputData: tableData,
+    inputData: latestActivities,
     comparator: getComparator(table.order, table.orderBy),
     filters,
     dateError,
@@ -133,16 +157,16 @@ export default function DocumentsListView() {
   const notFound = (!dataFiltered.length && canReset) || !dataFiltered.length;
 
   const getDivisionLength = (divisionName: string) => {
-    return tableData.filter((item) => item.division?.division_name === divisionName).length;
+    return latestActivities.filter((item) => item.division?.division_name === divisionName).length;
   };
 
   const getPercentByDivision = (divisionName: string) => {
-    if (!tableData.length) return 0;
-    return (getDivisionLength(divisionName) / tableData.length) * 100;
+    if (!latestActivities.length) return 0;
+    return (getDivisionLength(divisionName) / latestActivities.length) * 100;
   };
 
   const TABS = [
-    { value: 'all', label: 'All', color: 'default', count: tableData.length },
+    { value: 'all', label: 'All', color: 'default', count: latestActivities.length },
     ...division.map((d) => ({
       value: d.division_name,
       label: d.division_name,
@@ -176,17 +200,17 @@ export default function DocumentsListView() {
   );
 
   const handleDeleteRows = useCallback(() => {
-    const deleteRows = tableData.filter(
-      (row) => !table.selected.includes(row.id_technical_document)
+    const deleteRows = latestActivities.filter(
+      (row) => !table.selected.includes(row.id_technical_document_activity.toString())
     );
     setTableData(deleteRows);
 
     table.onUpdatePageDeleteRows({
-      totalRows: tableData.length,
+      totalRows: latestActivities.length,
       totalRowsInPage: dataInPage.length,
       totalRowsFiltered: dataFiltered.length,
     });
-  }, [dataFiltered.length, dataInPage.length, table, tableData]);
+  }, [dataFiltered.length, dataInPage.length, table, latestActivities]);
 
   const handleEditRow = useCallback(
     (id: string) => {
@@ -259,7 +283,7 @@ export default function DocumentsListView() {
             >
               <DocumentsAnalytic
                 title="Total"
-                total={tableData.length}
+                total={latestActivities.length}
                 percent={100}
                 icon="solar:bill-list-bold-duotone"
                 color={theme.palette.text.secondary}
@@ -354,11 +378,11 @@ export default function DocumentsListView() {
             <TableSelectedAction
               dense={table.dense}
               numSelected={table.selected.length}
-              rowCount={tableData.length}
+              rowCount={latestActivities.length}
               onSelectAllRows={(checked) =>
                 table.onSelectAllRows(
                   checked,
-                  tableData.map((row) => row.id_technical_document)
+                  latestActivities.map((row) => row.id_technical_document.toString())
                 )
               }
               action={
@@ -396,19 +420,19 @@ export default function DocumentsListView() {
                   order={table.order}
                   orderBy={table.orderBy}
                   headLabel={TABLE_HEAD}
-                  rowCount={tableData.length}
+                  rowCount={latestActivities.length}
                   numSelected={table.selected.length}
                   onSort={table.onSort}
                   onSelectAllRows={(checked) =>
                     table.onSelectAllRows(
                       checked,
-                      tableData.map((row) => row.id_technical_document)
+                      latestActivities.map((row) => row.id_technical_document.toString())
                     )
                   }
                 />
 
                 <TableBody>
-                  {documentLoading ? (
+                  {documentActiveLoading ? (
                     [...Array(table.rowsPerPage)].map((i, index) => (
                       <TableSkeleton key={index} sx={{ height: denseHeight }} />
                     ))
@@ -440,7 +464,7 @@ export default function DocumentsListView() {
 
                   <TableEmptyRows
                     height={denseHeight}
-                    emptyRows={emptyRows(table.page, table.rowsPerPage, tableData.length)}
+                    emptyRows={emptyRows(table.page, table.rowsPerPage, latestActivities.length)}
                   />
 
                   <TableNoData notFound={notFound} />
@@ -496,12 +520,12 @@ function applyFilter({
   filters,
   dateError,
 }: {
-  inputData: IDocument[];
+  inputData: IDocumentActivity[];
   comparator: (a: any, b: any) => number;
   filters: IDocumentTableFilters;
   dateError: boolean;
 }) {
-  const { document_number, job_title, created_at, updated_at, id_division } = filters;
+  const { title, created_at, updated_at, id_division } = filters;
 
   const stabilizedThis = inputData.map((el, index) => [el, index] as const);
 
@@ -513,10 +537,9 @@ function applyFilter({
 
   inputData = stabilizedThis.map((el) => el[0]);
 
-  if (document_number) {
+  if (title) {
     inputData = inputData.filter(
-      (document) =>
-        document.document_number.toLowerCase().indexOf(document_number.toLowerCase()) !== -1
+      (document) => document.title.toLowerCase().indexOf(title.toLowerCase()) !== -1
     );
   }
 

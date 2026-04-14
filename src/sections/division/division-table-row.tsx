@@ -26,7 +26,7 @@ type Props = {
 };
 
 export default function DivisionTableRow({ row, index, onEditRow, onDeleteRow }: Props) {
-  const { division_name } = row;
+  const { division_name, division_code } = row;
 
   const confirm = useBoolean();
 
@@ -51,6 +51,17 @@ export default function DivisionTableRow({ row, index, onEditRow, onDeleteRow }:
             primary={
               <Typography variant="body2" noWrap>
                 {division_name}
+              </Typography>
+            }
+          />
+        </TableCell>
+
+        <TableCell sx={{ px: 1, alignItems: 'center' }}>
+          <ListItemText
+            disableTypography
+            primary={
+              <Typography variant="body2" noWrap>
+                {division_code}
               </Typography>
             }
           />

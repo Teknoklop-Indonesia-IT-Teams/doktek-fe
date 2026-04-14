@@ -20,8 +20,8 @@ import { fCurrency } from 'src/utils/format-number';
 // types
 import {
   IDocument,
-  IDocumentItem,
-  IDocumentItemTableFilters,
+  IDocumentActivity,
+  IDocumentById,
   IDocumentTableFilters,
 } from 'src/types/document';
 // components
@@ -50,61 +50,64 @@ import {
 import { useRouter } from 'src/routes/hooks';
 import { paths } from 'src/routes/paths';
 import { useGetType, useGetTypes } from 'src/api/type';
-import { useGetDocumentItems, useGetDocumentItemsLog, useGetDocuments } from 'src/api/document';
+import {
+  // useGetDocumentItems,
+  // useGetDocumentItemsLog,
+  useGetDocuments,
+  useGetDocumentsActive,
+} from 'src/api/document';
 import LoadingButton from '@mui/lab/LoadingButton';
 import { deleterDoktek, epDoktek } from 'src/utils/axios-doktek';
 import { enqueueSnackbar } from 'src/components/snackbar';
 import { mutate } from 'swr';
 import { isEqual } from 'lodash';
 import DocumentItemsTableRow from './document-items-table-row';
+import { aC } from '@fullcalendar/core/internal-common';
 // ----------------------------------------------------------------------
 
 type Props = {
-  documents: IDocument;
-  onEditItem?: (item: IDocumentItem) => void;
+  documents: IDocumentById | null;
+  onEditItem?: (item: IDocumentActivity) => void;
 };
 
 const TABLE_HEAD = [
   { id: 'document_number', label: 'Doc Number' },
-  { id: 'id_type_document', label: 'Type Document' },
   { id: 'document_file', label: 'Upload' },
   { id: 'created_at', label: 'Create At' },
-  { id: 'updated_at', label: 'Update At' },
   { id: '' },
 ];
 
-const defaultFilters: IDocumentItemTableFilters = {
+const defaultFilters: IDocumentTableFilters = {
+  title: '',
   document_number: '',
-  document_file: '',
   id_type_document: '',
-  id_technical_document: '',
+  id_division: '',
   created_at: null,
   updated_at: null,
 };
 
 export default function DocumentDetails({ documents, onEditItem }: Props) {
   if (!documents) return null;
-  const { division } = useGetDivision();
+  // const { division } = useGetDivision();
   const { type } = useGetTypes();
   const table = useTable({ defaultOrderBy: 'createDate' });
-  const { documentItem, documentItemEmpty, documentItemLoading } = useGetDocumentItems();
-  const { documentItemsLog } = useGetDocumentItemsLog();
-  const [selectedRow, setSelectedRow] = useState<IDocumentItem | null>(null);
+  const { documentActive, documentActiveLoading } = useGetDocumentsActive();
+  // const { documentItem, documentItemEmpty, documentItemLoading } = useGetDocumentItems();
+  // const { documentItemsLog } = useGetDocumentItemsLog();
+  const [selectedRow, setSelectedRow] = useState<IDocumentActivity | null>(null);
   const [loadingId, setLoadingId] = useState<number | null>(null);
   const [filters, setFilters] = useState(defaultFilters);
 
-  const tableData: IDocumentItem[] =
-    documentItem?.filter(
-      (item) =>
-        item.technicalDocument.id_technical_document === documents.id_technical_document ||
-        item.technicalDocument?.id_technical_document === documents.id_technical_document
-    ) || [];
-
-  const { document_number, job_title, created_at, updated_at } = documents;
-  const divisionObj = division.find((d) => d.id_division === documents.division.id_division);
-  console.log('documentItem:', documentItem);
-  console.log('documents:', documents);
-  console.log('TABLE DATA', tableData);
+  const tableData = [...documents.activities].sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
+  const firstActivity = documents.activities[0];
+  const { document_number, division, title, created_at, created_by } = firstActivity || {};
+  // const { document_number, division, title, typeDocument, created_at, updated_at } = documents;
+  // const divisionObj = division.find((d) => d.id_division === documents.division.id_division);
+  // console.log('documentItem:', documentItem);
+  // console.log('documents:', documents);
+  // console.log('TABLE DATA', tableData);
 
   const confirm = useBoolean();
   const router = useRouter();
@@ -127,7 +130,7 @@ export default function DocumentDetails({ documents, onEditItem }: Props) {
   const notFound = (!dataFiltered.length && canReset) || !dataFiltered.length;
 
   const handleFilters = useCallback(
-    (name: string, value: IDocumentItemTableFilters) => {
+    (name: string, value: IDocumentTableFilters) => {
       table.onResetPage();
       setFilters((prevState) => ({
         ...prevState,
@@ -155,15 +158,25 @@ export default function DocumentDetails({ documents, onEditItem }: Props) {
     },
     [dataInPage.length, table]
   );
-  const activityLogs =
-    documentItemsLog?.filter(
-      (log) =>
-        log.technicalDocumentItem?.document_number &&
-        tableData.some(
-          (item) =>
-            item.id_technical_document_item === log.technicalDocumentItem.id_technical_document_item
-        )
-    ) || [];
+  const activityLogs = documents?.activities ?? [];
+  console.log(
+    'CReated by',
+    activityLogs.map((log) => {
+      log.created_by;
+    })
+  );
+
+  console.log(
+    'FULL LOG:',
+    activityLogs.map((log) => ({ log }))
+  );
+  console.log(
+    'CREATED BY:',
+    activityLogs.map((log) => log.created_by)
+  );
+
+  console.log('FINAL DATA:', documents);
+  console.log('ACTIVITIES:', documents.activities);
 
   const handleResetFilters = useCallback(() => {
     setFilters(defaultFilters);
@@ -191,12 +204,12 @@ export default function DocumentDetails({ documents, onEditItem }: Props) {
 
                 <Stack direction="row" spacing={1} alignItems="center">
                   <Iconify width={16} icon="hugeicons:job-search" />
-                  <Typography variant="body2">{job_title}</Typography>
+                  <Typography variant="body2">{title}</Typography>
                 </Stack>
                 <Stack direction="row" spacing={1} alignItems="center">
                   <Iconify width={16} icon="solar:buildings-2-bold" />
                   <Typography variant="body2" color="text.secondary">
-                    {divisionObj?.division_name}
+                    {division?.division_name}
                   </Typography>
                 </Stack>
               </Stack>
@@ -216,31 +229,34 @@ export default function DocumentDetails({ documents, onEditItem }: Props) {
                     pr: 1,
                   }}
                 >
-                  {activityLogs.map((log) => (
-                    <Stack
-                      key={log.id_technical_document_item_log}
-                      direction="row"
-                      spacing={2}
-                      alignItems="flex-start"
-                    >
-                      <Iconify icon="solar:clock-circle-bold" width={18} />
+                  {activityLogs.map((log) => {
+                    console.log('LOG:', log);
+                    return (
+                      <Stack
+                        key={log.id_technical_document_activity}
+                        direction="row"
+                        spacing={2}
+                        alignItems="flex-start"
+                      >
+                        <Iconify icon="solar:clock-circle-bold" width={18} />
 
-                      <Box>
-                        <Typography variant="body2" fontWeight={600}>
-                          {log.activity}
-                        </Typography>
+                        <Box>
+                          <Typography variant="body2" fontWeight={600}>
+                            {log.title}
+                          </Typography>
 
-                        <Typography variant="body2" color="text.secondary">
-                          {log.note}
-                        </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            {log.document_number}
+                          </Typography>
 
-                        <Typography variant="caption" color="text.disabled">
-                          by {log.users?.username} •{' '}
-                          {format(new Date(log.created_at), 'dd MMM yyyy HH:mm')}
-                        </Typography>
-                      </Box>
-                    </Stack>
-                  ))}
+                          <Typography variant="caption" color="text.disabled">
+                            by {log.created_by} •{' '}
+                            {format(new Date(log.created_at), 'dd MMM yyyy HH:mm')}
+                          </Typography>
+                        </Box>
+                      </Stack>
+                    );
+                  })}
                 </Stack>
               </Stack>
             </Card>
@@ -262,13 +278,13 @@ export default function DocumentDetails({ documents, onEditItem }: Props) {
                     onSelectAllRows={(checked) =>
                       table.onSelectAllRows(
                         checked,
-                        tableData.map((row) => row.id_technical_document_item.toString())
+                        tableData.map((row) => row.id_technical_document_activity.toString())
                       )
                     }
                   />
 
                   <TableBody>
-                    {documentItemLoading ? (
+                    {documentActiveLoading ? (
                       [...Array(table.rowsPerPage)].map((_, index) => (
                         <TableSkeleton key={index} sx={{ height: denseHeight }} />
                       ))
@@ -281,19 +297,19 @@ export default function DocumentDetails({ documents, onEditItem }: Props) {
                           )
                           .map((row, index) => (
                             <DocumentItemsTableRow
-                              key={row.id_technical_document_item}
+                              key={row.id_technical_document_activity}
                               row={row}
                               typeList={type || []}
                               index={table.page * table.rowsPerPage + index}
                               selected={table.selected.includes(
-                                row.id_technical_document_item.toString()
+                                row.id_technical_document_activity.toString()
                               )}
                               onSelectRow={() =>
-                                table.onSelectRow(row.id_technical_document_item.toString())
+                                table.onSelectRow(row.id_technical_document_activity.toString())
                               }
                               onEditRow={() => onEditItem?.(row)}
                               onDeleteRow={() =>
-                                handleDeleteItem(row.id_technical_document_item.toString())
+                                handleDeleteItem(row.id_technical_document_activity.toString())
                               }
                             />
                           ))}
@@ -350,7 +366,7 @@ export default function DocumentDetails({ documents, onEditItem }: Props) {
                   color="error"
                   onClick={() => {
                     if (selectedRow) {
-                      handleDeleteItem(selectedRow.id_technical_document_item.toString());
+                      handleDeleteItem(selectedRow.id_technical_document_activity.toString());
                     }
                   }}
                 >
@@ -382,18 +398,11 @@ function applyFilter({
   comparator,
   filters,
 }: {
-  inputData: IDocumentItem[];
+  inputData: IDocumentActivity[];
   comparator: (a: any, b: any) => number;
-  filters: IDocumentItemTableFilters;
+  filters: IDocumentTableFilters;
 }) {
-  const {
-    document_number,
-    document_file,
-    id_type_document,
-    id_technical_document,
-    created_at,
-    updated_at,
-  } = filters;
+  const { document_number, id_type_document, id_division, title, created_at, updated_at } = filters;
 
   const stabilizedThis = inputData.map((el, index) => [el, index] as const);
 
