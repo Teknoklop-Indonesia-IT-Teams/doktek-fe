@@ -116,6 +116,7 @@ export function useGetDocumentByID(documentId: string) {
               typeDocument: act.typeDocument,
               flag_active: act.flag_active,
               document_file: act.document_file,
+              created_by: act.created_by || act.user?.username || doc.created_by,
             })) || [],
         }
       : null;

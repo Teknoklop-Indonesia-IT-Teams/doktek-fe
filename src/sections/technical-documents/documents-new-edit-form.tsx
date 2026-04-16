@@ -45,9 +45,9 @@ export default function DocumentNewEditForm({ currentDocument }: Props) {
     document_file: Yup.array().max(1, 'Only one file allowed').nullable().notRequired(),
   });
 
-  const lastActivity = currentDocument?.activities?.sort(
-    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-  )[0];
+  const lastActivity = currentDocument?.activities
+    ?.slice()
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
 
   const defaultValues = useMemo(
     () => ({
@@ -169,15 +169,10 @@ export default function DocumentNewEditForm({ currentDocument }: Props) {
       if (currentDocument) {
         await putDoktek(
           epDoktek.document.edit(currentDocument.id_technical_document.toString()),
-          formData,
-          {
-            headers: { 'Content-Type': 'multipart/form-data' },
-          }
+          formData
         );
       } else {
-        await posterDoktek(epDoktek.document.postDocument, formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
+        await posterDoktek(epDoktek.document.postDocument, formData);
       }
 
       enqueueSnackbar(currentDocument ? 'Update success!' : 'Create success!');
