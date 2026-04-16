@@ -1,18 +1,11 @@
-import sumBy from 'lodash/sumBy';
 import { useState, useCallback, useEffect } from 'react';
 // @mui
-import { useTheme, alpha } from '@mui/material/styles';
-import Tab from '@mui/material/Tab';
-import Tabs from '@mui/material/Tabs';
+import { useTheme } from '@mui/material/styles';
 import Card from '@mui/material/Card';
 import Table from '@mui/material/Table';
-import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
-import Divider from '@mui/material/Divider';
-import Tooltip from '@mui/material/Tooltip';
 import Container from '@mui/material/Container';
 import TableBody from '@mui/material/TableBody';
-import IconButton from '@mui/material/IconButton';
 import TableContainer from '@mui/material/TableContainer';
 // routes
 import { paths } from 'src/routes/paths';
@@ -20,14 +13,11 @@ import { useRouter } from 'src/routes/hooks';
 import { RouterLink } from 'src/routes/components';
 // hooks
 import { useBoolean } from 'src/hooks/use-boolean';
-// utils
-import { fTimestamp } from 'src/utils/format-time';
 // _mock
 import { _roles } from 'src/_mock';
 // api
-import { useGetRoles, useGetRolesDetails, useSearchRoles } from 'src/api/role';
+import { useGetRoles } from 'src/api/role';
 // components
-import Label from 'src/components/label';
 import Iconify from 'src/components/iconify';
 import Scrollbar from 'src/components/scrollbar';
 import { ConfirmDialog } from 'src/components/custom-dialog';
@@ -46,7 +36,6 @@ import {
 // types
 import { IRole, IRoleTableFilters, IRoleTableFilterValue } from 'src/types/role';
 //
-import RolesAnalytic from '../roles-analytic';
 import RolesTableRow from '../roles-table-row';
 import RolesTableToolbar from '../roles-table-toolbar';
 import RolesTableFiltersResult from '../roles-table-filters-result';
@@ -72,8 +61,6 @@ const defaultFilters: IRoleTableFilters = {
 // ----------------------------------------------------------------------
 
 export default function RolesListView() {
-  const theme = useTheme();
-
   const settings = useSettingsContext();
 
   const { roles, rolesLoading, rolesEmpty } = useGetRoles();

@@ -65,12 +65,14 @@ export default function DivisionNewEditForm({ currentDivision }: Props) {
   const { enqueueSnackbar } = useSnackbar();
 
   const NewDivisionSchema = Yup.object().shape({
-    division_name: Yup.string().required('Division is required'),
+    division_name: Yup.string().required('Division Name is required'),
+    division_code: Yup.string().required('Division Code is required'),
   });
 
   const defaultValues = useMemo(
     () => ({
       division_name: currentDivision?.division_name || '',
+      division_code: currentDivision?.division_code || '',
     }),
     [currentDivision]
   );
@@ -153,12 +155,14 @@ export default function DivisionNewEditForm({ currentDivision }: Props) {
     <>
       {mdUp && (
         <Grid md={4}>
-          <Typography variant="h6" sx={{ mb: 0.5 }}>
-            Details
-          </Typography>
-          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            Title
-          </Typography>
+          <Stack spacing={1} sx={{ mb: 3, ml: 3 }}>
+            <Typography variant="h6" sx={{ mb: 0.5 }}>
+              Details
+            </Typography>
+            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+              Fill in the details of the division.
+            </Typography>
+          </Stack>
         </Grid>
       )}
 
@@ -167,7 +171,9 @@ export default function DivisionNewEditForm({ currentDivision }: Props) {
           {!mdUp && <CardHeader title="Details" />}
 
           <Stack spacing={3} sx={{ p: 3 }}>
-            <RHFTextField name="division_name" label="Division Name" />
+            <RHFTextField name="division_name" label="Division Name" multiline rows={4} />
+
+            <RHFTextField name="division_code" label="Division Code" />
           </Stack>
         </Card>
       </Grid>

@@ -16,7 +16,7 @@ import Iconify from 'src/components/iconify';
 import { ConfirmDialog } from 'src/components/custom-dialog';
 import CustomPopover, { usePopover } from 'src/components/custom-popover';
 import { ITypeDocument } from 'src/types/type';
-import { Box, Dialog, DialogActions, Stack } from '@mui/material';
+import { Box, Dialog, DialogActions, Stack, useTheme } from '@mui/material';
 import LoadingButton from '@mui/lab/LoadingButton';
 import { useState } from 'react';
 import { enqueueSnackbar } from 'src/components/snackbar';
@@ -42,13 +42,30 @@ export default function DocumentItemsTableRow({
   onEditRow,
   onDeleteRow,
 }: Props) {
+  const theme = useTheme();
   const { document_number, document_file, created_at, created_by } = row;
   const [fileUrl, setFileUrl] = useState<string | null>(null);
   const confirm = useBoolean();
   const view = useBoolean();
-  console.log('rowsss2', row);
 
-  console.log('CREACREA', created_by);
+  const fileColors: Record<string, { main: string; soft: string }> = {
+    doc: {
+      main: '#2196f3',
+      soft: 'rgba(33, 150, 243, 0.16)',
+    },
+    docx: {
+      main: '#2196f3',
+      soft: 'rgba(33, 150, 243, 0.16)',
+    },
+    pdf: {
+      main: '#f44336',
+      soft: 'rgba(244, 67, 54, 0.16)',
+    },
+    xlsx: {
+      main: '#4caf50',
+      soft: 'rgba(76, 175, 80, 0.16)',
+    },
+  };
 
   const popover = usePopover();
 
@@ -106,6 +123,21 @@ export default function DocumentItemsTableRow({
     return ext.toUpperCase(); // pdf → PDF
   };
 
+  const ext = getFileExtension(document_file);
+  const fileColor = fileColors[ext] || {
+    main: '#9e9e9e',
+    soft: 'rgba(158, 158, 158, 0.16)',
+  };
+
+  const getColor = () => {
+    if (ext === 'doc' || ext === 'docx') return 'primary';
+    if (ext === 'pdf') return 'error';
+    if (ext === 'xlsx') return 'success';
+    return 'default';
+  };
+
+  const color = getColor();
+
   return (
     <>
       <TableRow hover key={row.id_technical_document_activity} selected={selected}>
@@ -151,24 +183,16 @@ export default function DocumentItemsTableRow({
         <TableCell>
           <Label
             variant="soft"
-            color="default"
             sx={{
-              ...(getFileExtension(document_file) === 'docx' && {
-                bgcolor: 'rgba(33, 150, 243, 0.16)',
-                color: '#2196f3',
-              }),
-              ...(getFileExtension(document_file) === 'doc' && {
-                bgcolor: 'rgba(33, 150, 243, 0.16)',
-                color: '#2196f3',
-              }),
-              ...(getFileExtension(document_file) === 'pdf' && {
-                bgcolor: 'rgba(244, 67, 54, 0.16)',
-                color: '#f44336',
-              }),
-              ...(getFileExtension(document_file) === 'xlsx' && {
-                bgcolor: 'rgba(76, 175, 80, 0.16)',
-                color: '#4caf50',
-              }),
+              bgcolor:
+                theme.palette.mode === 'dark'
+                  ? fileColor.main // 🌙 solid
+                  : fileColor.soft, // 🌞 soft
+
+              color: theme.palette.mode === 'dark' ? '#fff' : fileColor.main,
+              px: 1.2,
+              borderRadius: 1.5,
+              fontWeight: 600,
             }}
           >
             {getFileLabel(document_file)}
@@ -176,11 +200,6 @@ export default function DocumentItemsTableRow({
         </TableCell>
 
         <TableCell>{format(new Date(created_at), 'dd MMM yyyy')}</TableCell>
-        <TableCell>
-          <Typography variant="body2" noWrap>
-            {created_by}
-          </Typography>
-        </TableCell>
         {/* <TableCell>{format(new Date(updated_at), 'dd MMM yyyy')}</TableCell> */}
 
         {/* <TableCell align="right">

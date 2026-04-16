@@ -2,14 +2,12 @@
 import Container from '@mui/material/Container';
 // routes
 import { paths } from 'src/routes/paths';
-// _mock
-import { _invoices } from 'src/_mock';
 // components
 import { useSettingsContext } from 'src/components/settings';
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 //
 import RolesNewEditForm from '../roles-new-edit-form';
-import { useGetRoles, useGetRolesDetails } from 'src/api/role';
+import { useGetRolesDetails } from 'src/api/role';
 import { _role } from 'src/_mock/_role';
 
 // ----------------------------------------------------------------------
@@ -22,7 +20,6 @@ export default function RolesEditView({ id }: Props) {
   const settings = useSettingsContext();
 
   const { roles: currentRole } = useGetRolesDetails(id);
-  // const currentRoles = _role.find((role) => role.id_role.toString() === id);
 
   return (
     <Container maxWidth={settings.themeStretch ? false : 'xl'}>
@@ -31,7 +28,7 @@ export default function RolesEditView({ id }: Props) {
         links={[
           {
             name: 'Dashboard',
-            href: paths.dashboard.root,
+            href: paths.dashboard.general.file,
           },
           {
             name: 'Roles',

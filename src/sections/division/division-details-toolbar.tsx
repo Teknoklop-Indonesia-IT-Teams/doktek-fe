@@ -23,7 +23,7 @@ type Props = StackProps & {
   backLink: string;
 };
 
-export default function DocumentDetailsToolbar({ backLink, sx, ...other }: Props) {
+export default function DivisionDetailsToolbar({ backLink, sx, ...other }: Props) {
   return (
     <>
       <Stack

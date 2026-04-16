@@ -6,6 +6,7 @@ import { paths } from 'src/routes/paths';
 import { useSettingsContext } from 'src/components/settings';
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 import TypeDocumentNewEditForm from '../type-document-new-edit-form';
+import TypeDocumentDetailsToolbar from '../type-document-details-toolbar';
 //
 
 // ----------------------------------------------------------------------
@@ -15,12 +16,13 @@ export default function TypeDcoumentsCreateView() {
 
   return (
     <Container maxWidth={settings.themeStretch ? false : 'xl'}>
+      <TypeDocumentDetailsToolbar backLink={paths.dashboard.typeDocument.root} />
       <CustomBreadcrumbs
         heading="Create a new type documents"
         links={[
           {
             name: 'Dashboard',
-            href: paths.dashboard.root,
+            href: paths.dashboard.general.file,
           },
           {
             name: 'Type Dcouments',

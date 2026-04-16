@@ -40,7 +40,6 @@ export const posterDoktek = async (url: string, data: any, config?: AxiosRequest
   // console.log('Fetching data with args:', args);
 
   try {
-    console.log(data);
     const response: AxiosResponse = await apiDoktek.post(url, data, config);
 
     if (response.status === 201) {
@@ -71,7 +70,6 @@ export const patcherDoktek = async (url: string, data: any, config?: AxiosReques
   // console.log('Fetching data with args:', args);
 
   try {
-    console.log(data);
     const response: AxiosResponse = await apiDoktek.patch(url, data, config);
 
     if (response.status === 201) {
@@ -98,7 +96,6 @@ export const putDoktek = async (url: string, data: any, config?: AxiosRequestCon
   // console.log('Fetching data with args:', args);
 
   try {
-    console.log(data);
     const response: AxiosResponse = await apiDoktek.put(url, data, config);
 
     if (response.status === 201) {

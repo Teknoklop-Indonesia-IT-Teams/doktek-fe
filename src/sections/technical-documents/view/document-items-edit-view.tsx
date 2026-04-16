@@ -32,7 +32,7 @@ export default function DocumentItemsEditView({ id }: Props) {
         links={[
           {
             name: 'Dashboard',
-            href: paths.dashboard.root,
+            href: paths.dashboard.general.file,
           },
           {
             name: 'Document Items',

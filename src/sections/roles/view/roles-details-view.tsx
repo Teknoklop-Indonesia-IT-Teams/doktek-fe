@@ -28,7 +28,7 @@ export default function RolesDetailsView({ id }: Props) {
         links={[
           {
             name: 'Dashboard',
-            href: paths.dashboard.root,
+            href: paths.dashboard.general.file,
           },
           {
             name: 'Roles',

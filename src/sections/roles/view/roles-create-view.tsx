@@ -7,6 +7,7 @@ import { useSettingsContext } from 'src/components/settings';
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 //
 import RolesNewEditForm from '../roles-new-edit-form';
+import RolesDetailsToolbar from '../roles-details-toolbar';
 
 // ----------------------------------------------------------------------
 
@@ -15,6 +16,7 @@ export default function RolesCreateView() {
 
   return (
     <Container maxWidth={settings.themeStretch ? false : 'xl'}>
+      <RolesDetailsToolbar backLink={paths.dashboard.roles.root} />
       <CustomBreadcrumbs
         heading="Create a new roles"
         links={[

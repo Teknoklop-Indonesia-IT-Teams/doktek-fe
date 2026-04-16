@@ -4,6 +4,7 @@ import { useSettingsContext } from 'src/components/settings';
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 import { useGetUserById } from 'src/api/user';
 import UserNewEditForm from '../user-new-edit-form';
+import UserDetailsToolbar from '../user-details-toolbar';
 
 type Props = {
   id: string;
@@ -15,10 +16,11 @@ export default function UserEditView({ id }: Props) {
 
   return (
     <Container maxWidth={settings.themeStretch ? false : 'xl'}>
+      <UserDetailsToolbar backLink={paths.dashboard.user.list} />
       <CustomBreadcrumbs
         heading="Edit"
         links={[
-          { name: 'Dashboard', href: paths.dashboard.root },
+          { name: 'Dashboard', href: paths.dashboard.general.file },
           { name: 'User', href: paths.dashboard.user.list },
           { name: user?.[0]?.username },
         ]}

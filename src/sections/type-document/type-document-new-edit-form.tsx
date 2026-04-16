@@ -125,12 +125,14 @@ export default function TypeDocumentNewEditForm({ currentTypes }: Props) {
     <>
       {mdUp && (
         <Grid md={4}>
-          <Typography variant="h6" sx={{ mb: 0.5 }}>
-            Details
-          </Typography>
-          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            Type Document, Code Document
-          </Typography>
+          <Stack spacing={1} sx={{ mb: 3, ml: 3 }}>
+            <Typography variant="h6" sx={{ mb: 0.5 }}>
+              Details
+            </Typography>
+            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+              Type Document, Code Document
+            </Typography>
+          </Stack>
         </Grid>
       )}
 

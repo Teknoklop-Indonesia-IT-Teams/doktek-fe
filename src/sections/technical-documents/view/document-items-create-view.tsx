@@ -25,7 +25,7 @@ export default function DocumentItemsCreateView() {
         links={[
           {
             name: 'Dashboard',
-            href: paths.dashboard.root,
+            href: paths.dashboard.general.file,
           },
           {
             name: 'All Document Items',

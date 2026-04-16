@@ -7,6 +7,7 @@ import { useSettingsContext } from 'src/components/settings';
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 //
 import UserNewEditForm from '../user-new-edit-form';
+import UserDetailsToolbar from '../user-details-toolbar';
 
 // ----------------------------------------------------------------------
 
@@ -15,12 +16,13 @@ export default function UserCreateView() {
 
   return (
     <Container maxWidth={settings.themeStretch ? false : 'xl'}>
+      <UserDetailsToolbar backLink={paths.dashboard.user.list} />
       <CustomBreadcrumbs
         heading="Create a new user"
         links={[
           {
             name: 'Dashboard',
-            href: paths.dashboard.root,
+            href: paths.dashboard.general.file,
           },
           {
             name: 'User',

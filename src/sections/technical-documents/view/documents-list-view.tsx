@@ -445,8 +445,6 @@ export default function DocumentsListView() {
                           table.page * table.rowsPerPage + table.rowsPerPage
                         )
                         .map((row) => {
-                          console.log('ROWSSSSS', row);
-
                           return (
                             <DocumentsTableRow
                               key={row.id_technical_document}
@@ -553,12 +551,6 @@ function applyFilter({
   if (id_division && id_division !== 'all') {
     inputData = inputData.filter((document) => document.division?.division_name === id_division);
   }
-
-  // if (service.length) {
-  //   inputData = inputData.filter((invoice) =>
-  //     invoice.items.some((filterItem) => service.includes(filterItem.service))
-  //   );
-  // }
 
   if (!dateError) {
     if (created_at && updated_at) {

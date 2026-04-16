@@ -23,6 +23,7 @@ import ProfileFollowers from '../profile-followers';
 import { useAuthContext } from 'src/auth/hooks';
 import { useGetRoles } from 'src/api/role';
 import { useGetUsers } from 'src/api/user';
+import UserDetailsToolbar from '../user-details-toolbar';
 
 // ----------------------------------------------------------------------
 
@@ -72,10 +73,11 @@ export default function UserProfileView() {
 
   return (
     <Container maxWidth={settings.themeStretch ? false : 'lg'}>
+      <UserDetailsToolbar backLink={paths.dashboard.user.list} />
       <CustomBreadcrumbs
         heading="Profile"
         links={[
-          { name: 'Dashboard', href: paths.dashboard.root },
+          { name: 'Dashboard', href: paths.dashboard.general.file },
           { name: 'User', href: paths.dashboard.user.root },
           { name: user?.username },
         ]}

@@ -11,7 +11,6 @@ import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 import DocumentDetails from '../documents-details';
 import { useGetDocumentByID } from 'src/api/document';
 import DocumentDetailsToolbar from '../documents-details-toolbar';
-import { useRouter } from 'src/routes/hooks';
 import { useState } from 'react';
 import { Box, Dialog, Typography } from '@mui/material';
 import DocumentItemsNewEditForm from '../document-items-new-edit-form';

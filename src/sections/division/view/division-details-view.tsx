@@ -9,6 +9,7 @@ import { useSettingsContext } from 'src/components/settings';
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 //
 import DivisionDetails from '../division-details';
+import DivisionDetailsToolbar from '../division-details-toolbar';
 
 // ----------------------------------------------------------------------
 
@@ -22,13 +23,14 @@ export default function DivisionDetailsView({ id }: Props) {
   const currentDivision = _invoices.filter((division) => division.id === id)[0];
 
   return (
-    <Container maxWidth={settings.themeStretch ? false : 'lg'}>
+    <Container maxWidth={settings.themeStretch ? false : 'xl'}>
+      <DivisionDetailsToolbar backLink={paths.dashboard.division.root} />
       <CustomBreadcrumbs
         heading={currentDivision?.invoiceNumber}
         links={[
           {
             name: 'Dashboard',
-            href: paths.dashboard.root,
+            href: paths.dashboard.general.file,
           },
           {
             name: 'Division',

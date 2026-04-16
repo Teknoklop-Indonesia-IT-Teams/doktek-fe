@@ -10,6 +10,7 @@ import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 //
 import DocumentsNewEditForm from '../documents-new-edit-form';
 import { useGetDocumentByID } from 'src/api/document';
+import DocumentDetailsToolbar from '../documents-details-toolbar';
 
 // ----------------------------------------------------------------------
 
@@ -27,10 +28,11 @@ export default function DocumentsEditView({ id }: Props) {
 
   return (
     <Container maxWidth={settings.themeStretch ? false : 'xl'}>
+      <DocumentDetailsToolbar backLink={paths.dashboard.technicalDocument.root} />
       <CustomBreadcrumbs
         heading="Edit"
         links={[
-          { name: 'Dashboard', href: paths.dashboard.root },
+          { name: 'Dashboard', href: paths.dashboard.general.file },
           { name: 'Documents', href: paths.dashboard.technicalDocument.root },
           {
             name:

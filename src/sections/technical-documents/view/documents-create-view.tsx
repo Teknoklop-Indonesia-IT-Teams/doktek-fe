@@ -7,6 +7,7 @@ import { useSettingsContext } from 'src/components/settings';
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 //
 import DocumentsNewEditForm from '../documents-new-edit-form';
+import DocumentDetailsToolbar from '../documents-details-toolbar';
 
 // ----------------------------------------------------------------------
 
@@ -15,6 +16,7 @@ export default function DocumentsCreateView() {
 
   return (
     <Container maxWidth={settings.themeStretch ? false : 'xl'}>
+      <DocumentDetailsToolbar backLink={paths.dashboard.technicalDocument.root} />
       <CustomBreadcrumbs
         heading="Create a new all document"
         links={[

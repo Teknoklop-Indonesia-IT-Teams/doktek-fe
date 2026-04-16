@@ -170,7 +170,7 @@ export default function UserListView() {
               key={tab.value}
               iconPosition="end"
               value={tab.value}
-              label={tab.label}
+              // label={tab.label}
               icon={
                 <Label
                   variant={
@@ -181,7 +181,9 @@ export default function UserListView() {
                     (tab.value === 'non-active' && 'warning') ||
                     'default'
                   }
-                ></Label>
+                >
+                  {tab.label}
+                </Label>
               }
             />
           ))}

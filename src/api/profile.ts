@@ -29,7 +29,6 @@ export function useGetProfiles(query: unknown) {
   const { data, isLoading, error, isValidating } = useSWR(URL, fetcherDoktek, {
     revalidateOnFocus: false,
   });
-  console.log(URL);
 
   const memoizedValue = useMemo(
     () => ({

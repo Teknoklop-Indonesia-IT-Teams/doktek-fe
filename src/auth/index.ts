@@ -88,7 +88,6 @@ class AuthApi {
 
     const decoded = jwtDecode<{ id_user: string }>(accessToken);
     const { id_user } = decoded;
-    console.log(jwtDecode(accessToken), 'LOGIN');
 
     try {
       const { data } = await apiDoktek.post(epDoktek.auth.login);

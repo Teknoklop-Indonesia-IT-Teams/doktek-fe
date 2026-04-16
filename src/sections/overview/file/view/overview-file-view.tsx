@@ -239,6 +239,7 @@ export default function OverviewFileView() {
                       colors: chartColors,
                       chart: {
                         fontFamily: theme.typography.fontFamily,
+                        foreColor: theme.palette.text.secondary,
                       },
                       legend: {
                         position: 'bottom',

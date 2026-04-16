@@ -9,8 +9,8 @@ import { useSettingsContext } from 'src/components/settings';
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 //
 import DivisionNewEditForm from '../division-new-edit-form';
-import { useGetProduct } from 'src/api/product';
 import { useGetDivision, useGetDivisionDetails } from 'src/api/division';
+import DivisionDetailsToolbar from '../division-details-toolbar';
 
 // ----------------------------------------------------------------------
 
@@ -22,16 +22,16 @@ export default function DivisionEditView({ id }: Props) {
   const settings = useSettingsContext();
 
   const { division: currentDivision } = useGetDivisionDetails(id);
-  // const currentDivisions = _.find((invoice) => invoice.id === id);
 
   return (
-    <Container maxWidth={settings.themeStretch ? false : 'lg'}>
+    <Container maxWidth={settings.themeStretch ? false : 'xl'}>
+      <DivisionDetailsToolbar backLink={paths.dashboard.division.root} />
       <CustomBreadcrumbs
         heading="Edit"
         links={[
           {
             name: 'Dashboard',
-            href: paths.dashboard.root,
+            href: paths.dashboard.general.file,
           },
           {
             name: 'Division',

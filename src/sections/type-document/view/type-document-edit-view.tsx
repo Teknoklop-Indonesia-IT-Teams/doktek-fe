@@ -10,6 +10,7 @@ import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 //
 import TypeDocumentsNewEditForm from '../type-document-new-edit-form';
 import { useGetType, useGetTypeDetails } from 'src/api/type';
+import TypeDocumentDetailsToolbar from '../type-document-details-toolbar';
 
 // ----------------------------------------------------------------------
 
@@ -21,16 +22,16 @@ export default function TypeDocumentsEditView({ id }: Props) {
   const settings = useSettingsContext();
 
   const { type: currentType } = useGetTypeDetails(id);
-  // const currentTypeDocuments = _types.find((type) => type.id === id);
 
   return (
     <Container maxWidth={settings.themeStretch ? false : 'xl'}>
+      <TypeDocumentDetailsToolbar backLink={paths.dashboard.typeDocument.root} />
       <CustomBreadcrumbs
         heading="Edit"
         links={[
           {
             name: 'Dashboard',
-            href: paths.dashboard.root,
+            href: paths.dashboard.general.file,
           },
           {
             name: 'Type Documents',

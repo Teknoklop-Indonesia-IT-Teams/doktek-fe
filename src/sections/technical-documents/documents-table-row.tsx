@@ -58,7 +58,6 @@ export default function DocumentsTableRow({
     created_by,
   } = row;
   const [fileUrl, setFileUrl] = useState<string | null>(null);
-  console.log('keretakreta', created_by);
 
   const view = useBoolean();
   const divisionObj = divisionList.find((d) => d.id_division === division.id_division);
