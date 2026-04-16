@@ -30,6 +30,7 @@ export default function DocumentsDetailsView({ id }: Props) {
   const lastActivity = currentDocument?.activities?.sort(
     (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   )[0];
+
   const [openModal, setOpenModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState<IDocumentActivity | null>(null);
 
@@ -50,14 +51,14 @@ export default function DocumentsDetailsView({ id }: Props) {
 
   return (
     <>
-      <Container maxWidth={settings.themeStretch ? false : 'lg'}>
+      <Container maxWidth={settings.themeStretch ? false : 'xl'}>
         <DocumentDetailsToolbar backLink={paths.dashboard.technicalDocument.root} />
         <CustomBreadcrumbs
           heading={lastActivity?.title || ''}
           links={[
             {
               name: 'Dashboard',
-              href: paths.dashboard.root,
+              href: paths.dashboard.general.file,
             },
             {
               name: 'Documents',

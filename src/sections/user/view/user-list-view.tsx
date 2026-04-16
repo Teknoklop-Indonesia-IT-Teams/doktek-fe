@@ -133,7 +133,7 @@ export default function UserListView() {
   }, [users, user]);
 
   return (
-    <Container maxWidth={settings.themeStretch ? false : 'lg'}>
+    <Container maxWidth={settings.themeStretch ? false : 'xl'}>
       <CustomBreadcrumbs
         heading="List"
         links={[

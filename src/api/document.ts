@@ -64,22 +64,22 @@ export function useGetDocumentsActive() {
         doc.activities.map((act: any) => ({
           id_technical_document: doc.id_technical_document,
           id_technical_document_activity: act.id_technical_document_activity,
-
           title: act.title,
           document_number: act.document_number,
           version_number: act.version_number,
-
           created_at: act.created_at,
           updated_at: doc.updated_at,
-
           division: act.divisions,
           typeDocument: act.typeDocument,
+          document_file: act.document_file,
+          created_by: act.user?.username || act.created_by,
+          flag_active: act.flag_active,
         }))
       ) || [];
 
     return {
       documentActive: transformed,
-      documentActiveLoading: isLoading,
+      documentActiveLoading: transformed.length === 0 && isLoading,
       documentActiveError: error,
       documentActiveValidating: isValidating,
       documentActiveEmpty: !isLoading && !transformed.length,

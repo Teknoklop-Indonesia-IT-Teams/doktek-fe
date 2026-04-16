@@ -24,7 +24,7 @@ export default function TypeDocumentsEditView({ id }: Props) {
   // const currentTypeDocuments = _types.find((type) => type.id === id);
 
   return (
-    <Container maxWidth={settings.themeStretch ? false : 'lg'}>
+    <Container maxWidth={settings.themeStretch ? false : 'xl'}>
       <CustomBreadcrumbs
         heading="Edit"
         links={[

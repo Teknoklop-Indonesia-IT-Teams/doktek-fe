@@ -135,7 +135,7 @@ export default function DivisionListView() {
   }, []);
 
   return (
-    <Container maxWidth={settings.themeStretch ? false : 'lg'}>
+    <Container maxWidth={settings.themeStretch ? false : 'xl'}>
       <CustomBreadcrumbs
         heading="List"
         links={[

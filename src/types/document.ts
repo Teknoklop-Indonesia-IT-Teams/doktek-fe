@@ -19,6 +19,7 @@ export type IDocumentTableFilters = {
 export type IDocument = {
   id_technical_document: number;
   created_at: string;
+  created_by: string;
   updated_at: string;
   activities: IDocumentActivity[];
 };

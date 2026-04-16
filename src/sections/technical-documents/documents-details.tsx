@@ -63,6 +63,7 @@ import { mutate } from 'swr';
 import { isEqual } from 'lodash';
 import DocumentItemsTableRow from './document-items-table-row';
 import { aC } from '@fullcalendar/core/internal-common';
+import { useGetUsers } from 'src/api/user';
 // ----------------------------------------------------------------------
 
 type Props = {
@@ -73,8 +74,10 @@ type Props = {
 const TABLE_HEAD = [
   { id: 'document_number', label: 'Doc Number' },
   { id: 'document_file', label: 'Upload' },
+  { id: 'file_type', label: 'File Type' },
   { id: 'created_at', label: 'Create At' },
-  { id: '' },
+  { id: 'created_by', label: 'Created By' },
+  // { id: '' },
 ];
 
 const defaultFilters: IDocumentTableFilters = {
@@ -94,9 +97,12 @@ export default function DocumentDetails({ documents, onEditItem }: Props) {
   const { documentActive, documentActiveLoading } = useGetDocumentsActive();
   // const { documentItem, documentItemEmpty, documentItemLoading } = useGetDocumentItems();
   // const { documentItemsLog } = useGetDocumentItemsLog();
+  // console.log('Document loading', documentActiveLoading);
+
   const [selectedRow, setSelectedRow] = useState<IDocumentActivity | null>(null);
   const [loadingId, setLoadingId] = useState<number | null>(null);
   const [filters, setFilters] = useState(defaultFilters);
+  const { users } = useGetUsers();
 
   const tableData = [...documents.activities].sort(
     (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
@@ -106,7 +112,9 @@ export default function DocumentDetails({ documents, onEditItem }: Props) {
   // const { document_number, division, title, typeDocument, created_at, updated_at } = documents;
   // const divisionObj = division.find((d) => d.id_division === documents.division.id_division);
   // console.log('documentItem:', documentItem);
-  // console.log('documents:', documents);
+  // console.log('hayooo:', created_by);
+  // console.log('doctorine', document_number);
+
   // console.log('TABLE DATA', tableData);
 
   const confirm = useBoolean();
@@ -148,11 +156,11 @@ export default function DocumentDetails({ documents, onEditItem }: Props) {
 
   const handleDeleteItem = useCallback(
     (id: string) => {
-      const URL = epDoktek.documentItem.details(id);
+      const URL = epDoktek.document.details(id);
       deleterDoktek(URL)
         .then((res) => enqueueSnackbar('Delete Success', 'success' as any))
         .catch((e) => enqueueSnackbar(e, 'error' as any));
-      mutate(epDoktek.documentItem.list);
+      mutate(epDoktek.document.list);
 
       table.onUpdatePageDeleteRow(dataInPage.length);
     },
@@ -165,6 +173,11 @@ export default function DocumentDetails({ documents, onEditItem }: Props) {
       log.created_by;
     })
   );
+
+  // const getUserName = (username: string) => {
+  //   const user = users?.find((u) => u.username === username);
+  //   return user?.username || username || 'Unknown';
+  // };
 
   console.log(
     'FULL LOG:',
@@ -231,6 +244,7 @@ export default function DocumentDetails({ documents, onEditItem }: Props) {
                 >
                   {activityLogs.map((log) => {
                     console.log('LOG:', log);
+                    console.log('CREATED_BY TYPE:', typeof log.created_by, log.created_by);
                     return (
                       <Stack
                         key={log.id_technical_document_activity}

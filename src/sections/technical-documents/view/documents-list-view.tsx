@@ -66,6 +66,7 @@ const TABLE_HEAD = [
   { id: 'created_at', label: 'Create' },
   { id: 'updated_at', label: 'Update' },
   { id: 'division', label: 'Division' },
+  { id: 'file', label: 'File' },
   { id: '' },
 ];
 
@@ -239,7 +240,7 @@ export default function DocumentsListView() {
 
   return (
     <>
-      <Container maxWidth={settings.themeStretch ? false : 'lg'}>
+      <Container maxWidth={settings.themeStretch ? false : 'xl'}>
         <CustomBreadcrumbs
           heading="List"
           links={[
@@ -443,22 +444,28 @@ export default function DocumentsListView() {
                           table.page * table.rowsPerPage,
                           table.page * table.rowsPerPage + table.rowsPerPage
                         )
-                        .map((row) => (
-                          <DocumentsTableRow
-                            key={row.id_technical_document}
-                            row={row}
-                            divisionList={division}
-                            selected={table.selected.includes(row.id_technical_document.toString())}
-                            onSelectRow={() =>
-                              table.onSelectRow(row.id_technical_document.toString())
-                            }
-                            onViewRow={() => handleViewRow(row.id_technical_document.toString())}
-                            onEditRow={() => handleEditRow(row.id_technical_document.toString())}
-                            onDeleteRow={() =>
-                              handleDeleteRow(row.id_technical_document.toString())
-                            }
-                          />
-                        ))}
+                        .map((row) => {
+                          console.log('ROWSSSSS', row);
+
+                          return (
+                            <DocumentsTableRow
+                              key={row.id_technical_document}
+                              row={row}
+                              divisionList={division}
+                              selected={table.selected.includes(
+                                row.id_technical_document.toString()
+                              )}
+                              onSelectRow={() =>
+                                table.onSelectRow(row.id_technical_document.toString())
+                              }
+                              onViewRow={() => handleViewRow(row.id_technical_document.toString())}
+                              onEditRow={() => handleEditRow(row.id_technical_document.toString())}
+                              onDeleteRow={() =>
+                                handleDeleteRow(row.id_technical_document.toString())
+                              }
+                            />
+                          );
+                        })}
                     </>
                   )}
 

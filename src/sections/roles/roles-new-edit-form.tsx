@@ -153,12 +153,14 @@ export default function RolesNewEditForm({ currentRoles }: Props) {
     <>
       {mdUp && (
         <Grid md={4}>
-          <Typography variant="h6" sx={{ mb: 0.5 }}>
-            Details
-          </Typography>
-          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            Title
-          </Typography>
+          <Stack spacing={1} sx={{ mb: 3, ml: 3 }}>
+            <Typography variant="h6" sx={{ mb: 0.5 }}>
+              Details
+            </Typography>
+            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+              Create or edit your roles and necessary information from here.
+            </Typography>
+          </Stack>
         </Grid>
       )}
 

@@ -25,7 +25,7 @@ export default function RolesEditView({ id }: Props) {
   // const currentRoles = _role.find((role) => role.id_role.toString() === id);
 
   return (
-    <Container maxWidth={settings.themeStretch ? false : 'lg'}>
+    <Container maxWidth={settings.themeStretch ? false : 'xl'}>
       <CustomBreadcrumbs
         heading="Edit"
         links={[

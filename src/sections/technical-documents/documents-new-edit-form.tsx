@@ -33,7 +33,6 @@ export default function DocumentNewEditForm({ currentDocument }: Props) {
   const router = useRouter();
 
   const mdUp = useResponsive('up', 'md');
-  console.log('Current Document', currentDocument);
 
   const { enqueueSnackbar } = useSnackbar();
   const { division } = useGetDivision();
@@ -89,7 +88,6 @@ export default function DocumentNewEditForm({ currentDocument }: Props) {
         .then((response: any) => {
           enqueueSnackbar(currentDocument ? 'Update success!' : 'Create success!');
           router.push(paths.dashboard.technicalDocument.root);
-          console.info('DATA', response);
         })
         .catch((error: any) => {
           console.error(error);
@@ -106,7 +104,6 @@ export default function DocumentNewEditForm({ currentDocument }: Props) {
         .then((response) => {
           enqueueSnackbar(currentDocument ? 'Update success!' : 'Create success!');
           router.push(paths.dashboard.technicalDocument.root);
-          console.info('DATA', response);
         })
         .catch((error) => {
           console.error(error);
@@ -158,15 +155,18 @@ export default function DocumentNewEditForm({ currentDocument }: Props) {
 
       formData.append('activities', JSON.stringify(activities));
 
-      if (data.document_file && data.document_file.length > 0) {
-        const file = data.document_file[0];
-        if (file instanceof File) {
-          formData.append('file', file);
-        }
+      // 🔥 ambil file pertama
+      const file = data.document_file?.[0];
+
+      if (file instanceof File) {
+        // ✅ user upload file baru
+        formData.append('file', file);
+      } else if (typeof file === 'string') {
+        // ✅ file lama → kirim ke backend biar tidak hilang
+        formData.append('existing_file', file);
       }
 
       if (currentDocument) {
-        // ✅ EDIT
         await putDoktek(
           epDoktek.document.edit(currentDocument.id_technical_document.toString()),
           formData,
@@ -175,7 +175,6 @@ export default function DocumentNewEditForm({ currentDocument }: Props) {
           }
         );
       } else {
-        // ✅ CREATE
         await posterDoktek(epDoktek.document.postDocument, formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
@@ -242,7 +241,6 @@ export default function DocumentNewEditForm({ currentDocument }: Props) {
 
               <RHFUpload
                 name="document_file"
-                // files={values.document_file}
                 maxSize={3145728}
                 multiple={false}
                 onDrop={handleDrop}
@@ -275,7 +273,6 @@ export default function DocumentNewEditForm({ currentDocument }: Props) {
     <FormProvider methods={methods} onSubmit={onSubmit}>
       <Grid container spacing={3}>
         {renderDetails}
-
         {renderActions}
       </Grid>
     </FormProvider>

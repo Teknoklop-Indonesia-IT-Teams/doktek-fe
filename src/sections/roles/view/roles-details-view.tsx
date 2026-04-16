@@ -22,7 +22,7 @@ export default function RolesDetailsView({ id }: Props) {
   const currentRoles = _invoices.filter((roles) => roles.id === id)[0];
 
   return (
-    <Container maxWidth={settings.themeStretch ? false : 'lg'}>
+    <Container maxWidth={settings.themeStretch ? false : 'xl'}>
       <CustomBreadcrumbs
         heading={currentRoles?.invoiceNumber}
         links={[

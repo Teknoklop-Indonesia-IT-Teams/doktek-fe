@@ -1,34 +1,26 @@
 import { format } from 'date-fns';
 // @mui
-import Link from '@mui/material/Link';
 import Button from '@mui/material/Button';
-import Avatar from '@mui/material/Avatar';
-import Divider from '@mui/material/Divider';
 import MenuItem from '@mui/material/MenuItem';
 import TableRow from '@mui/material/TableRow';
 import Checkbox from '@mui/material/Checkbox';
 import TableCell from '@mui/material/TableCell';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
-import ListItemText from '@mui/material/ListItemText';
 // hooks
 import { useBoolean } from 'src/hooks/use-boolean';
-// utils
-import { fCurrency } from 'src/utils/format-number';
 // types
-import { IDocument, IDocumentActivity } from 'src/types/document';
+import { IDocumentActivity } from 'src/types/document';
 // components
-import Label from 'src/components/label';
 import Iconify from 'src/components/iconify';
 import { ConfirmDialog } from 'src/components/custom-dialog';
 import CustomPopover, { usePopover } from 'src/components/custom-popover';
-import FileThumbnail from 'src/components/file-thumbnail';
-import { useGetDivision } from 'src/api/division';
-import { IDivision } from 'src/types/division';
 import { ITypeDocument } from 'src/types/type';
-import { Stack } from '@mui/material';
+import { Box, Dialog, DialogActions, Stack } from '@mui/material';
 import LoadingButton from '@mui/lab/LoadingButton';
-import { cr } from '@fullcalendar/core/internal-common';
+import { useState } from 'react';
+import { enqueueSnackbar } from 'src/components/snackbar';
+import Label from 'src/components/label';
 
 // ----------------------------------------------------------------------
 
@@ -51,38 +43,67 @@ export default function DocumentItemsTableRow({
   onDeleteRow,
 }: Props) {
   const { document_number, document_file, created_at, created_by } = row;
+  const [fileUrl, setFileUrl] = useState<string | null>(null);
   const confirm = useBoolean();
-  console.log('ROW', row);
-  console.log('created by', created_by);
+  const view = useBoolean();
+  console.log('rowsss2', row);
+
+  console.log('CREACREA', created_by);
 
   const popover = usePopover();
-  const handleViewFile = (row: IDocumentActivity) => {
-    const file = document_file?.toString();
 
-    if (!file) return;
-
-    const fileUrl = typeof file === 'string' ? file : URL.createObjectURL(file);
-
-    window.open(fileUrl, '_blank');
+  const isPDF = (file: string) => {
+    return file.toLowerCase().endsWith('.pdf');
   };
 
-  const handleDownloadFile = (row: IDocumentActivity) => {
-    const file = document_file?.toString();
+  const handleViewFile = () => {
+    if (!document_file) return;
 
-    if (!file) return;
+    const url = `${import.meta.env.VITE_API_BE}${document_file}`;
 
-    const fileUrl = typeof file === 'string' ? file : URL.createObjectURL(file);
+    if (isPDF(document_file)) {
+      setFileUrl(url);
+      view.onTrue();
+    } else {
+      handleDownloadFile();
+
+      enqueueSnackbar('File tidak bisa dipreview, langsung didownload', {
+        variant: 'warning',
+      });
+    }
+  };
+
+  const handleDownloadFile = () => {
+    if (!document_file) return;
+
+    const url = `${import.meta.env.VITE_API_BE}${document_file}`;
 
     const link = document.createElement('a');
-    link.href = fileUrl;
+    link.href = url;
 
-    const fileName = typeof file === 'string' ? file.split('/').pop() : file;
+    const fileName = document_file.split('/').pop();
 
     link.download = fileName || 'document';
 
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const getFileExtension = (file?: string) => {
+    if (!file) return '-';
+
+    const ext = file.split('.').pop()?.toLowerCase();
+
+    return ext || '-';
+  };
+
+  const getFileLabel = (file?: string) => {
+    const ext = getFileExtension(file);
+
+    if (ext === '-') return '-';
+
+    return ext.toUpperCase(); // pdf → PDF
   };
 
   return (
@@ -104,7 +125,9 @@ export default function DocumentItemsTableRow({
                 size="small"
                 variant="outlined"
                 startIcon={<Iconify icon="solar:eye-bold" />}
-                onClick={() => handleViewFile(row)}
+                onClick={handleViewFile}
+                // onClick={() => view.onTrue()}
+                sx={{ display: 'flex', gap: 1 }}
               >
                 View
               </LoadingButton>
@@ -113,7 +136,7 @@ export default function DocumentItemsTableRow({
                 size="small"
                 variant="contained"
                 startIcon={<Iconify icon="solar:download-bold" />}
-                onClick={() => handleDownloadFile(row)}
+                onClick={() => handleDownloadFile()}
               >
                 Download
               </LoadingButton>
@@ -125,11 +148,42 @@ export default function DocumentItemsTableRow({
           )}
         </TableCell>
 
-        <TableCell>{format(new Date(created_at), 'dd MMM yyyy')}</TableCell>
+        <TableCell>
+          <Label
+            variant="soft"
+            color="default"
+            sx={{
+              ...(getFileExtension(document_file) === 'docx' && {
+                bgcolor: 'rgba(33, 150, 243, 0.16)',
+                color: '#2196f3',
+              }),
+              ...(getFileExtension(document_file) === 'doc' && {
+                bgcolor: 'rgba(33, 150, 243, 0.16)',
+                color: '#2196f3',
+              }),
+              ...(getFileExtension(document_file) === 'pdf' && {
+                bgcolor: 'rgba(244, 67, 54, 0.16)',
+                color: '#f44336',
+              }),
+              ...(getFileExtension(document_file) === 'xlsx' && {
+                bgcolor: 'rgba(76, 175, 80, 0.16)',
+                color: '#4caf50',
+              }),
+            }}
+          >
+            {getFileLabel(document_file)}
+          </Label>
+        </TableCell>
 
+        <TableCell>{format(new Date(created_at), 'dd MMM yyyy')}</TableCell>
+        <TableCell>
+          <Typography variant="body2" noWrap>
+            {created_by}
+          </Typography>
+        </TableCell>
         {/* <TableCell>{format(new Date(updated_at), 'dd MMM yyyy')}</TableCell> */}
 
-        <TableCell align="right">
+        {/* <TableCell align="right">
           <IconButton
             onClick={(e) => {
               popover.onOpen(e);
@@ -137,7 +191,18 @@ export default function DocumentItemsTableRow({
           >
             <Iconify icon="eva:more-vertical-fill" />
           </IconButton>
-        </TableCell>
+        </TableCell> */}
+        {/* <TableCell align="right">
+          <IconButton
+            onClick={() => {
+              confirm.onTrue();
+              popover.onClose();
+            }}
+            sx={{ color: 'error.main' }}
+          >
+            <Iconify icon="solar:trash-bin-trash-bold" />
+          </IconButton>
+        </TableCell> */}
       </TableRow>
 
       <CustomPopover
@@ -146,7 +211,7 @@ export default function DocumentItemsTableRow({
         arrow="right-top"
         sx={{ width: 160 }}
       >
-        <MenuItem
+        {/* <MenuItem
           onClick={() => {
             onEditRow();
             popover.onClose();
@@ -154,9 +219,9 @@ export default function DocumentItemsTableRow({
         >
           <Iconify icon="solar:pen-bold" />
           Edit
-        </MenuItem>
+        </MenuItem> */}
 
-        <Divider sx={{ borderStyle: 'dashed' }} />
+        {/* <Divider sx={{ borderStyle: 'dashed' }} /> */}
 
         <MenuItem
           onClick={() => {
@@ -181,6 +246,21 @@ export default function DocumentItemsTableRow({
           </Button>
         }
       />
+      <Dialog fullScreen open={view.value}>
+        <Box sx={{ height: 1, display: 'flex', flexDirection: 'column' }}>
+          <DialogActions sx={{ p: 1.5 }}>
+            <Button color="inherit" variant="contained" onClick={view.onFalse}>
+              Close
+            </Button>
+          </DialogActions>
+
+          <Box sx={{ flexGrow: 1 }}>
+            {fileUrl && (
+              <iframe src={fileUrl} width="100%" height="100%" style={{ border: 'none' }} />
+            )}
+          </Box>
+        </Box>
+      </Dialog>
     </>
   );
 }

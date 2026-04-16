@@ -26,13 +26,14 @@ import { useAuthContext } from 'src/auth/hooks';
 import AppWidgetSummary from '../../app/app-widget-summary';
 import FileDocumentItemRecent from 'src/sections/technical-documents/file-document-item-recent';
 import FileDocumentRecent from 'src/sections/technical-documents/file-document-recent';
+import { useMemo } from 'react';
+import { Typography } from '@mui/material';
+import Chart from 'react-apexcharts';
 
 // ----------------------------------------------------------------------
 
 export default function OverviewFileView() {
   const theme = useTheme();
-
-  const smDown = useResponsive('down', 'sm');
 
   const settings = useSettingsContext();
 
@@ -45,6 +46,64 @@ export default function OverviewFileView() {
   const totalDocuments = documentActive?.length || 0;
   const totalTypes = type?.length || 0;
   const totalActivities = documentActive?.length || 0;
+
+  const getFileExtension = (file?: string) => {
+    if (!file) return 'unknown';
+    return file.split('.').pop()?.toLowerCase() || 'unknown';
+  };
+
+  const extensionSummary = useMemo(() => {
+    const result: Record<string, number> = {};
+
+    documentActive.forEach((doc: any) => {
+      if (!doc.document_file) return;
+
+      const ext = getFileExtension(doc.document_file);
+
+      if (!result[ext]) {
+        result[ext] = 0;
+      }
+
+      result[ext] += 1;
+    });
+
+    return result;
+  }, [documentActive]);
+
+  const getExtColor = (ext: string) => {
+    switch (ext) {
+      case 'pdf':
+        return '#A31D1D';
+      case 'doc':
+      case 'docx':
+        return '#134E8E';
+      case 'xlsx':
+        return '#347433';
+      default:
+        return '#757575';
+    }
+  };
+
+  const formatExt = (ext: string) => {
+    if (ext === 'pdf') return 'PDF Document';
+    if (ext === 'docx') return 'Word Document';
+    if (ext === 'doc') return 'Word Document';
+    if (ext === 'xlsx') return 'Excel Spreadsheet';
+    if (ext === 'unknown') return 'Unknown File';
+    return ext.toUpperCase();
+  };
+
+  const chartSeries = useMemo(() => {
+    return Object.values(extensionSummary);
+  }, [extensionSummary]);
+
+  const chartLabels = useMemo(() => {
+    return Object.keys(extensionSummary).map((ext) => formatExt(ext));
+  }, [extensionSummary]);
+
+  const chartColors = useMemo(() => {
+    return Object.keys(extensionSummary).map((ext) => getExtColor(ext));
+  }, [extensionSummary]);
 
   return (
     <>
@@ -112,7 +171,7 @@ export default function OverviewFileView() {
 
               <Scrollbar>
                 <Stack direction="row" spacing={2}>
-                  <Grid container spacing={2}>
+                  <Grid container spacing={1}>
                     {documentActive.slice(0, 6).map((d: any) => (
                       <Grid key={d.id_technical_document} xs={12} sm={6} md={6}>
                         <FileDocumentRecent
@@ -166,6 +225,53 @@ export default function OverviewFileView() {
             </div>
           </Grid>
           <Grid xs={12} md={6} lg={4}>
+            <Grid xs={12}>
+              <FileManagerPanel title="Document by Type" />
+              <Box sx={{ mt: 2 }}>
+                {chartSeries.length === 0 ? (
+                  <Typography variant="body2">No document data</Typography>
+                ) : (
+                  <Chart
+                    type="donut"
+                    series={chartSeries}
+                    options={{
+                      labels: chartLabels,
+                      colors: chartColors,
+                      chart: {
+                        fontFamily: theme.typography.fontFamily,
+                      },
+                      legend: {
+                        position: 'bottom',
+                      },
+                      dataLabels: {
+                        enabled: true,
+                      },
+                      tooltip: {
+                        y: {
+                          formatter: (val: number) => `${val} files`,
+                        },
+                      },
+                      plotOptions: {
+                        pie: {
+                          donut: {
+                            labels: {
+                              show: true,
+                              total: {
+                                show: true,
+                                label: 'Total',
+                                fontSize: theme.typography.pxToRem(14),
+                                formatter: () => `${totalDocuments}`,
+                              },
+                            },
+                          },
+                        },
+                      },
+                    }}
+                    height={300}
+                  />
+                )}
+              </Box>
+            </Grid>
             <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
               <FileManagerPanel title="Recent Activity" sx={{ mt: 3 }} />
 
