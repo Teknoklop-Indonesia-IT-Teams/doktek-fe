@@ -172,8 +172,8 @@ export default function OverviewFileView() {
               <Scrollbar>
                 <Stack direction="row" spacing={2}>
                   <Grid container spacing={1}>
-                    {documentActive.slice(0, 6).map((d: any) => (
-                      <Grid key={d.id_technical_document} xs={12} sm={6} md={6}>
+                    {documentActive.slice(0, 4).map((d: any) => (
+                      <Grid key={d.id_technical_document} xs={12} sm={6} md={4}>
                         <FileDocumentRecent
                           file={{
                             id_technical_document: d.id_technical_document,

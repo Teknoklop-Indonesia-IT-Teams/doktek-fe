@@ -56,7 +56,7 @@ export default function FileDocumentRecent({ file, onEdit, onDelete, sx, ...othe
         alignItems="center"
         sx={{
           borderRadius: 2,
-          p: 1,
+          p: 2,
           ...sx,
         }}
       >
