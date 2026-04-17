@@ -11,17 +11,17 @@ import Grid from '@mui/material/Unstable_Grid2';
 import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
 // types
-import { IDocument, IDocumentActivity, IDocumentById, IDocumentInput } from 'src/types/document';
+import { IDocumentById, IDocumentInput } from 'src/types/document';
 // components
-import FormProvider, { RHFSelect, RHFTextField, RHFUpload } from 'src/components/hook-form';
+import FormProvider, { RHFTextField, RHFUpload } from 'src/components/hook-form';
 import { useResponsive } from 'src/hooks/use-responsive';
 import { useSnackbar } from 'src/components/snackbar';
 import Typography from '@mui/material/Typography';
 import CardHeader from '@mui/material/CardHeader';
 import { useGetDivision } from 'src/api/division';
-import { epDoktek, patcherDoktek, posterDoktek, putDoktek } from 'src/utils/axios-doktek';
-import { mutate } from 'swr';
+import { epDoktek, posterDoktek, putDoktek } from 'src/utils/axios-doktek';
 import { useGetTypes } from 'src/api/type';
+import { Autocomplete, TextField } from '@mui/material';
 
 // ----------------------------------------------------------------------
 
@@ -71,6 +71,15 @@ export default function DocumentNewEditForm({ currentDocument }: Props) {
     handleSubmit,
     formState: { isSubmitting },
   } = methods;
+
+  useEffect(() => {
+    if (division.length && !values.id_division) {
+      setValue('id_division', division[0].id_division.toString());
+    }
+    if (type.length && !values.id_type_document) {
+      setValue('id_type_document', type[0].id_type_document.toString());
+    }
+  }, [division, type]);
 
   const values = watch();
 
@@ -202,31 +211,48 @@ export default function DocumentNewEditForm({ currentDocument }: Props) {
           <Stack spacing={3} sx={{ p: 3 }}>
             <RHFTextField name="title" label="Job Title" />
 
-            <RHFSelect
-              native
-              name="id_division"
-              label="Division"
-              InputLabelProps={{ shrink: true }}
-            >
-              {division.map((category) => (
-                <option key={category.id_division} value={category.id_division}>
-                  {category.division_name}
-                </option>
-              ))}
-            </RHFSelect>
+            <Autocomplete
+              options={division.map((d) => ({
+                label: d.division_name,
+                value: d.id_division,
+              }))}
+              value={
+                division
+                  .map((d) => ({
+                    label: d.division_name,
+                    value: d.id_division,
+                  }))
+                  .find((opt) => opt.value.toString() === values.id_division) || null
+              }
+              onChange={(_, newValue) => {
+                setValue('id_division', newValue ? newValue.value.toString() : '', {
+                  shouldValidate: true,
+                });
+              }}
+              renderInput={(params) => <TextField {...params} label="Division" />}
+            />
 
-            <RHFSelect
-              native
-              name="id_type_document"
-              label="Type Document"
-              InputLabelProps={{ shrink: true }}
-            >
-              {type.map((category) => (
-                <option key={category.id_type_document} value={category.id_type_document}>
-                  {category.type_document}
-                </option>
-              ))}
-            </RHFSelect>
+            <Autocomplete
+              options={type.map((d) => ({
+                label: d.type_document,
+                value: d.id_type_document,
+              }))}
+              value={
+                type
+                  .map((d) => ({
+                    label: d.type_document,
+                    value: d.id_type_document,
+                  }))
+                  .find((opt) => opt.value.toString() === values.id_type_document) || null
+              }
+              onChange={(_, newValue) => {
+                setValue('id_type_document', newValue ? newValue.value.toString() : '', {
+                  shouldValidate: true,
+                });
+              }}
+              renderInput={(params) => <TextField {...params} label="Type Document" />}
+            />
+
             <Stack spacing={1}>
               <Typography variant="subtitle2">Upload File</Typography>
 
