@@ -169,40 +169,50 @@ export default function OverviewFileView() {
                 sx={{ mt: 3 }}
               />
 
-              <Scrollbar>
-                <Stack direction="row" spacing={2}>
-                  <Grid container spacing={1}>
-                    {documentActive.slice(0, 4).map((d: any) => (
-                      <Grid key={d.id_technical_document} xs={12} sm={6} md={4}>
-                        <FileDocumentRecent
-                          file={{
-                            id_technical_document: d.id_technical_document,
-                            id_technical_document_activity: d.id_technical_document_activity,
-                            document_number: d.document_number,
-                            title: d.title,
-                            created_at: d.created_at,
-                            updated_at: d.updated_at,
-                            typeDocument: {
-                              id_type_document: d.id_type_document,
-                              type_document: d.typeDocument.type_document,
-                              code_document: d.typeDocument.code_document,
-                            },
-                            division: {
-                              id_division: d.id_division,
-                              division_name: d.division_name,
-                              division_code: d.division_code,
-                            },
-                            document_file: d.document_file,
-                            created_by: d.created_by,
-                            flag_active: d.flag_active,
-                            version_number: d.version_number,
-                          }}
-                          onEdit={() => console.info('EDIT', d.id_technical_document)}
-                          onDelete={() => console.info('DELETE', d.id_technical_document)}
-                        />
-                      </Grid>
-                    ))}
-                  </Grid>
+              <Scrollbar sx={{ width: '100%' }}>
+                <Stack
+                  direction="row"
+                  spacing={2}
+                  sx={{
+                    overflowX: 'auto',
+                    flexWrap: 'nowrap',
+                    pb: 1,
+                  }}
+                >
+                  {documentActive.slice(0, 6).map((d: any) => (
+                    <Box
+                      key={d.id_technical_document}
+                      sx={{
+                        minWidth: 200,
+                        flexShrink: 0,
+                      }}
+                    >
+                      <FileDocumentRecent
+                        file={{
+                          id_technical_document: d.id_technical_document,
+                          id_technical_document_activity: d.id_technical_document_activity,
+                          document_number: d.document_number,
+                          title: d.title,
+                          created_at: d.created_at,
+                          updated_at: d.updated_at,
+                          typeDocument: {
+                            id_type_document: d.id_type_document,
+                            type_document: d.typeDocument.type_document,
+                            code_document: d.typeDocument.code_document,
+                          },
+                          division: {
+                            id_division: d.id_division,
+                            division_name: d.division_name,
+                            division_code: d.division_code,
+                          },
+                          document_file: d.document_file,
+                          created_by: d.created_by,
+                          flag_active: d.flag_active,
+                          version_number: d.version_number,
+                        }}
+                      />
+                    </Box>
+                  ))}
                 </Stack>
               </Scrollbar>
 
@@ -273,7 +283,7 @@ export default function OverviewFileView() {
                 )}
               </Box>
             </Grid>
-            <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
+            <Box sx={{ mt: 3 }}>
               <FileManagerPanel title="Recent Activity" sx={{ mt: 3 }} />
 
               <Stack spacing={2}>

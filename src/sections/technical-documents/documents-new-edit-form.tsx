@@ -37,6 +37,8 @@ export default function DocumentNewEditForm({ currentDocument }: Props) {
   const { enqueueSnackbar } = useSnackbar();
   const { division } = useGetDivision();
   const { type } = useGetTypes();
+  const MAX_SIZE = 3145728; // 3 MB
+  const maxSizeMB = (MAX_SIZE / (1024 * 1024)).toFixed(0);
 
   const NewDocumentSchema = Yup.object().shape({
     title: Yup.string().required('Job Title is required'),
@@ -257,12 +259,12 @@ export default function DocumentNewEditForm({ currentDocument }: Props) {
               <Typography variant="subtitle2">Upload File</Typography>
 
               <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                Optional (max 1 file)
+                Optional (max {maxSizeMB} MB)
               </Typography>
 
               <RHFUpload
                 name="document_file"
-                maxSize={3145728}
+                maxSize={MAX_SIZE}
                 multiple={false}
                 onDrop={handleDrop}
                 onRemove={handleRemoveFile}

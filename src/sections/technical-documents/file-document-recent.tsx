@@ -1,115 +1,102 @@
-import { useState, useCallback } from 'react';
 // @mui
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
-import Divider from '@mui/material/Divider';
-import MenuItem from '@mui/material/MenuItem';
-import Checkbox from '@mui/material/Checkbox';
-import IconButton from '@mui/material/IconButton';
-import ListItemText from '@mui/material/ListItemText';
 import Stack, { StackProps } from '@mui/material/Stack';
 // hooks
-import { useBoolean } from 'src/hooks/use-boolean';
 import { useResponsive } from 'src/hooks/use-responsive';
 import { useCopyToClipboard } from 'src/hooks/use-copy-to-clipboard';
 // utils
-import { fData } from 'src/utils/format-number';
-import { fDateTime } from 'src/utils/format-time';
 // types
-import { ITypeDocument } from 'src/types/type';
 // components
 import Iconify from 'src/components/iconify';
 import { useSnackbar } from 'src/components/snackbar';
-import CustomPopover, { usePopover } from 'src/components/custom-popover';
-import FileThumbnail from 'src/components/file-thumbnail';
 import { Typography } from '@mui/material';
-import { IDocument, IDocumentActivity } from 'src/types/document';
+import { IDocumentActivity } from 'src/types/document';
 
 // ----------------------------------------------------------------------
 
 interface Props extends StackProps {
   file: IDocumentActivity;
-  onEdit: VoidFunction;
-  onDelete: VoidFunction;
 }
 
-export default function FileDocumentRecent({ file, onEdit, onDelete, sx, ...other }: Props) {
-  const { enqueueSnackbar } = useSnackbar();
+export default function FileDocumentRecent({ file, sx, ...other }: Props) {
+  const { title } = file;
+  const getFileExtension = (file?: string) => {
+    if (!file) return '';
 
-  const { copy } = useCopyToClipboard();
+    return file.split('.').pop()?.toLowerCase();
+  };
+  const getFileConfig = (ext?: string) => {
+    switch (ext) {
+      case 'pdf':
+        return {
+          icon: 'vscode-icons:file-type-pdf2',
+          color: '#f44336',
+        };
+      case 'doc':
+      case 'docx':
+        return {
+          icon: 'vscode-icons:file-type-word',
+          color: '#2196f3',
+        };
+      case 'xls':
+      case 'xlsx':
+        return {
+          icon: 'vscode-icons:file-type-excel',
+          color: '#4caf50',
+        };
+      default:
+        return {
+          icon: 'solar:file-text-bold',
+          color: '#9e9e9e',
+        };
+    }
+  };
 
-  const { document_number, division, title } = file;
-
-  const smUp = useResponsive('up', 'sm');
-
-  const popover = usePopover();
-
-  const details = useBoolean();
+  const ext = getFileExtension(file.document_file);
+  const { icon, color } = getFileConfig(ext);
 
   return (
     <>
       <Stack
         component={Paper}
         variant="outlined"
-        spacing={2}
         direction="row"
         alignItems="center"
+        spacing={2}
         sx={{
           borderRadius: 2,
-          p: 2,
+          p: 1.5,
+          minWidth: 220,
+          flexShrink: 0,
+          borderLeft: `4px solid ${color}`,
           ...sx,
         }}
       >
-        <FileThumbnail file={document_number} sx={{ width: 30, height: 30 }} />
+        <Box
+          sx={{
+            width: 36,
+            height: 36,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: 1,
+            bgcolor: `${color}20`, // transparan
+          }}
+        >
+          <Iconify icon={icon} width={22} />
+        </Box>
 
         <Stack sx={{ minWidth: 0 }}>
-          <Typography variant="subtitle2" noWrap sx={{ maxWidth: '100%' }}>
+          <Typography variant="subtitle2" noWrap>
             {title}
           </Typography>
 
-          <Typography variant="body2" color="text.secondary" noWrap>
-            {division.division_name}
+          <Typography variant="caption" color="text.secondary" noWrap>
+            {ext?.toUpperCase()}
           </Typography>
         </Stack>
       </Stack>
-
-      <CustomPopover
-        open={popover.open}
-        onClose={popover.onClose}
-        arrow="right-top"
-        sx={{ width: 160 }}
-      >
-        <MenuItem
-          onClick={() => {
-            popover.onClose();
-          }}
-        >
-          <Iconify icon="eva:link-2-fill" />
-          Copy Link
-        </MenuItem>
-
-        <MenuItem
-          onClick={() => {
-            popover.onClose();
-          }}
-        >
-          <Iconify icon="solar:share-bold" />
-          Share
-        </MenuItem>
-
-        <Divider sx={{ borderStyle: 'dashed' }} />
-
-        <MenuItem
-          onClick={() => {
-            popover.onClose();
-            onDelete();
-          }}
-          sx={{ color: 'error.main' }}
-        >
-          <Iconify icon="solar:trash-bin-trash-bold" />
-          Delete
-        </MenuItem>
-      </CustomPopover>
     </>
   );
 }
