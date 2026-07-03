@@ -179,21 +179,23 @@ export default function DocumentNewEditForm({ currentDocument }: Props) {
 
       formData.append('activities', JSON.stringify(activities));
 
-      const allFiles = [
-        ...(data.document_file_pdf || []),
-        ...(data.document_file_word || [])
-      ];
+      // PDF 
+      (data.document_file_pdf || []).forEach((file: any) => {
+        if (file instanceof File) {
+          formData.append('file_pdf', file);
+        } else if (typeof file === 'string') {
+          formData.append('existing_file_pdf', file);
+        }
+      });
 
-      // append all files
-      if (allFiles.length > 0) {
-        allFiles.forEach((file) => {
-          if (file instanceof File) {
-            formData.append('file', file);
-          } else if (typeof file === 'string') {
-            formData.append('existing_file', file);
-          }
-        });
-      }
+      // Word 
+      (data.document_file_word || []).forEach((file: any) => {
+        if (file instanceof File) {
+          formData.append('file_word', file);
+        } else if (typeof file === 'string') {
+          formData.append('existing_file_word', file);
+        }
+      });
 
       if (currentDocument) {
         await putDoktek(

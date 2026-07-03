@@ -95,7 +95,7 @@ export default function UserNewEditForm({ currentUser }: Props) {
     try {
       const payload = { ...data };
       if (currentUser && !payload.password) {
-        delete payload.password; // Don't send empty password on edit
+        delete payload.password; 
       }
 
       if (currentUser) {

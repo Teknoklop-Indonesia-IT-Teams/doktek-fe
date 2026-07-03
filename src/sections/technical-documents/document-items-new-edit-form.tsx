@@ -166,7 +166,7 @@ export default function DocumentItemsNewEditForm({
     try {
       const formData = new FormData();
 
-      // 🔥 bikin object activity
+      //  bikin object activity
       const activities = [
         {
           id_division: Number(data.id_division),
@@ -175,26 +175,28 @@ export default function DocumentItemsNewEditForm({
         },
       ];
 
-      // 🔥 WAJIB stringify
+      //  WAJIB stringify
       formData.append('activities', JSON.stringify(activities));
 
-      const allFiles = [
-        ...(data.document_file_pdf || []),
-        ...(data.document_file_word || [])
-      ];
+      // PDF 
+      (data.document_file_pdf || []).forEach((file: any) => {
+        if (file instanceof File) {
+          formData.append('file_pdf', file);
+        } else if (typeof file === 'string') {
+          formData.append('existing_file_pdf', file);
+        }
+      });
 
-      // 🔥 file (optional) - append all files
-      if (allFiles.length > 0) {
-        allFiles.forEach((file: any) => {
-          if (file instanceof File) {
-            formData.append('file', file);
-          } else if (typeof file === 'string') {
-            formData.append('existing_file', file);
-          }
-        });
-      }
+      // Word 
+      (data.document_file_word || []).forEach((file: any) => {
+        if (file instanceof File) {
+          formData.append('file_word', file);
+        } else if (typeof file === 'string') {
+          formData.append('existing_file_word', file);
+        }
+      });
 
-      // 🔥 EDIT
+      // EDIT
       if (currentDocumentItems) {
         await putDoktek(
           epDoktek.document.edit(currentDocumentItems.id_technical_document.toString()),
@@ -204,7 +206,7 @@ export default function DocumentItemsNewEditForm({
           }
         );
       } else {
-        // 🔥 CREATE
+        //  CREATE
         await posterDoktek(epDoktek.document.postDocument, formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
