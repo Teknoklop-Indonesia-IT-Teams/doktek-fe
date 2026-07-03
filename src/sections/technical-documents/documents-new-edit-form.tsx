@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import * as Yup from 'yup';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -13,7 +13,9 @@ import { useRouter } from 'src/routes/hooks';
 // types
 import { IDocumentById, IDocumentInput } from 'src/types/document';
 // components
-import FormProvider, { RHFTextField, RHFUpload } from 'src/components/hook-form';
+import FormProvider, { RHFTextField, RHFUpload, RHFSelect } from 'src/components/hook-form';
+import { ConfirmDialog } from 'src/components/custom-dialog';
+import { useBoolean } from 'src/hooks/use-boolean';
 import { useResponsive } from 'src/hooks/use-responsive';
 import { useSnackbar } from 'src/components/snackbar';
 import Typography from '@mui/material/Typography';
@@ -21,7 +23,7 @@ import CardHeader from '@mui/material/CardHeader';
 import { useGetDivision } from 'src/api/division';
 import { epDoktek, posterDoktek, putDoktek } from 'src/utils/axios-doktek';
 import { useGetTypes } from 'src/api/type';
-import { Autocomplete, TextField } from '@mui/material';
+import { Autocomplete, TextField, Button } from '@mui/material';
 
 // ----------------------------------------------------------------------
 
@@ -34,32 +36,43 @@ export default function DocumentNewEditForm({ currentDocument }: Props) {
 
   const mdUp = useResponsive('up', 'md');
 
+  const confirmRemoveFile = useBoolean();
+  const [fileToRemove, setFileToRemove] = useState<File | string | null>(null);
+  const [fieldToRemove, setFieldToRemove] = useState<'document_file_pdf' | 'document_file_word' | null>(null);
+
   const { enqueueSnackbar } = useSnackbar();
   const { division } = useGetDivision();
   const { type } = useGetTypes();
-  const MAX_SIZE = 3145728; // 3 MB
-  const maxSizeMB = (MAX_SIZE / (1024 * 1024)).toFixed(0);
+  const MAX_SIZE = 10 * 1024 * 1024 - 1;
 
   const NewDocumentSchema = Yup.object().shape({
     title: Yup.string().required('Job Title is required'),
     id_division: Yup.string().required('Division is required'),
     id_type_document: Yup.string().required('Type Document is required'),
-    document_file: Yup.array().max(1, 'Only one file allowed').nullable().notRequired(),
+    document_file_pdf: Yup.array().nullable().notRequired(),
+    document_file_word: Yup.array().nullable().notRequired(),
   });
 
   const lastActivity = currentDocument?.activities
     ?.slice()
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
 
-  const defaultValues = useMemo(
-    () => ({
+  const defaultValues = useMemo(() => {
+    const existingFile = lastActivity?.document_file;
+    let pdfFile: any[] = [];
+    let wordFile: any[] = [];
+    if (existingFile) {
+      if (existingFile.toLowerCase().endsWith('.pdf')) pdfFile = [existingFile];
+      else wordFile = [existingFile];
+    }
+    return {
       title: lastActivity?.title || '',
       id_division: lastActivity?.division.id_division.toString() || '',
       id_type_document: lastActivity?.typeDocument.id_type_document.toString() || '',
-      document_file: lastActivity?.document_file ? [lastActivity.document_file] : [],
-    }),
-    [currentDocument]
-  );
+      document_file_pdf: pdfFile,
+      document_file_word: wordFile,
+    };
+  }, [currentDocument]);
 
   const methods = useForm({
     resolver: yupResolver(NewDocumentSchema),
@@ -102,12 +115,10 @@ export default function DocumentNewEditForm({ currentDocument }: Props) {
         })
         .catch((error: any) => {
           console.error(error);
-          enqueueSnackbar(
-            currentDocument ? `Update failed! ${error.message}` : `Create failed! ${error.message}`,
-            {
-              variant: 'error',
-            }
-          );
+          const msg = error?.message || (typeof error === 'string' ? error : JSON.stringify(error));
+          enqueueSnackbar(currentDocument ? `Update failed! ${msg}` : `Create failed! ${msg}`, {
+            variant: 'error',
+          });
         });
     } else {
       const URL = epDoktek.document.postDocument;
@@ -118,39 +129,41 @@ export default function DocumentNewEditForm({ currentDocument }: Props) {
         })
         .catch((error) => {
           console.error(error);
-          enqueueSnackbar(
-            currentDocument ? `Update failed! ${error.message}` : `Create failed! ${error.message}`,
-            {
-              variant: 'error',
-            }
-          );
+          const msg = error?.message || (typeof error === 'string' ? error : JSON.stringify(error));
+          enqueueSnackbar(currentDocument ? `Update failed! ${msg}` : `Create failed! ${msg}`, {
+            variant: 'error',
+          });
         });
     }
   };
 
   const handleDrop = useCallback(
-    (acceptedFiles: File[]) => {
-      const files = values.document_file || [];
-
-      const newFiles = acceptedFiles.map((file) => file);
-
-      setValue('document_file', acceptedFiles, { shouldValidate: true });
+    (acceptedFiles: File[], fieldName: 'document_file_pdf' | 'document_file_word') => {
+      const newFile = acceptedFiles[0];
+      if (newFile) {
+        setValue(fieldName, [newFile], { shouldValidate: true });
+      }
     },
-    [setValue, values.document_file]
+    [setValue]
   );
 
   const handleRemoveFile = useCallback(
-    (inputFile: File | string) => {
-      const filtered =
-        values.document_file && values.document_file?.filter((file) => file !== inputFile);
-      setValue('document_file', filtered);
+    (inputFile: File | string, fieldName: 'document_file_pdf' | 'document_file_word') => {
+      setFileToRemove(inputFile);
+      setFieldToRemove(fieldName);
+      confirmRemoveFile.onTrue();
     },
-    [setValue, values.document_file]
+    [confirmRemoveFile]
   );
 
-  const handleRemoveAllFiles = useCallback(() => {
-    setValue('document_file', []);
-  }, [setValue]);
+  const onConfirmRemoveFile = useCallback(() => {
+    if (fieldToRemove) {
+      setValue(fieldToRemove, []);
+    }
+    confirmRemoveFile.onFalse();
+    setFileToRemove(null);
+    setFieldToRemove(null);
+  }, [fieldToRemove, setValue, confirmRemoveFile]);
 
   const onSubmit = handleSubmit(async (data) => {
     try {
@@ -166,30 +179,37 @@ export default function DocumentNewEditForm({ currentDocument }: Props) {
 
       formData.append('activities', JSON.stringify(activities));
 
-      // 🔥 ambil file pertama
-      const file = data.document_file?.[0];
+      const allFiles = [
+        ...(data.document_file_pdf || []),
+        ...(data.document_file_word || [])
+      ];
 
-      if (file instanceof File) {
-        // ✅ user upload file baru
-        formData.append('file', file);
-      } else if (typeof file === 'string') {
-        // ✅ file lama → kirim ke backend biar tidak hilang
-        formData.append('existing_file', file);
+      // append all files
+      if (allFiles.length > 0) {
+        allFiles.forEach((file) => {
+          if (file instanceof File) {
+            formData.append('file', file);
+          } else if (typeof file === 'string') {
+            formData.append('existing_file', file);
+          }
+        });
       }
 
       if (currentDocument) {
         await putDoktek(
           epDoktek.document.edit(currentDocument.id_technical_document.toString()),
-          formData
+          formData,
+          { headers: { 'Content-Type': 'multipart/form-data' } }
         );
       } else {
-        await posterDoktek(epDoktek.document.postDocument, formData);
+        await posterDoktek(epDoktek.document.postDocument, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
       }
 
       enqueueSnackbar(currentDocument ? 'Update success!' : 'Create success!');
       router.push(paths.dashboard.technicalDocument.root);
     } catch (error: any) {
-      enqueueSnackbar(`Failed! ${error.message}`, { variant: 'error' });
+      const msg = error?.message || (typeof error === 'string' ? error : JSON.stringify(error));
+      enqueueSnackbar(`Failed! ${msg}`, { variant: 'error' });
     }
   });
 
@@ -255,21 +275,53 @@ export default function DocumentNewEditForm({ currentDocument }: Props) {
               renderInput={(params) => <TextField {...params} label="Type Document" />}
             />
 
-            <Stack spacing={1}>
-              <Typography variant="subtitle2">Upload File</Typography>
+            <Stack spacing={2}>
+              <Stack spacing={1}>
+                <Typography variant="subtitle2">Upload File PDF</Typography>
+                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                  Optional (maks. 10 MB)
+                </Typography>
 
-              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                Optional (max {maxSizeMB} MB)
-              </Typography>
+                <RHFUpload
+                  name="document_file_pdf"
+                  maxSize={MAX_SIZE}
+                  multiple
+                  accept={{
+                    'application/pdf': [],
+                  }}
+                  onDrop={(files) => handleDrop(files, 'document_file_pdf')}
+                  onRemove={(file) => handleRemoveFile(file, 'document_file_pdf')}
+                  sx={{
+                    '& > .MuiBox-root:first-of-type': {
+                      py: 2.5,
+                    },
+                  }}
+                />
+              </Stack>
 
-              <RHFUpload
-                name="document_file"
-                maxSize={MAX_SIZE}
-                multiple={false}
-                onDrop={handleDrop}
-                onRemove={handleRemoveFile}
-                onRemoveAll={handleRemoveAllFiles}
-              />
+              <Stack spacing={1}>
+                <Typography variant="subtitle2">Upload File Word</Typography>
+                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                  Optional (maks. 10 MB)
+                </Typography>
+
+                <RHFUpload
+                  name="document_file_word"
+                  maxSize={MAX_SIZE}
+                  multiple
+                  accept={{
+                    'application/msword': [],
+                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': []
+                  }}
+                  onDrop={(files) => handleDrop(files, 'document_file_word')}
+                  onRemove={(file) => handleRemoveFile(file, 'document_file_word')}
+                  sx={{
+                    '& > .MuiBox-root:first-of-type': {
+                      py: 2.5,
+                    },
+                  }}
+                />
+              </Stack>
             </Stack>
           </Stack>
         </Card>
@@ -298,6 +350,19 @@ export default function DocumentNewEditForm({ currentDocument }: Props) {
         {renderDetails}
         {renderActions}
       </Grid>
+      <ConfirmDialog
+        open={confirmRemoveFile.value}
+        onClose={confirmRemoveFile.onFalse}
+        title="Remove File"
+        content={`Yakin ingin membatalkan upload file ${
+          typeof fileToRemove === 'string' ? fileToRemove : fileToRemove?.name
+        }?`}
+        action={
+          <Button variant="contained" color="error" onClick={onConfirmRemoveFile}>
+            Remove
+          </Button>
+        }
+      />
     </FormProvider>
   );
 }

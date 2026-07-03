@@ -59,8 +59,9 @@ export const posterDoktek = async (url: string, data: any, config?: AxiosRequest
   } catch (error) {
     // Handle request errors (e.g., network issues)
     console.error('Request error:', error);
-    enqueueSnackbar(error.message, { variant: 'error' });
-    throw error;
+    const message = (error && (error.message || (typeof error === 'string' && error))) || 'Something went wrong';
+    enqueueSnackbar(typeof message === 'string' ? message : JSON.stringify(message), { variant: 'error' });
+    throw new Error(typeof message === 'string' ? message : JSON.stringify(message));
   }
 };
 

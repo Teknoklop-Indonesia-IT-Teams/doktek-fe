@@ -14,7 +14,7 @@ import Typography from '@mui/material/Typography';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import MenuItem from '@mui/material/MenuItem';
 // utils
-import { posterDoktek, epDoktek } from 'src/utils/axios-doktek';
+import { posterDoktek, epDoktek, patcherDoktek, putDoktek } from 'src/utils/axios-doktek';
 // Api
 import { useGetDivision } from 'src/api/division';
 import { useGetRoles } from 'src/api/role';
@@ -52,7 +52,12 @@ export default function UserNewEditForm({ currentUser }: Props) {
 
   const NewUserSchema = Yup.object().shape({
     username: Yup.string().required('Username is required'),
-    password: Yup.string().required('Password is required'),
+    password: Yup.string().test('password-required', 'Password is required', function (value) {
+      if (currentUser) {
+        return true; // Not required on edit
+      }
+      return !!value; // Required on create
+    }),
     id_division: Yup.number().required('Division is required'),
     id_role: Yup.number().required('Role is required'),
     flag_active: Yup.boolean().required(),
@@ -88,7 +93,16 @@ export default function UserNewEditForm({ currentUser }: Props) {
 
   const onSubmit = handleSubmit(async (data) => {
     try {
-      await posterDoktek(epDoktek.users.new, data);
+      const payload = { ...data };
+      if (currentUser && !payload.password) {
+        delete payload.password; // Don't send empty password on edit
+      }
+
+      if (currentUser) {
+        await putDoktek(epDoktek.users.details(currentUser.id_user.toString()), payload);
+      } else {
+        await posterDoktek(epDoktek.users.new, payload);
+      }
       enqueueSnackbar(currentUser ? 'Update success!' : 'Create success!');
       router.push(paths.dashboard.user.list);
     } catch (error) {
