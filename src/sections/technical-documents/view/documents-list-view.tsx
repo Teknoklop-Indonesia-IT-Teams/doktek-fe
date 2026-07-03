@@ -66,7 +66,8 @@ const TABLE_HEAD = [
   { id: 'created_at', label: 'Create' },
   { id: 'updated_at', label: 'Update' },
   { id: 'division', label: 'Division' },
-  { id: 'file', label: 'File' },
+  { id: '' },
+  { id: 'action', label: 'Action', align: 'left' },
   { id: '' },
 ];
 

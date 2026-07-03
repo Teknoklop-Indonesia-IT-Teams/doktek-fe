@@ -65,12 +65,48 @@ export default function DocumentsTableRow({
 
   const popover = usePopover();
 
-  const getFileExtension = (file?: string) => {
-    if (!file) return '';
-    return file.split('.').pop()?.toLowerCase();
+  const isPDF = (file?: string) => getFileExtension(file) === 'pdf';
+
+  const fileColors: Record<string, { main: string; soft: string }> = {
+    doc: {
+      main: '#2196f3',
+      soft: 'rgba(33, 150, 243, 0.16)',
+    },
+    docx: {
+      main: '#2196f3',
+      soft: 'rgba(33, 150, 243, 0.16)',
+    },
+    pdf: {
+      main: '#f44336',
+      soft: 'rgba(244, 67, 54, 0.16)',
+    },
+    xlsx: {
+      main: '#4caf50',
+      soft: 'rgba(76, 175, 80, 0.16)',
+    },
   };
 
-  const isPDF = (file?: string) => getFileExtension(file) === 'pdf';
+  const getFileExtension = (file?: string) => {
+    if (!file) return '-';
+
+    const ext = file.split('.').pop()?.toLowerCase();
+
+    return ext || '-';
+  };
+
+  const getFileLabel = (file?: string) => {
+    const ext = getFileExtension(file);
+
+    if (ext === '-') return '-';
+
+    return ext.toUpperCase(); // pdf → PDF
+  };
+
+  const ext = getFileExtension(document_file);
+  const fileColor = fileColors[ext] || {
+    main: '#9e9e9e',
+    soft: 'rgba(158, 158, 158, 0.16)',
+  };
 
   const handleViewFile = () => {
     if (!document_file) return;
@@ -188,35 +224,59 @@ export default function DocumentsTableRow({
 
         <TableCell>
           {document_file ? (
-            <Stack direction="row" spacing={1}>
-              {isPDF(document_file) ? (
-                <LoadingButton
-                  size="small"
-                  variant="outlined"
-                  startIcon={<Iconify icon="solar:eye-bold" />}
-                  onClick={handleViewFile}
-                >
-                  View
-                </LoadingButton>
-              ) : (
-                <LoadingButton
-                  size="small"
-                  variant="contained"
-                  startIcon={<Iconify icon="solar:download-bold" />}
-                  onClick={handleDownloadFile}
-                >
-                  Download
-                </LoadingButton>
-              )}
-            </Stack>
+            <LoadingButton
+              size="small"
+              variant="outlined"
+              startIcon={<Iconify icon="solar:eye-bold" />}
+              onClick={handleViewFile}
+              sx={{
+                color: fileColor.main,
+                borderColor: fileColor.main,
+                bgcolor: fileColor.soft,
+                '&:hover': {
+                  borderColor: fileColor.soft,
+                  bgcolor: fileColor.main,
+                  color: '#fff',
+                },
+              }}
+            >
+              {getFileLabel(document_file)}
+            </LoadingButton>
           ) : (
             <Typography variant="body2" color="text.secondary">
-              No File
+              No File PDF
             </Typography>
           )}
         </TableCell>
 
-        <TableCell align="right" sx={{ px: 1 }}>
+        <TableCell>
+          {document_file ? (
+            <LoadingButton
+              size="small"
+              variant="outlined"
+              startIcon={<Iconify icon="solar:download-bold" />}
+              onClick={handleDownloadFile}
+              sx={{
+                color: fileColor.main,
+                borderColor: fileColor.main,
+                bgcolor: fileColor.soft,
+                '&:hover': {
+                  borderColor: fileColor.soft,
+                  bgcolor: fileColor.main,
+                  color: '#fff',
+                },
+              }}
+            >
+              {getFileLabel(document_file)}
+            </LoadingButton>
+          ) : (
+            <Typography variant="body2" color="text.secondary">
+              No File Word
+            </Typography>
+          )}
+        </TableCell>
+
+        <TableCell align="left" sx={{ px: 1 }}>
           <IconButton color={popover.open ? 'inherit' : 'default'} onClick={popover.onOpen}>
             <Iconify icon="eva:more-vertical-fill" />
           </IconButton>
@@ -236,7 +296,7 @@ export default function DocumentsTableRow({
           }}
         >
           <Iconify icon="solar:eye-bold" />
-          View
+          Detail
         </MenuItem>
 
         <MenuItem
