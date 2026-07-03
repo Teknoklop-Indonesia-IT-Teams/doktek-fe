@@ -56,7 +56,7 @@ export default function DocumentItemsNewEditForm({
 
   const NewDocumentItemsSchema = Yup.object().shape({
     id_technical_document_activity: Yup.string(),
-    document_file: Yup.array().max(1, 'Only one file allowed').nullable().notRequired(),
+    document_file: Yup.array().nullable().notRequired(),
     id_type_document: Yup.string().required('Type is required'),
     id_division: Yup.string().required('Division is required'),
   });
@@ -167,12 +167,15 @@ export default function DocumentItemsNewEditForm({
       // 🔥 WAJIB stringify
       formData.append('activities', JSON.stringify(activities));
 
-      // 🔥 file (optional)
+      // 🔥 file (optional) - append all files
       if (data.document_file && data.document_file.length > 0) {
-        const file = data.document_file[0];
-        if (file instanceof File) {
-          formData.append('file', file);
-        }
+        data.document_file.forEach((file: any) => {
+          if (file instanceof File) {
+            formData.append('file', file);
+          } else if (typeof file === 'string') {
+            formData.append('existing_file', file);
+          }
+        });
       }
 
       // 🔥 EDIT
@@ -204,22 +207,27 @@ export default function DocumentItemsNewEditForm({
 
       const newFiles = acceptedFiles.map((file) => file);
 
-      setValue('document_file', acceptedFiles, { shouldValidate: true });
+      setValue('document_file', [...files, ...newFiles], { shouldValidate: true });
     },
     [setValue, values.document_file]
   );
 
   const handleRemoveFile = useCallback(
     (inputFile: File | string) => {
-      const filtered =
-        values.document_file && values.document_file?.filter((file) => file !== inputFile);
-      setValue('document_file', filtered);
+      const fileName = typeof inputFile === 'string' ? inputFile : inputFile.name;
+      if (window.confirm(`Yakin ingin membatalkan upload file ${fileName}?`)) {
+        const filtered =
+          values.document_file && values.document_file?.filter((file) => file !== inputFile);
+        setValue('document_file', filtered);
+      }
     },
     [setValue, values.document_file]
   );
 
   const handleRemoveAllFiles = useCallback(() => {
-    setValue('document_file', []);
+    if (window.confirm('Yakin ingin membatalkan upload semua file?')) {
+      setValue('document_file', []);
+    }
   }, [setValue]);
 
   const renderDetails = (
@@ -254,7 +262,12 @@ export default function DocumentItemsNewEditForm({
               name="document_file"
               // files={values.document_file}
               maxSize={10 * 1024 * 1024 - 1}
-              multiple={false}
+              multiple
+              accept={{
+                'application/pdf': [],
+                'application/msword': [],
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document': []
+              }}
               onDrop={handleDrop}
               onRemove={handleRemoveFile}
               onRemoveAll={handleRemoveAllFiles}
