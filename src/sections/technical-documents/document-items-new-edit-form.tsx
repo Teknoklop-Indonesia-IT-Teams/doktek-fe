@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import * as Yup from 'yup';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -19,6 +19,8 @@ import FormProvider, {
   RHFTextField,
   RHFUpload,
 } from 'src/components/hook-form';
+import { ConfirmDialog } from 'src/components/custom-dialog';
+import { useBoolean } from 'src/hooks/use-boolean';
 import { useResponsive } from 'src/hooks/use-responsive';
 import { useSnackbar } from 'src/components/snackbar';
 import Typography from '@mui/material/Typography';
@@ -28,6 +30,7 @@ import { epDoktek, patcherDoktek, posterDoktek, putDoktek } from 'src/utils/axio
 import { mutate } from 'swr';
 import { useGetType, useGetTypes } from 'src/api/type';
 import Chip from '@mui/material/Chip';
+import Button from '@mui/material/Button';
 
 // ----------------------------------------------------------------------
 
@@ -40,7 +43,8 @@ type FormValues = {
   id_technical_document_activity: string;
   id_type_document: string;
   id_division: string;
-  document_file: (File | string)[];
+  document_file_pdf: (File | string)[];
+  document_file_word: (File | string)[];
 };
 
 export default function DocumentItemsNewEditForm({
@@ -51,31 +55,38 @@ export default function DocumentItemsNewEditForm({
 
   const mdUp = useResponsive('up', 'md');
 
+  const confirmRemoveFile = useBoolean();
+  const [fileToRemove, setFileToRemove] = useState<File | string | null>(null);
+  const [fieldToRemove, setFieldToRemove] = useState<'document_file_pdf' | 'document_file_word' | null>(null);
+
   const { enqueueSnackbar } = useSnackbar();
   const { type } = useGetTypes();
 
   const NewDocumentItemsSchema = Yup.object().shape({
     id_technical_document_activity: Yup.string(),
-    document_file: Yup.array().nullable().notRequired(),
+    document_file_pdf: Yup.array().nullable().notRequired(),
+    document_file_word: Yup.array().nullable().notRequired(),
     id_type_document: Yup.string().required('Type is required'),
     id_division: Yup.string().required('Division is required'),
   });
 
-  const defaultValues: FormValues = useMemo(
-    () => ({
+  const defaultValues: FormValues = useMemo(() => {
+    const existingFile = currentDocumentItems?.document_file;
+    let pdfFile: any[] = [];
+    let wordFile: any[] = [];
+    if (existingFile) {
+      if (existingFile.toLowerCase().endsWith('.pdf')) pdfFile = [existingFile];
+      else wordFile = [existingFile];
+    }
+    return {
       id_technical_document_activity:
         currentDocumentItems?.id_technical_document_activity?.toString() || '',
-
-      document_file: currentDocumentItems?.document_file
-        ? [currentDocumentItems.document_file]
-        : [],
-
+      document_file_pdf: pdfFile,
+      document_file_word: wordFile,
       id_type_document: currentDocumentItems?.typeDocument?.id_type_document?.toString() || '',
-
       id_division: currentDocumentItems?.division?.id_division?.toString() || '',
-    }),
-    [currentDocumentItems]
-  );
+    };
+  }, [currentDocumentItems]);
 
   const methods = useForm({
     resolver: yupResolver(NewDocumentItemsSchema),
@@ -167,9 +178,14 @@ export default function DocumentItemsNewEditForm({
       // 🔥 WAJIB stringify
       formData.append('activities', JSON.stringify(activities));
 
+      const allFiles = [
+        ...(data.document_file_pdf || []),
+        ...(data.document_file_word || [])
+      ];
+
       // 🔥 file (optional) - append all files
-      if (data.document_file && data.document_file.length > 0) {
-        data.document_file.forEach((file: any) => {
+      if (allFiles.length > 0) {
+        allFiles.forEach((file: any) => {
           if (file instanceof File) {
             formData.append('file', file);
           } else if (typeof file === 'string') {
@@ -202,33 +218,32 @@ export default function DocumentItemsNewEditForm({
   });
 
   const handleDrop = useCallback(
-    (acceptedFiles: File[]) => {
-      const files = values.document_file || [];
-
-      const newFiles = acceptedFiles.map((file) => file);
-
-      setValue('document_file', [...files, ...newFiles], { shouldValidate: true });
+    (acceptedFiles: File[], fieldName: 'document_file_pdf' | 'document_file_word') => {
+      const newFile = acceptedFiles[0];
+      if (newFile) {
+        setValue(fieldName, [newFile], { shouldValidate: true });
+      }
     },
-    [setValue, values.document_file]
+    [setValue]
   );
 
   const handleRemoveFile = useCallback(
-    (inputFile: File | string) => {
-      const fileName = typeof inputFile === 'string' ? inputFile : inputFile.name;
-      if (window.confirm(`Yakin ingin membatalkan upload file ${fileName}?`)) {
-        const filtered =
-          values.document_file && values.document_file?.filter((file) => file !== inputFile);
-        setValue('document_file', filtered);
-      }
+    (inputFile: File | string, fieldName: 'document_file_pdf' | 'document_file_word') => {
+      setFileToRemove(inputFile);
+      setFieldToRemove(fieldName);
+      confirmRemoveFile.onTrue();
     },
-    [setValue, values.document_file]
+    [confirmRemoveFile]
   );
 
-  const handleRemoveAllFiles = useCallback(() => {
-    if (window.confirm('Yakin ingin membatalkan upload semua file?')) {
-      setValue('document_file', []);
+  const onConfirmRemoveFile = useCallback(() => {
+    if (fieldToRemove) {
+      setValue(fieldToRemove, []);
     }
-  }, [setValue]);
+    confirmRemoveFile.onFalse();
+    setFileToRemove(null);
+    setFieldToRemove(null);
+  }, [fieldToRemove, setValue, confirmRemoveFile]);
 
   const renderDetails = (
     <Grid xs={12}>
@@ -251,27 +266,53 @@ export default function DocumentItemsNewEditForm({
             ))}
           </RHFSelect> */}
 
-          <Stack spacing={1}>
-            <Typography variant="subtitle2">Upload File</Typography>
+          <Stack spacing={2}>
+            <Stack spacing={1}>
+              <Typography variant="subtitle2">Upload File PDF</Typography>
+              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                Optional (maks. di bawah 10 MB)
+              </Typography>
 
-            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-              Optional (maks. di bawah 10 MB)
-            </Typography>
+              <RHFUpload
+                name="document_file_pdf"
+                maxSize={10 * 1024 * 1024 - 1}
+                multiple
+                accept={{
+                  'application/pdf': [],
+                }}
+                onDrop={(files) => handleDrop(files, 'document_file_pdf')}
+                onRemove={(file) => handleRemoveFile(file, 'document_file_pdf')}
+                sx={{
+                  '& > .MuiBox-root:first-of-type': {
+                    py: 2.5,
+                  },
+                }}
+              />
+            </Stack>
 
-            <RHFUpload
-              name="document_file"
-              // files={values.document_file}
-              maxSize={10 * 1024 * 1024 - 1}
-              multiple
-              accept={{
-                'application/pdf': [],
-                'application/msword': [],
-                'application/vnd.openxmlformats-officedocument.wordprocessingml.document': []
-              }}
-              onDrop={handleDrop}
-              onRemove={handleRemoveFile}
-              onRemoveAll={handleRemoveAllFiles}
-            />
+            <Stack spacing={1}>
+              <Typography variant="subtitle2">Upload File Word</Typography>
+              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                Optional (maks. di bawah 10 MB)
+              </Typography>
+
+              <RHFUpload
+                name="document_file_word"
+                maxSize={10 * 1024 * 1024 - 1}
+                multiple
+                accept={{
+                  'application/msword': [],
+                  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': []
+                }}
+                onDrop={(files) => handleDrop(files, 'document_file_word')}
+                onRemove={(file) => handleRemoveFile(file, 'document_file_word')}
+                sx={{
+                  '& > .MuiBox-root:first-of-type': {
+                    py: 2.5,
+                  },
+                }}
+              />
+            </Stack>
           </Stack>
         </Stack>
       </Card>
@@ -293,6 +334,19 @@ export default function DocumentItemsNewEditForm({
 
         {renderActions}
       </Grid>
+      <ConfirmDialog
+        open={confirmRemoveFile.value}
+        onClose={confirmRemoveFile.onFalse}
+        title="Remove File"
+        content={`Yakin ingin membatalkan upload file ${
+          typeof fileToRemove === 'string' ? fileToRemove : fileToRemove?.name
+        }?`}
+        action={
+          <Button variant="contained" color="error" onClick={onConfirmRemoveFile}>
+            Remove
+          </Button>
+        }
+      />
     </FormProvider>
   );
 }
