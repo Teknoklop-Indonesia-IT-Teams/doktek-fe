@@ -106,7 +106,7 @@ export default function DocumentsListView() {
     Automation: 'warning',
     Laboratory: 'success',
     RnD: 'error',
-    'IT Enggineer': 'info',
+    'IT Engineer': 'info',
     Finance: 'secondary',
   };
 
@@ -316,8 +316,8 @@ export default function DocumentsListView() {
 
               <DocumentsAnalytic
                 title="IT Engineer"
-                total={getDivisionLength('IT Enggineer')}
-                percent={getPercentByDivision('IT Enggineer')}
+                total={getDivisionLength('IT Engineer')}
+                percent={getPercentByDivision('IT Engineer')}
                 icon="solar:laptop-line-duotone"
                 color={theme.palette.info.main}
               />

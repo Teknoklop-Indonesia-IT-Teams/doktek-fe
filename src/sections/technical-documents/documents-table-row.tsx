@@ -177,7 +177,7 @@ export default function DocumentsTableRow({
               (divisionObj?.division_name === 'Laboratory' && 'success') ||
               (divisionObj?.division_name === 'Automation' && 'warning') ||
               (divisionObj?.division_name === 'RnD' && 'error') ||
-              (divisionObj?.division_name === 'IT Enggineer' && 'info') ||
+              (divisionObj?.division_name === 'IT Engineer' && 'info') ||
               (divisionObj?.division_name === 'Finance' && 'secondary') ||
               'default'
             }
