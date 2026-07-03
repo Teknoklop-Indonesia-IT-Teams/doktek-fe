@@ -279,7 +279,7 @@ export default function DocumentNewEditForm({ currentDocument }: Props) {
               <Stack spacing={1}>
                 <Typography variant="subtitle2">Upload File PDF</Typography>
                 <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                  Optional (maks. di bawah 10 MB)
+                  Optional (maks. 10 MB)
                 </Typography>
 
                 <RHFUpload
@@ -302,7 +302,7 @@ export default function DocumentNewEditForm({ currentDocument }: Props) {
               <Stack spacing={1}>
                 <Typography variant="subtitle2">Upload File Word</Typography>
                 <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                  Optional (maks. di bawah 10 MB)
+                  Optional (maks. 10 MB)
                 </Typography>
 
                 <RHFUpload
