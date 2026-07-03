@@ -42,11 +42,21 @@ export default function RejectionFiles({ fileRejections }: Props) {
               {path} - {size ? fData(size) : ''}
             </Typography>
 
-            {errors.map((error) => (
-              <Box key={error.code} component="span" sx={{ typography: 'caption' }}>
-                - {error.message}
-              </Box>
-            ))}
+            {errors.map((error) => {
+              let message = error.message;
+
+              if (error.code === 'file-too-large') {
+                message = 'apabila file terlalu besar harap compress terlebih dahulu agar menjadi lebih kecil';
+              } else if (error.code === 'file-invalid-type') {
+                message = 'Tipe file tidak didukung';
+              }
+
+              return (
+                <Box key={error.code} component="span" sx={{ typography: 'caption' }}>
+                  - {message}
+                </Box>
+              );
+            })}
           </Box>
         );
       })}

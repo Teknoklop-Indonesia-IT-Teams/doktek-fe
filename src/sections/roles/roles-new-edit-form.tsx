@@ -108,12 +108,10 @@ export default function RolesNewEditForm({ currentRoles }: Props) {
         })
         .catch((error: any) => {
           console.error(error);
-          enqueueSnackbar(
-            currentRoles ? `Update failed! ${error.message}` : `Create failed! ${error.message}`,
-            {
-              variant: 'error',
-            }
-          );
+          const msg = error?.message || (typeof error === 'string' ? error : JSON.stringify(error));
+          enqueueSnackbar(currentRoles ? `Update failed! ${msg}` : `Create failed! ${msg}`, {
+            variant: 'error',
+          });
         });
     } else {
       const URL = epDoktek.roles.postRole;
@@ -125,12 +123,10 @@ export default function RolesNewEditForm({ currentRoles }: Props) {
         })
         .catch((error) => {
           console.error(error);
-          enqueueSnackbar(
-            currentRoles ? `Update failed! ${error.message}` : `Create failed! ${error.message}`,
-            {
-              variant: 'error',
-            }
-          );
+          const msg = error?.message || (typeof error === 'string' ? error : JSON.stringify(error));
+          enqueueSnackbar(currentRoles ? `Update failed! ${msg}` : `Create failed! ${msg}`, {
+            variant: 'error',
+          });
         });
     }
   };

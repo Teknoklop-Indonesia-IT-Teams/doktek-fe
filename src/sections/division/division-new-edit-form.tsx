@@ -110,12 +110,10 @@ export default function DivisionNewEditForm({ currentDivision }: Props) {
         })
         .catch((error: any) => {
           console.error(error);
-          enqueueSnackbar(
-            currentDivision ? `Update failed! ${error.message}` : `Create failed! ${error.message}`,
-            {
+            const msg = error?.message || (typeof error === 'string' ? error : JSON.stringify(error));
+            enqueueSnackbar(currentDivision ? `Update failed! ${msg}` : `Create failed! ${msg}`, {
               variant: 'error',
-            }
-          );
+            });
         });
     } else {
       const URL = epDoktek.division.postDivision;
@@ -127,12 +125,10 @@ export default function DivisionNewEditForm({ currentDivision }: Props) {
         })
         .catch((error) => {
           console.error(error);
-          enqueueSnackbar(
-            currentDivision ? `Update failed! ${error.message}` : `Create failed! ${error.message}`,
-            {
+            const msg = error?.message || (typeof error === 'string' ? error : JSON.stringify(error));
+            enqueueSnackbar(currentDivision ? `Update failed! ${msg}` : `Create failed! ${msg}`, {
               variant: 'error',
-            }
-          );
+            });
         });
     }
   };

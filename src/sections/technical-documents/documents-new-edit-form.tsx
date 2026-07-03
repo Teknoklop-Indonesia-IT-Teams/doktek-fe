@@ -37,8 +37,7 @@ export default function DocumentNewEditForm({ currentDocument }: Props) {
   const { enqueueSnackbar } = useSnackbar();
   const { division } = useGetDivision();
   const { type } = useGetTypes();
-  const MAX_SIZE = 3145728; // 3 MB
-  const maxSizeMB = (MAX_SIZE / (1024 * 1024)).toFixed(0);
+  const MAX_SIZE = 10 * 1024 * 1024 - 1; 
 
   const NewDocumentSchema = Yup.object().shape({
     title: Yup.string().required('Job Title is required'),
@@ -102,12 +101,10 @@ export default function DocumentNewEditForm({ currentDocument }: Props) {
         })
         .catch((error: any) => {
           console.error(error);
-          enqueueSnackbar(
-            currentDocument ? `Update failed! ${error.message}` : `Create failed! ${error.message}`,
-            {
-              variant: 'error',
-            }
-          );
+          const msg = error?.message || (typeof error === 'string' ? error : JSON.stringify(error));
+          enqueueSnackbar(currentDocument ? `Update failed! ${msg}` : `Create failed! ${msg}`, {
+            variant: 'error',
+          });
         });
     } else {
       const URL = epDoktek.document.postDocument;
@@ -118,12 +115,10 @@ export default function DocumentNewEditForm({ currentDocument }: Props) {
         })
         .catch((error) => {
           console.error(error);
-          enqueueSnackbar(
-            currentDocument ? `Update failed! ${error.message}` : `Create failed! ${error.message}`,
-            {
-              variant: 'error',
-            }
-          );
+          const msg = error?.message || (typeof error === 'string' ? error : JSON.stringify(error));
+          enqueueSnackbar(currentDocument ? `Update failed! ${msg}` : `Create failed! ${msg}`, {
+            variant: 'error',
+          });
         });
     }
   };
@@ -166,30 +161,32 @@ export default function DocumentNewEditForm({ currentDocument }: Props) {
 
       formData.append('activities', JSON.stringify(activities));
 
-      // 🔥 ambil file pertama
+      //  ambil file pertama
       const file = data.document_file?.[0];
 
       if (file instanceof File) {
-        // ✅ user upload file baru
+        //  user upload file baru
         formData.append('file', file);
       } else if (typeof file === 'string') {
-        // ✅ file lama → kirim ke backend biar tidak hilang
+        //  file lama → kirim ke backend biar tidak hilang
         formData.append('existing_file', file);
       }
 
       if (currentDocument) {
         await putDoktek(
           epDoktek.document.edit(currentDocument.id_technical_document.toString()),
-          formData
+          formData,
+          { headers: { 'Content-Type': 'multipart/form-data' } }
         );
       } else {
-        await posterDoktek(epDoktek.document.postDocument, formData);
+        await posterDoktek(epDoktek.document.postDocument, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
       }
 
       enqueueSnackbar(currentDocument ? 'Update success!' : 'Create success!');
       router.push(paths.dashboard.technicalDocument.root);
     } catch (error: any) {
-      enqueueSnackbar(`Failed! ${error.message}`, { variant: 'error' });
+      const msg = error?.message || (typeof error === 'string' ? error : JSON.stringify(error));
+      enqueueSnackbar(`Failed! ${msg}`, { variant: 'error' });
     }
   });
 
@@ -259,7 +256,7 @@ export default function DocumentNewEditForm({ currentDocument }: Props) {
               <Typography variant="subtitle2">Upload File</Typography>
 
               <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                Optional (max {maxSizeMB} MB)
+                Optional (maks. di bawah 10 MB)
               </Typography>
 
               <RHFUpload

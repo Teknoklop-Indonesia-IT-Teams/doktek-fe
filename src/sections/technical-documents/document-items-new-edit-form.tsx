@@ -120,10 +120,9 @@ export default function DocumentItemsNewEditForm({
         })
         .catch((error: any) => {
           console.error(error);
+          const msg = error?.message || (typeof error === 'string' ? error : JSON.stringify(error));
           enqueueSnackbar(
-            currentDocumentItems
-              ? `Update failed! ${error.message}`
-              : `Create failed! ${error.message}`,
+            currentDocumentItems ? `Update failed! ${msg}` : `Create failed! ${msg}`,
             {
               variant: 'error',
             }
@@ -141,10 +140,9 @@ export default function DocumentItemsNewEditForm({
         })
         .catch((error) => {
           console.error(error);
+          const msg = error?.message || (typeof error === 'string' ? error : JSON.stringify(error));
           enqueueSnackbar(
-            currentDocumentItems
-              ? `Update failed! ${error.message}`
-              : `Create failed! ${error.message}`,
+            currentDocumentItems ? `Update failed! ${msg}` : `Create failed! ${msg}`,
             {
               variant: 'error',
             }
@@ -195,7 +193,8 @@ export default function DocumentItemsNewEditForm({
 
       enqueueSnackbar('Success!');
     } catch (error: any) {
-      enqueueSnackbar(`Failed! ${error.message}`, { variant: 'error' });
+      const msg = error?.message || (typeof error === 'string' ? error : JSON.stringify(error));
+      enqueueSnackbar(`Failed! ${msg}`, { variant: 'error' });
     }
   });
 
@@ -248,13 +247,13 @@ export default function DocumentItemsNewEditForm({
             <Typography variant="subtitle2">Upload File</Typography>
 
             <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-              Optional (max 1 file)
+              Optional (maks. di bawah 10 MB)
             </Typography>
 
             <RHFUpload
               name="document_file"
               // files={values.document_file}
-              maxSize={3145728}
+              maxSize={10 * 1024 * 1024 - 1}
               multiple={false}
               onDrop={handleDrop}
               onRemove={handleRemoveFile}
