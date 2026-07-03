@@ -29,7 +29,6 @@ export type IDocumentActivity = {
   id_technical_document_activity: number;
   title: string;
   document_number: string;
-  document_file: string;
   flag_active: number;
   version_number: number;
   created_at: string;
@@ -37,6 +36,8 @@ export type IDocumentActivity = {
   updated_at: string;
   division: IDivision;
   typeDocument: ITypeDocument;
+  document_file_pdf?: string | null;
+  document_file?: string | null;
 };
 
 export type IDocumentById = {
@@ -45,6 +46,8 @@ export type IDocumentById = {
   created_by: string;
   updated_at: string;
   activities: IDocumentActivity[];
+  document_file_pdf?: string | null;
+  document_file?: string | null;
 };
 
 export type IDocumentInput = {

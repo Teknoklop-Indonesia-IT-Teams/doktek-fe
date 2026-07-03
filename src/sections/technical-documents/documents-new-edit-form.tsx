@@ -58,13 +58,9 @@ export default function DocumentNewEditForm({ currentDocument }: Props) {
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
 
   const defaultValues = useMemo(() => {
-    const existingFile = lastActivity?.document_file;
-    let pdfFile: any[] = [];
-    let wordFile: any[] = [];
-    if (existingFile) {
-      if (existingFile.toLowerCase().endsWith('.pdf')) pdfFile = [existingFile];
-      else wordFile = [existingFile];
-    }
+    const pdfFile = lastActivity?.document_file_pdf ? [lastActivity.document_file_pdf] : [];
+    const wordFile = lastActivity?.document_file ? [lastActivity.document_file] : [];
+
     return {
       title: lastActivity?.title || '',
       id_division: lastActivity?.division.id_division.toString() || '',

@@ -54,6 +54,7 @@ export default function DocumentsTableRow({
     typeDocument,
     created_at,
     updated_at,
+    document_file_pdf,
     document_file,
     created_by,
   } = row;
@@ -65,25 +66,14 @@ export default function DocumentsTableRow({
 
   const popover = usePopover();
 
-  const isPDF = (file?: string) => getFileExtension(file) === 'pdf';
+  const pdf = {
+    main: '#f44336',
+    soft: 'rgba(244, 67, 54, 0.16)',
+  };
 
-  const fileColors: Record<string, { main: string; soft: string }> = {
-    doc: {
-      main: '#2196f3',
-      soft: 'rgba(33, 150, 243, 0.16)',
-    },
-    docx: {
-      main: '#2196f3',
-      soft: 'rgba(33, 150, 243, 0.16)',
-    },
-    pdf: {
-      main: '#f44336',
-      soft: 'rgba(244, 67, 54, 0.16)',
-    },
-    xlsx: {
-      main: '#4caf50',
-      soft: 'rgba(76, 175, 80, 0.16)',
-    },
+  const docx = {
+    main: '#2196f3',
+    soft: 'rgba(33, 150, 243, 0.16)',
   };
 
   const getFileExtension = (file?: string) => {
@@ -94,49 +84,25 @@ export default function DocumentsTableRow({
     return ext || '-';
   };
 
-  const getFileLabel = (file?: string) => {
-    const ext = getFileExtension(file);
-
-    if (ext === '-') return '-';
-
-    return ext.toUpperCase(); // pdf → PDF
+  const getFileLabel = (file?: string | null) => {
+    if (!file) return '-';
+    const ext = file.split('.').pop()?.toLowerCase();
+    return ext ? ext.toUpperCase() : '-';
   };
 
-  const ext = getFileExtension(document_file);
-  const fileColor = fileColors[ext] || {
-    main: '#9e9e9e',
-    soft: 'rgba(158, 158, 158, 0.16)',
+  const handleViewPdf = () => {
+    if (!document_file_pdf) return;
+    const url = `${import.meta.env.VITE_API_BE}${document_file_pdf}`;
+    setFileUrl(url);
+    view.onTrue();
   };
 
-  const handleViewFile = () => {
+  const handleDownloadWord = () => {
     if (!document_file) return;
-
     const url = `${import.meta.env.VITE_API_BE}${document_file}`;
-
-    if (isPDF(document_file)) {
-      setFileUrl(url);
-      view.onTrue();
-    } else {
-      handleDownloadFile();
-
-      enqueueSnackbar('File tidak bisa dipreview, langsung didownload', {
-        variant: 'warning',
-      });
-    }
-  };
-
-  const handleDownloadFile = () => {
-    if (!document_file) return;
-
-    const url = `${import.meta.env.VITE_API_BE}${document_file}`;
-
     const link = document.createElement('a');
     link.href = url;
-
-    const fileName = document_file.split('/').pop();
-
-    link.download = fileName || 'document';
-
+    link.download = document_file.split('/').pop() || 'document';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -222,32 +188,33 @@ export default function DocumentsTableRow({
           </Label>
         </TableCell>
 
+        {/* View PDF */}
         <TableCell>
-          {document_file ? (
+          {document_file_pdf ? (
             <LoadingButton
               size="small"
               variant="outlined"
               startIcon={<Iconify icon="solar:eye-bold" />}
-              onClick={handleViewFile}
+              onClick={handleViewPdf}
               sx={{
-                color: fileColor.main,
-                borderColor: fileColor.main,
-                bgcolor: fileColor.soft,
+                color: pdf.main,
+                borderColor: pdf.main,
+                bgcolor: pdf.soft,
                 '&:hover': {
-                  borderColor: fileColor.soft,
-                  bgcolor: fileColor.main,
+                  borderColor: pdf.soft,
+                  bgcolor: pdf.main,
                   color: '#fff',
                 },
               }}
             >
-              {getFileLabel(document_file)}
+              {getFileLabel(document_file_pdf)}
             </LoadingButton>
           ) : (
             <Typography variant="body2" color="text.secondary">
               No File PDF
             </Typography>
           )}
-        </TableCell>
+        </TableCell> 
 
         <TableCell>
           {document_file ? (
@@ -255,14 +222,14 @@ export default function DocumentsTableRow({
               size="small"
               variant="outlined"
               startIcon={<Iconify icon="solar:download-bold" />}
-              onClick={handleDownloadFile}
+              onClick={handleDownloadWord}
               sx={{
-                color: fileColor.main,
-                borderColor: fileColor.main,
-                bgcolor: fileColor.soft,
+                color: docx.main,
+                borderColor: docx.main,
+                bgcolor: docx.soft,
                 '&:hover': {
-                  borderColor: fileColor.soft,
-                  bgcolor: fileColor.main,
+                  borderColor: docx.soft,
+                  bgcolor: docx.main,
                   color: '#fff',
                 },
               }}

@@ -71,13 +71,12 @@ export default function DocumentItemsNewEditForm({
   });
 
   const defaultValues: FormValues = useMemo(() => {
-    const existingFile = currentDocumentItems?.document_file;
-    let pdfFile: any[] = [];
-    let wordFile: any[] = [];
-    if (existingFile) {
-      if (existingFile.toLowerCase().endsWith('.pdf')) pdfFile = [existingFile];
-      else wordFile = [existingFile];
-    }
+    const pdfFile = currentDocumentItems?.document_file_pdf
+      ? [currentDocumentItems.document_file_pdf]
+      : [];
+    const wordFile = currentDocumentItems?.document_file
+      ? [currentDocumentItems.document_file]
+      : [];
     return {
       id_technical_document_activity:
         currentDocumentItems?.id_technical_document_activity?.toString() || '',
