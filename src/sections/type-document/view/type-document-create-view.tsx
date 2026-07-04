@@ -25,11 +25,11 @@ export default function TypeDcoumentsCreateView() {
             href: paths.dashboard.general.file,
           },
           {
-            name: 'Type Dcouments',
+            name: 'Type Documents',
             href: paths.dashboard.typeDocument.root,
           },
           {
-            name: 'New Type Dcouments',
+            name: 'New Type Documents',
           },
         ]}
         sx={{
