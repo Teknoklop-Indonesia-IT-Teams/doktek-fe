@@ -74,7 +74,6 @@ type Props = {
 const TABLE_HEAD = [
   { id: 'document_number', label: 'Doc Number' },
   { id: 'document_file', label: 'Upload' },
-  { id: 'file_type', label: 'File Type' },
   { id: 'created_at', label: 'Create At' },
   // { id: '' },
 ];
