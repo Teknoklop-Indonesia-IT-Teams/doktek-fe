@@ -30,6 +30,8 @@ export function useGetDocuments() {
           title: act.title,
           document_number: act.document_number,
           version_number: act.version_number,
+          document_file: act.document_file,
+          document_file_pdf: act.document_file_pdf,
 
           created_at: act.created_at,
           updated_at: doc.updated_at,
@@ -72,6 +74,7 @@ export function useGetDocumentsActive() {
           division: act.divisions,
           typeDocument: act.typeDocument,
           document_file: act.document_file,
+          document_file_pdf: act.document_file_pdf,
           created_by: act.user?.username || act.created_by,
           flag_active: act.flag_active,
         }))
@@ -116,6 +119,7 @@ export function useGetDocumentByID(documentId: string) {
               typeDocument: act.typeDocument,
               flag_active: act.flag_active,
               document_file: act.document_file,
+              document_file_pdf: act.document_file_pdf,
               created_by: act.created_by || act.user?.username || doc.created_by,
             })) || [],
         }
@@ -150,6 +154,8 @@ export function useEditDocument(documentId: string) {
           title: act.title,
           document_number: act.document_number,
           version_number: act.version_number,
+          document_file: act.document_file,
+          document_file_pdf: act.document_file_pdf,
 
           created_at: act.created_at,
           updated_at: doc.updated_at,
