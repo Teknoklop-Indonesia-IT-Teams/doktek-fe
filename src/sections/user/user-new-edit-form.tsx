@@ -13,6 +13,8 @@ import Grid from '@mui/material/Unstable_Grid2';
 import Typography from '@mui/material/Typography';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import MenuItem from '@mui/material/MenuItem';
+import { ConfirmDialog } from 'src/components/custom-dialog';
+import { useBoolean } from 'src/hooks/use-boolean';
 // utils
 import { posterDoktek, epDoktek, patcherDoktek, putDoktek } from 'src/utils/axios-doktek';
 // Api
@@ -47,7 +49,8 @@ export default function UserNewEditForm({ currentUser }: Props) {
   const router = useRouter();
   const { division } = useGetDivision();
   const { roles } = useGetRoles();
-
+  const alertDialog = useBoolean();
+  const [alertMessage, setAlertMessage] = useState('');
   const { enqueueSnackbar } = useSnackbar();
 
   const NewUserSchema = Yup.object().shape({
@@ -95,7 +98,7 @@ export default function UserNewEditForm({ currentUser }: Props) {
     try {
       const payload = { ...data };
       if (currentUser && !payload.password) {
-        delete payload.password; 
+        delete payload.password;
       }
 
       if (currentUser) {
@@ -105,8 +108,17 @@ export default function UserNewEditForm({ currentUser }: Props) {
       }
       enqueueSnackbar(currentUser ? 'Update success!' : 'Create success!');
       router.push(paths.dashboard.user.list);
-    } catch (error) {
-      console.error(error);
+    } catch (error: any) {
+      const msg =
+        error?.message ||
+        (typeof error === 'string' ? error : 'Terjadi kesalahan, silakan coba lagi');
+
+      if (typeof msg === 'string' && msg.toLowerCase().includes('password')) {
+        setAlertMessage(msg);
+        alertDialog.onTrue();
+      } else {
+        enqueueSnackbar(typeof msg === 'string' ? msg : JSON.stringify(msg), { variant: 'error' });
+      }
     }
   });
 
@@ -174,6 +186,17 @@ export default function UserNewEditForm({ currentUser }: Props) {
           </Card>
         </Grid>
       </Grid>
+      <ConfirmDialog
+        open={alertDialog.value}
+        onClose={alertDialog.onFalse}
+        title="Perhatian"
+        content={alertMessage}
+        action={
+          <Button variant="contained" onClick={alertDialog.onFalse}>
+            OK
+          </Button>
+        }
+      />
     </FormProvider>
   );
 }
