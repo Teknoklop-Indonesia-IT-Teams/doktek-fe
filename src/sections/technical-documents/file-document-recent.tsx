@@ -21,7 +21,7 @@ interface Props extends StackProps {
 
 export default function FileDocumentRecent({ file, sx, ...other }: Props) {
   const { title } = file;
-  const getFileExtension = (file?: string) => {
+  const getFileExtension = (file?: string | null) => {
     if (!file) return '';
 
     return file.split('.').pop()?.toLowerCase();
