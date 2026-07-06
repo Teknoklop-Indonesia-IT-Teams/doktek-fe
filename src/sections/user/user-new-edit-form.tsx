@@ -189,7 +189,11 @@ export default function UserNewEditForm({ currentUser }: Props) {
       <ConfirmDialog
         open={alertDialog.value}
         onClose={alertDialog.onFalse}
-        title="Perhatian"
+        title={
+          <Typography variant="h6" component="span" sx={{ color: 'error.main' }}>
+            Perhatian
+          </Typography>
+        }
         content={alertMessage}
         action={
           <Button variant="contained" onClick={alertDialog.onFalse}>
